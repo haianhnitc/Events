@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "871920171501",
+    "project_id": "events-app-chepcon",
+    "storage_bucket": "events-app-chepcon.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:871920171501:android:69d7082e04e4917d224fe4",
+        "android_client_info": {
+          "package_name": "com.example.events_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "871920171501-lmsgknr8ai0qtul25hpd8kc0nd99qkh1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAeW-33SFxoBg3v0Ptrpp5qaRfqaj_42eM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "871920171501-lmsgknr8ai0qtul25hpd8kc0nd99qkh1.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "871920171501-4i4r01lnan2dusptf09nmmra8m7eo969.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.eventsApp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
