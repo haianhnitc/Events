@@ -20,7 +20,7 @@ else()
     set(CMAKE_BUILD_TYPE "Debug" CACHE
       STRING "Flutter build mode" FORCE)
     set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
-      "Debug" "Profile" "Release")
+      "Debug" "Profile" "Release" )
   endif()
 endif()
 # Define settings for the Profile build mode.
