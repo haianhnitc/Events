@@ -1,6 +1,6 @@
 import 'package:dartz/dartz.dart';
 import 'package:events_app/api_template/services/failure.dart';
-import 'package:events_app/authentication/domain/entity/user_entity.dart';
+import 'package:events_app/feature/user_management/domain/entity/user_entity.dart';
 
 abstract class AuthRepository {
   Future<Either<FailureEntity, UserEntity?>> signInWithEmailAndPassword(

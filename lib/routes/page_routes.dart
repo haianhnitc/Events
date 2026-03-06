@@ -1,4 +1,4 @@
-import 'package:events_app/feature/events/presentation/page/event_page.dart';
+import 'package:events_app/feature/event_management/presentation/page/event_page.dart';
 import 'package:events_app/feature/home/presentation/page/home_page.dart';
 import 'package:events_app/feature/news/presentation/page/news_page.dart';
 import 'package:events_app/routes/navbar/bottom_nav_bar_controller.dart';

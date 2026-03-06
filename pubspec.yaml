@@ -28,6 +28,7 @@ dependencies:
   flutter_svg: ^2.2.2
   mobile_scanner: ^2.0.0
   flutter_slidable: ^3.0.1
+  url_launcher: ^6.3.0
 
 dev_dependencies:
   flutter_test:
