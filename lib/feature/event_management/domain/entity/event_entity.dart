@@ -7,6 +7,7 @@ class EventEntity {
   final EventRecruitmentType? recruitmentType;
   final String? title;
   final String? description;
+  final String? banner;
   final EventStatus? status;
   final DateTime? startTime;
   final DateTime? endTime;
@@ -20,6 +21,7 @@ class EventEntity {
     this.recruitmentType,
     this.title,
     this.description,
+    this.banner,
     this.status,
     this.startTime,
     this.endTime,

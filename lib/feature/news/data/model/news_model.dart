@@ -17,6 +17,7 @@ class NewsModel with _$NewsModel {
     int? targetId,
     @Default(0) int? totalRewardCoin,
     @Default(0) int? rewardPerMinute,
+    @Default(0) int? viewCount,
     DateTime? createdTime,
   }) = _NewsModel;
 
@@ -34,6 +35,7 @@ class NewsModel with _$NewsModel {
       targetId: entity.targetId,
       totalRewardCoin: entity.totalRewardCoin,
       rewardPerMinute: entity.rewardPerMinute,
+      viewCount: entity.viewCount,
       createdTime: entity.createdTime,
     );
   }
@@ -51,6 +53,7 @@ extension NewsModelExtension on NewsModel {
       targetId: targetId,
       totalRewardCoin: totalRewardCoin,
       rewardPerMinute: rewardPerMinute,
+      viewCount: viewCount,
       createdTime: createdTime,
     );
   }

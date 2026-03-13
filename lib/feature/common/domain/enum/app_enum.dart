@@ -114,6 +114,8 @@ enum FeedbackQuestionType {
 enum NewsTargetType {
   @JsonValue('NONE')
   none,
+  @JsonValue('PUBLIC')
+  publicTarget,
   @JsonValue('EVENT')
   event,
   @JsonValue('USER')

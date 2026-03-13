@@ -1,3 +1,4 @@
+import 'package:events_app/feature/common/data/model/category_option_model.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:events_app/feature/common/domain/enum/app_enum.dart';
 import '../../domain/entity/category_entity.dart';
@@ -11,6 +12,7 @@ class CategoryModel with _$CategoryModel {
     int? categoryId,
     String? name,
     CategoryType? type,
+    List<CategoryOptionModel>? options,
   }) = _CategoryModel;
 
   factory CategoryModel.fromJson(Map<String, dynamic> json) =>
@@ -21,6 +23,7 @@ class CategoryModel with _$CategoryModel {
       categoryId: entity.categoryId,
       name: entity.name,
       type: entity.type,
+      options: entity.options?.map(CategoryOptionModel.fromEntity).toList(),
     );
   }
 }
@@ -31,6 +34,7 @@ extension CategoryModelExtension on CategoryModel {
       categoryId: categoryId,
       name: name,
       type: type,
+      options: options?.map((option) => option.toEntity()).toList(),
     );
   }
 }

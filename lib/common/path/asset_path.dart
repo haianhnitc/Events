@@ -16,4 +16,7 @@ class AssetPath {
   static const outStandingEvent = 'assets/icons/out_stading_event.svg';
   static const linkLogo = 'assets/picture/logo_text_png.png';
   static const rankingIcon = 'assets/icons/ranking_icon.svg';
+  static const calendarIcon = 'assets/icons/calendar.svg';
+  static const certificateIcon = 'assets/icons/certificate.svg';
+  static const networkIcon = 'assets/icons/network.svg';
 }
