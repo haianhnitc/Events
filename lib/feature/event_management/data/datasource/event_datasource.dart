@@ -15,6 +15,9 @@ abstract class EventDatasource {
     int size,
     String? keyword,
   });
+
+  Future<ApiResponse<List<EventSummaryModel>>> getFeaturedEvents();
+
   Future<ApiResponse<EventModel>> getEventById(int id);
 }
 
@@ -59,6 +62,32 @@ class EventDatasourceImpl extends ApiProvider implements EventDatasource {
               .toList();
         },
         fallbackError: 'Lấy danh sách sự kiện thất bại',
+      );
+    } catch (e) {
+      return mapExceptionToApiResponse(e);
+    }
+  }
+
+  @override
+  Future<ApiResponse<List<EventSummaryModel>>> getFeaturedEvents() async {
+    try {
+      final response = await get<Map<String, dynamic>>(
+        ApiPath.eventsFeatured,
+        (data) => Map<String, dynamic>.from(data as Map),
+        requireAuth: false,
+      );
+
+      return forwardEnvelopeResponse<List<EventSummaryModel>>(
+        response,
+        (object) {
+          if (object is! List) {
+            throw const FormatException('Expected a list payload');
+          }
+          return object
+              .map((e) => EventSummaryModel.fromJson(e as Map<String, dynamic>))
+              .toList();
+        },
+        fallbackError: 'Lấy danh sách sự kiện nổi bật thất bại',
       );
     } catch (e) {
       return mapExceptionToApiResponse(e);

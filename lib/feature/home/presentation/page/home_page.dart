@@ -1,4 +1,4 @@
-import 'package:events_app/feature/event_management/domain/entity/event_summary_entity.dart';
+import 'package:events_app/feature/home/presentation/controller/home_controller.dart';
 import 'package:events_app/feature/home/presentation/widget/footer_home_page.dart';
 import 'package:events_app/feature/home/presentation/widget/header_home_page.dart';
 import 'package:events_app/feature/home/presentation/widget/item_featured_event.dart';
@@ -8,12 +8,12 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class HomePage extends StatelessWidget {
-  HomePage({super.key, required this.featuredEvents});
+  const HomePage({super.key});
 
-  final List<EventSummaryEntity> featuredEvents;
-  final bottomNavBarController = Get.find<BottomNavBarController>();
   @override
   Widget build(BuildContext context) {
+    final controller = Get.find<HomeController>();
+
     return Scaffold(
       backgroundColor: const Color(0xffF5F5F5),
       body: SafeArea(
@@ -36,34 +36,52 @@ class HomePage extends StatelessWidget {
                     children: [
                       const HeaderHomePage(),
                       const SizedBox(height: 24),
-                      _buildTwoItemSubHEader(),
+                      _buildTwoItemSubHeader(),
                       const SizedBox(height: 24),
                       const RankingCard(),
                       const SizedBox(height: 24),
-                      _buildFeaturedEventHeader(true),
+                      _buildFeaturedEventHeader(),
                       const SizedBox(height: 16),
                     ],
                   ).marginSymmetric(horizontal: 16, vertical: 24),
                 ],
               ),
             ),
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-              sliver: SliverGrid.builder(
-                itemCount: featuredEvents.length,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
-                  childAspectRatio: 162 / 210,
+            Obx(() {
+              if (controller.isLoading.value) {
+                return const SliverFillRemaining(
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              }
+              final events = controller.featuredEvents;
+              if (events.isEmpty) {
+                return const SliverFillRemaining(
+                  child: Center(
+                    child: Text(
+                      'Không có sự kiện nổi bật',
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  ),
+                );
+              }
+              return SliverPadding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                sliver: SliverGrid.builder(
+                  itemCount: events.length,
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                    childAspectRatio: 162 / 210,
+                  ),
+                  itemBuilder: (context, index) {
+                    return ItemFeaturedEvent(
+                      eventFeatured: events[index],
+                    );
+                  },
                 ),
-                itemBuilder: (context, index) {
-                  return ItemFeaturedEvent(
-                    eventFeatured: featuredEvents[index],
-                  );
-                },
-              ),
-            ),
+              );
+            }),
             const SliverToBoxAdapter(child: FooterHomePage()),
           ],
         ),
@@ -71,21 +89,23 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  _buildTwoItemSubHEader() => Row(
-        children: [
-          _buildEventActionCard(true),
-          const SizedBox(width: 12),
-          _buildEventActionCard(false),
-        ],
-      );
+  Widget _buildTwoItemSubHeader() {
+    final controller = Get.find<BottomNavBarController>();
+    return Row(
+      children: [
+        _buildEventActionCard(true, controller),
+        const SizedBox(width: 12),
+        _buildEventActionCard(false, controller),
+      ],
+    );
+  }
 
-  _buildEventActionCard(bool isEvent) => Expanded(
+  Widget _buildEventActionCard(bool isEvent, BottomNavBarController controller) =>
+      Expanded(
         child: GestureDetector(
           onTap: () {
-            isEvent
-                ? bottomNavBarController.selectedPage.value =
-                    NavBarOptions.events
-                : bottomNavBarController.selectedPage.value = NavBarOptions.ctv;
+            controller.selectedPage.value =
+                isEvent ? NavBarOptions.events : NavBarOptions.ctv;
           },
           child: Container(
               padding: const EdgeInsets.only(top: 16),
@@ -146,7 +166,8 @@ class HomePage extends StatelessWidget {
         ),
       );
 
-  Widget _buildFeaturedEventHeader(bool isEvent) {
+  Widget _buildFeaturedEventHeader() {
+    final controller = Get.find<BottomNavBarController>();
     return Row(
       children: [
         const Text(
@@ -160,7 +181,7 @@ class HomePage extends StatelessWidget {
         const Spacer(),
         GestureDetector(
           onTap: () {
-            bottomNavBarController.selectedPage.value = NavBarOptions.events;
+            controller.selectedPage.value = NavBarOptions.events;
           },
           child: const Row(
             children: [

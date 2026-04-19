@@ -36,6 +36,14 @@ class EventRepositoryImpl implements EventRepository {
   }
 
   @override
+  Future<Either<FailureEntity, List<EventSummaryEntity>>> getFeaturedEvents() async {
+    final response = await _datasource.getFeaturedEvents();
+    return response.toEither().map(
+          (models) => models.map((m) => m.toEntity()).toList(),
+        );
+  }
+
+  @override
   Future<Either<FailureEntity, EventEntity>> getEventById(int id) async {
     final response = await _datasource.getEventById(id);
     return response.toEitherNullable().map((m) => m.toEntity());

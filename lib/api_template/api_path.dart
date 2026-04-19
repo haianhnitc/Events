@@ -67,6 +67,7 @@ class ApiPath {
   static const String coinHistory = '/finance/coins/history';
 
   static const String events = '/events';
+  static const String eventsFeatured = '/events/featured';
   static String eventDetail(int id) => '/events/$id';
   static String eventPublish(int id) => '/events/$id/publish';
   static String eventStatistics(int id) => '/events/$id/statistics';

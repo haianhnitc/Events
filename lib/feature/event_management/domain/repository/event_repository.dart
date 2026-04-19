@@ -12,5 +12,7 @@ abstract class EventRepository {
     String? keyword,
   });
 
+  Future<Either<FailureEntity, List<EventSummaryEntity>>> getFeaturedEvents();
+
   Future<Either<FailureEntity, EventEntity>> getEventById(int id);
 }
