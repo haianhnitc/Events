@@ -11,7 +11,7 @@ class UpdateCurrentUserParams {
   final DateTime? dateOfBirth;
   final int? avatarFileId;
   final String? address;
-  final String? logoUrl;
+  final int? logoFileId;
   final String? description;
 
   const UpdateCurrentUserParams({
@@ -20,7 +20,7 @@ class UpdateCurrentUserParams {
     this.dateOfBirth,
     this.avatarFileId,
     this.address,
-    this.logoUrl,
+    this.logoFileId,
     this.description,
   });
 
@@ -30,7 +30,7 @@ class UpdateCurrentUserParams {
         if (dateOfBirth != null) 'dateOfBirth': dateOfBirth!.toIso8601String().split('T').first,
         if (avatarFileId != null) 'avatarFileId': avatarFileId,
         if (address != null) 'address': address,
-        if (logoUrl != null) 'logoUrl': logoUrl,
+        if (logoFileId != null) 'logoFileId': logoFileId,
         if (description != null) 'description': description,
       };
 
@@ -40,7 +40,7 @@ class UpdateCurrentUserParams {
       dateOfBirth == null &&
       avatarFileId == null &&
       address == null &&
-      logoUrl == null &&
+      logoFileId == null &&
       description == null;
 }
 

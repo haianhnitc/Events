@@ -1,5 +1,5 @@
 import 'package:events_app/feature/common/domain/enum/app_enum.dart';
-import 'package:events_app/common/presentation/widget/upload_image_section.dart';
+import 'package:events_app/common/presentation/widget/avatar_upload_widget.dart';
 import 'package:events_app/feature/common/utils/app_date_utils.dart';
 import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
 import 'package:events_app/feature/event_management/domain/entity/event_summary_entity.dart';
@@ -182,17 +182,15 @@ class _OrganizerRecruitmentFormPageState
                   fontWeight: FontWeight.w700,
                   color: Color(0xff273143))),
           const SizedBox(height: 12),
-          Obx(() => ImageUploadSection(
+          Obx(() => BannerUploadWidget(
                 previewUrl: _formCtrl.bannerPreviewUrl.value,
-                isUploading: _formCtrl.isUploadingBanner.value,
-                onPickAndUpload: _formCtrl.pickAndUploadBanner,
-                onRemove: () {
-                  _formCtrl.bannerPreviewUrl.value = null;
-                  _formCtrl.bannerFileId.value = null;
-                },
+                fileType: FileType.recruitmentBanner,
                 height: 140,
-                placeholderTitle: 'Tải lên banner tuyển dụng',
-                placeholderSubtitle: 'JPG, PNG (tối đa 5MB)',
+                onSuccess: (fileId, url) => _formCtrl.onBannerUploaded(fileId, url),
+                onRemove: () {
+                  _formCtrl.bannerFileId.value = null;
+                  _formCtrl.bannerPreviewUrl.value = null;
+                },
               )),
         ],
       ),

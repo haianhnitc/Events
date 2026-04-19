@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:events_app/api_template/services/failure.dart';
-import 'package:events_app/common/utils/upload_helper.dart';
 import 'package:events_app/dependency_injection/injection.dart';
-import 'package:events_app/feature/common/domain/enum/app_enum.dart';
-import 'package:events_app/feature/common/usecase/upload_file_params.dart';
-import 'package:events_app/feature/common/usecase/upload_file_usecase.dart';
 import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
 import 'package:events_app/feature/recruitment/domain/entity/ctv_recruitment_entity.dart';
 import 'package:events_app/feature/organizer/recruitment/domain/usecase/organizer_recruitment_usecase.dart';
@@ -18,7 +14,6 @@ class OrganizerRecruitmentFormController extends GetxController {
       networkGetIt<CreateOrganizerRecruitmentUsecase>();
   UpdateOrganizerRecruitmentUsecase get _updateUsecase =>
       networkGetIt<UpdateOrganizerRecruitmentUsecase>();
-  UploadFileUsecase get _uploadFileUsecase => networkGetIt<UploadFileUsecase>();
 
   final formKey = GlobalKey<FormState>();
 
@@ -33,10 +28,10 @@ class OrganizerRecruitmentFormController extends GetxController {
 
   final RxBool isLoading = false.obs;
   final RxBool isSubmitting = false.obs;
-  final RxBool isUploadingBanner = false.obs;
   final Rx<CtvRecruitmentEntity?> editingRecruitment = Rx<CtvRecruitmentEntity?>(null);
   final Rx<DateTime?> startTime = Rx<DateTime?>(null);
   final Rx<DateTime?> registerOpenTime = Rx<DateTime?>(null);
+
   final Rx<int?> bannerFileId = Rx<int?>(null);
   final Rx<String?> bannerPreviewUrl = Rx<String?>(null);
 
@@ -59,36 +54,34 @@ class OrganizerRecruitmentFormController extends GetxController {
     super.onClose();
   }
 
-  Future<void> loadRecruitment(int recruitmentId) async {
-    if (isLoading.value) return;
-    isLoading.value = true;
-    final result = await _getByIdUsecase(recruitmentId);
-    result.fold(
-      (failure) {
-        _handleFailure(failure);
-        isLoading.value = false;
-      },
-      (data) {
-        editingRecruitment.value = data;
-        _populateForm(data);
-        isLoading.value = false;
-      },
-    );
-  }
-
-  void _populateForm(CtvRecruitmentEntity r) {
+  void initForEdit(CtvRecruitmentEntity r) {
+    editingRecruitment.value = r;
     titleController.text = r.title ?? '';
     descriptionController.text = r.description ?? '';
     roleNameController.text = r.roleName ?? '';
-    quantityController.text = r.quantity?.toString() ?? '1';
-    rewardCoinController.text = r.rewardCoin?.toString() ?? '0';
-    youthUnionPointController.text = r.youthUnionPoint?.toString() ?? '0';
-    cashRewardController.text = r.cashRewardAmount?.toString() ?? '0';
+    quantityController.text = (r.quantity ?? 0).toString();
+    rewardCoinController.text = (r.rewardCoin ?? 0).toString();
+    youthUnionPointController.text = (r.youthUnionPoint ?? 0).toString();
+    cashRewardController.text = (r.cashRewardAmount ?? 0).toString();
     certificateNameController.text = r.certificateName ?? '';
     startTime.value = r.startTime;
     registerOpenTime.value = r.registerOpenTime;
     bannerPreviewUrl.value = r.banner;
     bannerFileId.value = null;
+
+    selectedCategoryOptionIds.clear();
+    requirementQuestions.clear();
+    if (r.categories != null) {
+      for (final cat in r.categories!) {
+        if (cat.options != null) {
+          for (final opt in cat.options!) {
+            if (opt.categoryOptionId != null) {
+              selectedCategoryOptionIds.add(opt.categoryOptionId!);
+            }
+          }
+        }
+      }
+    }
   }
 
   void initForCreate() {
@@ -96,7 +89,7 @@ class OrganizerRecruitmentFormController extends GetxController {
     titleController.clear();
     descriptionController.clear();
     roleNameController.clear();
-    quantityController.text = '1';
+    quantityController.text = '10';
     rewardCoinController.text = '0';
     youthUnionPointController.text = '0';
     cashRewardController.text = '0';
@@ -109,34 +102,15 @@ class OrganizerRecruitmentFormController extends GetxController {
     requirementQuestions.clear();
   }
 
+  void onBannerUploaded(int fileId, String url) {
+    bannerFileId.value = fileId;
+    bannerPreviewUrl.value = url;
+  }
+
   void setStartTime(DateTime? dt) { startTime.value = dt; }
   void setRegisterOpenTime(DateTime? dt) { registerOpenTime.value = dt; }
 
-  Future<void> pickAndUploadBanner() async {
-    final result = await ImagePickerService().pickSingleImage();
-    if (result == null) return;
-
-    isUploadingBanner.value = true;
-    try {
-      final uploadResult = await _uploadFileUsecase(UploadFileParams(
-        filePath: result.filePath,
-        fileType: FileType.recruitmentBanner,
-      ));
-
-      uploadResult.fold(
-        (failure) {
-          _handleFailure(failure);
-        },
-        (fileEntity) {
-          bannerFileId.value = fileEntity.fileId;
-          bannerPreviewUrl.value = fileEntity.url;
-          AppSnackbarUtils.showSuccess('Thành công', 'Tải ảnh lên thành công');
-        },
-      );
-    } finally {
-      isUploadingBanner.value = false;
-    }
-  }
+  Future<void> loadRecruitment(int recruitmentId) => loadForEdit(recruitmentId);
 
   void toggleCategoryOption(int id) {
     if (selectedCategoryOptionIds.contains(id)) {
@@ -162,88 +136,110 @@ class OrganizerRecruitmentFormController extends GetxController {
     }
   }
 
+  Future<void> loadForEdit(int recruitmentId) async {
+    isLoading.value = true;
+    final result = await _getByIdUsecase(recruitmentId);
+    result.fold(
+      (failure) {
+        _handleFailure(failure);
+        isLoading.value = false;
+        Get.back();
+      },
+      (r) {
+        initForEdit(r);
+        isLoading.value = false;
+      },
+    );
+  }
+
   Future<void> submit(int eventId) async {
     if (!formKey.currentState!.validate()) return;
     if (isSubmitting.value) return;
     isSubmitting.value = true;
+
+    final params = CreateRecruitmentParams(
+      eventId: eventId,
+      title: titleController.text,
+      bannerFileId: bannerFileId.value,
+      roleName: roleNameController.text.isEmpty ? null : roleNameController.text,
+      description: descriptionController.text.isEmpty ? null : descriptionController.text,
+      startTime: startTime.value,
+      quantity: int.tryParse(quantityController.text),
+      rewardCoin: int.tryParse(rewardCoinController.text),
+      youthUnionPoint: int.tryParse(youthUnionPointController.text),
+      cashRewardAmount: int.tryParse(cashRewardController.text),
+      certificateName: certificateNameController.text.isEmpty ? null : certificateNameController.text,
+      isOpen: true,
+      categoryOptionIds:
+          selectedCategoryOptionIds.isEmpty ? null : selectedCategoryOptionIds.toList(),
+      requirementQuestions:
+          requirementQuestions.isEmpty ? null : requirementQuestions.toList(),
+    );
 
     final result = isEditMode
         ? await _updateUsecase(UpdateRecruitmentParamsWrapper(
             id: editingRecruitment.value!.ctvRecruitmentId!,
             params: UpdateRecruitmentParams(
               title: titleController.text,
-              description: descriptionController.text,
+              bannerFileId: bannerFileId.value,
               roleName: roleNameController.text.isEmpty ? null : roleNameController.text,
+              description: descriptionController.text.isEmpty ? null : descriptionController.text,
+              startTime: startTime.value,
               quantity: int.tryParse(quantityController.text),
               rewardCoin: int.tryParse(rewardCoinController.text),
               youthUnionPoint: int.tryParse(youthUnionPointController.text),
               cashRewardAmount: int.tryParse(cashRewardController.text),
               certificateName: certificateNameController.text.isEmpty ? null : certificateNameController.text,
-              startTime: startTime.value,
-              bannerFileId: bannerFileId.value,
-              isOpen: true,
-              categoryOptionIds: selectedCategoryOptionIds.isEmpty ? null : selectedCategoryOptionIds.toList(),
-              requirementQuestions: requirementQuestions.isEmpty ? null : requirementQuestions.toList(),
+              isOpen: editingRecruitment.value?.isOpen,
+              categoryOptionIds:
+                  selectedCategoryOptionIds.isEmpty ? null : selectedCategoryOptionIds.toList(),
+              requirementQuestions:
+                  requirementQuestions.isEmpty ? null : requirementQuestions.toList(),
             ),
           ))
-        : await _createUsecase(CreateRecruitmentParams(
-            eventId: eventId,
-            title: titleController.text,
-            description: descriptionController.text,
-            roleName: roleNameController.text.isEmpty ? null : roleNameController.text,
-            quantity: int.tryParse(quantityController.text),
-            rewardCoin: int.tryParse(rewardCoinController.text),
-            youthUnionPoint: int.tryParse(youthUnionPointController.text),
-            cashRewardAmount: int.tryParse(cashRewardController.text),
-            certificateName: certificateNameController.text.isEmpty ? null : certificateNameController.text,
-            startTime: startTime.value,
-            bannerFileId: bannerFileId.value,
-            isOpen: true,
-            categoryOptionIds: selectedCategoryOptionIds.isEmpty ? null : selectedCategoryOptionIds.toList(),
-            requirementQuestions: requirementQuestions.isEmpty ? null : requirementQuestions.toList(),
-          ));
+        : await _createUsecase(params);
 
     result.fold(
       (failure) {
         _handleFailure(failure);
         isSubmitting.value = false;
       },
-      (recruitment) {
-        AppSnackbarUtils.showSuccess('Thành công',
-            isEditMode ? 'Cập nhật tuyển CTV thành công' : 'Tạo tuyển CTV thành công');
+      (r) {
+        AppSnackbarUtils.showSuccess(
+          'Thành công',
+          isEditMode ? 'Cập nhật tuyển dụng thành công' : 'Tạo tuyển dụng thành công',
+        );
         isSubmitting.value = false;
-        Get.back(result: recruitment);
+        Get.back(result: r);
       },
     );
   }
 
   String? validateTitle(String? value) {
-    if (value == null || value.isEmpty) return 'Vui lòng nhập tiêu đề tuyển dụng';
+    if (value == null || value.isEmpty) return 'Vui lòng nhập tiêu đề';
     if (value.length < 10) return 'Tiêu đề phải có ít nhất 10 ký tự';
-    if (value.length > 200) return 'Tiêu đề không được quá 200 ký tự';
+    if (value.length > 200) return 'Tiêu đề không quá 200 ký tự';
     return null;
   }
 
   String? validateDescription(String? value) {
-    if (value == null || value.isEmpty) return 'Vui lòng nhập mô tả công việc';
-    if (value.length < 50) return 'Mô tả phải có ít nhất 50 ký tự';
-    if (value.length > 5000) return 'Mô tả không được quá 5000 ký tự';
+    if (value == null || value.isEmpty) return 'Vui lòng nhập mô tả';
+    if (value.length < 10) return 'Mô tả phải có ít nhất 10 ký tự';
+    if (value.length > 5000) return 'Mô tả không quá 5000 ký tự';
     return null;
   }
 
   String? validateRoleName(String? value) {
     if (value == null || value.isEmpty) return null;
-    if (value.length < 5) return 'Vai trò phải có ít nhất 5 ký tự';
-    if (value.length > 200) return 'Vai trò không được quá 200 ký tự';
+    if (value.length > 100) return 'Tên vai trò không quá 100 ký tự';
     return null;
   }
 
-  String? validateQuantity(String? value) {
-    if (value == null || value.isEmpty) return 'Vui lòng nhập số lượng';
-    final qty = int.tryParse(value);
-    if (qty == null) return 'Số lượng không hợp lệ';
-    if (qty < 1) return 'Số lượng phải lớn hơn 0';
-    if (qty > 1000) return 'Số lượng không được quá 1000';
+  String? validateStartTime(DateTime? value) {
+    if (value == null) return 'Vui lòng chọn thời gian bắt đầu';
+    if (value.isBefore(DateTime.now())) {
+      return 'Thời gian bắt đầu phải sau thời điểm hiện tại';
+    }
     return null;
   }
 
@@ -252,16 +248,7 @@ class OrganizerRecruitmentFormController extends GetxController {
     final coin = int.tryParse(value);
     if (coin == null) return 'Số coin không hợp lệ';
     if (coin < 0) return 'Số coin không được nhỏ hơn 0';
-    if (coin > 100000) return 'Số coin không được quá 100.000';
-    return null;
-  }
-
-  String? validateYouthUnionPoint(String? value) {
-    if (value == null || value.isEmpty) return null;
-    final point = int.tryParse(value);
-    if (point == null) return 'Số điểm không hợp lệ';
-    if (point < 0) return 'Số điểm không được nhỏ hơn 0';
-    if (point > 100) return 'Số điểm không được quá 100';
+    if (coin > 100000) return 'Số coin không quá 100.000';
     return null;
   }
 
@@ -270,22 +257,47 @@ class OrganizerRecruitmentFormController extends GetxController {
     final amount = int.tryParse(value);
     if (amount == null) return 'Số tiền không hợp lệ';
     if (amount < 0) return 'Số tiền không được nhỏ hơn 0';
-    if (amount > 100000000) return 'Số tiền không được quá 100.000.000 đ';
+    if (amount > 100000000) return 'Số tiền không quá 100.000.000';
     return null;
   }
 
-  String? validateStartTime(DateTime? value) {
-    if (value == null) return 'Vui lòng chọn thời gian bắt đầu tuyển dụng';
-    if (value.isBefore(DateTime.now())) return 'Thời gian bắt đầu phải sau thời điểm hiện tại';
+  String? validateQuantity(String? value) {
+    if (value == null || value.isEmpty) return null;
+    final qty = int.tryParse(value);
+    if (qty == null) return 'Số lượng không hợp lệ';
+    if (qty < 1) return 'Số lượng phải lớn hơn 0';
+    if (qty > 1000) return 'Số lượng không quá 1000';
+    return null;
+  }
+
+  String? validateCoin(String? value) {
+    if (value == null || value.isEmpty) return null;
+    final coin = int.tryParse(value);
+    if (coin == null) return 'Số coin không hợp lệ';
+    if (coin < 0) return 'Số coin không nhỏ hơn 0';
+    if (coin > 100000) return 'Số coin không quá 100.000';
+    return null;
+  }
+
+  String? validateYouthUnionPoint(String? value) {
+    if (value == null || value.isEmpty) return null;
+    final point = int.tryParse(value);
+    if (point == null) return 'Số điểm không hợp lệ';
+    if (point < 0) return 'Số điểm không nhỏ hơn 0';
+    if (point > 100) return 'Số điểm không quá 100';
     return null;
   }
 
   void _handleFailure(FailureEntity failure) {
     failure.when(
-      serverFailure: (_, message) => AppSnackbarUtils.showError('Lỗi', message ?? 'Thao tác thất bại'),
-      dataParsingFailure: () => AppSnackbarUtils.showError('Lỗi', 'Không đọc được dữ liệu'),
-      noConnectionFailure: () => AppSnackbarUtils.showError('Lỗi', 'Không có kết nối mạng'),
-      systemFailure: (_, message) => AppSnackbarUtils.showError('Lỗi', message ?? 'Lỗi hệ thống'),
+      serverFailure: (_, message) =>
+          AppSnackbarUtils.showError('Lỗi', message ?? 'Thao tác thất bại'),
+      dataParsingFailure: () =>
+          AppSnackbarUtils.showError('Lỗi', 'Không đọc được dữ liệu'),
+      noConnectionFailure: () =>
+          AppSnackbarUtils.showError('Lỗi', 'Không có kết nối mạng'),
+      systemFailure: (_, message) =>
+          AppSnackbarUtils.showError('Lỗi', message ?? 'Lỗi hệ thống'),
     );
   }
 }

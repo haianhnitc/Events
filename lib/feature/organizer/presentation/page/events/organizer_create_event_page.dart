@@ -1,6 +1,6 @@
 import 'package:events_app/feature/common/domain/enum/app_enum.dart';
 import 'package:events_app/feature/organizer/event/domain/usecase/event_params.dart';
-import 'package:events_app/common/presentation/widget/upload_image_section.dart';
+import 'package:events_app/common/presentation/widget/avatar_upload_widget.dart';
 import 'package:events_app/feature/common/utils/app_date_utils.dart';
 import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
 import 'package:events_app/feature/event_management/domain/entity/event_entity.dart';
@@ -268,17 +268,15 @@ class _OrganizerCreateEventPageState extends State<OrganizerCreateEventPage> {
   }
 
   Widget _buildBannerUpload() {
-    return Obx(() => ImageUploadSection(
+    return Obx(() => BannerUploadWidget(
           previewUrl: _ctrl.bannerPreviewUrl.value,
-          isUploading: _ctrl.isUploadingBanner.value,
-          onPickAndUpload: _ctrl.pickAndUploadBanner,
-          onRemove: () {
-            _ctrl.bannerPreviewUrl.value = null;
-            _ctrl.bannerFileId.value = null;
-          },
+          fileType: FileType.eventBanner,
           height: 160,
-          placeholderTitle: 'Tải lên banner sự kiện',
-          placeholderSubtitle: 'JPG, PNG (tối đa 5MB)',
+          onSuccess: (fileId, url) => _ctrl.onBannerUploaded(fileId, url),
+          onRemove: () {
+            _ctrl.bannerFileId.value = null;
+            _ctrl.bannerPreviewUrl.value = null;
+          },
         ));
   }
 

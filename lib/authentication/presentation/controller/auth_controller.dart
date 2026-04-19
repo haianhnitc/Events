@@ -171,14 +171,16 @@ class AuthController extends GetxController {
   final TextEditingController registerFacultyController =
       TextEditingController();
   final TextEditingController registerMajorController = TextEditingController();
-  final TextEditingController registerAvatarUrlController =
-      TextEditingController();
+
+  final Rx<int?> registerAvatarFileId = Rx<int?>(null);
+  final Rx<String?> registerAvatarPreviewUrl = Rx<String?>(null);
+  final Rx<int?> registerLogoFileId = Rx<int?>(null);
+  final Rx<String?> registerLogoPreviewUrl = Rx<String?>(null);
+  final RxBool isUploadingAvatarInRegister = false.obs;
 
   final TextEditingController organizationNameController =
       TextEditingController();
   final TextEditingController organizationAddressController =
-      TextEditingController();
-  final TextEditingController organizationLogoUrlController =
       TextEditingController();
   final TextEditingController organizationDescriptionController =
       TextEditingController();
@@ -239,12 +241,10 @@ class AuthController extends GetxController {
     registerConfirmPasswordController.dispose();
     registerStudentIdController.dispose();
     registerUniversityController.dispose();
-    registerFacultyController.dispose();
-    registerMajorController.dispose();
-    registerAvatarUrlController.dispose();
+    registerFacultyController.clear();
+    registerMajorController.clear();
     organizationNameController.dispose();
     organizationAddressController.dispose();
-    organizationLogoUrlController.dispose();
     organizationDescriptionController.dispose();
     organizationContactPhoneController.dispose();
     organizationContactEmailController.dispose();
@@ -268,9 +268,10 @@ class AuthController extends GetxController {
     registerConfirmPasswordController.clear();
     registerStudentIdController.clear();
     registerUniversityController.clear();
-    registerFacultyController.dispose();
-    registerMajorController.dispose();
-    registerAvatarUrlController.clear();
+    registerFacultyController.clear();
+    registerMajorController.clear();
+    registerAvatarFileId.value = null;
+    registerAvatarPreviewUrl.value = null;
     selectedGender.value = null;
     selectedBirthDate.value = null;
   }
@@ -278,12 +279,11 @@ class AuthController extends GetxController {
   void resetOrganizationFormFields() {
     organizationNameController.clear();
     organizationAddressController.clear();
-    organizationLogoUrlController.clear();
     organizationDescriptionController.clear();
-    organizationContactPhoneController.clear();
-    organizationContactEmailController.clear();
     organizationType.value = OrganizationType.club;
     uploadedVerificationDocs.clear();
+    registerLogoFileId.value = null;
+    registerLogoPreviewUrl.value = null;
   }
 
   void resetAllRegisterFields() {
@@ -339,7 +339,6 @@ class AuthController extends GetxController {
       isUploadingDoc.value = true;
       AppSnackbarUtils.showInfo('Đang tải lên', 'Đang xử lý tài liệu...');
 
-      // Step 1: Upload file to get fileId
       final fileResult = await _uploadFileUsecase(UploadFileParams(
         filePath: result.filePath,
         fileType: FileType.verificationDocument,
@@ -361,7 +360,6 @@ class AuthController extends GetxController {
 
       if (fileId == null) return;
 
-      // Step 2: Submit verification document with fileId
       final uploadResponse = await _uploadVerificationDocumentUsecase(
         UploadVerificationDocumentParams(
           fileId: fileId,
@@ -401,6 +399,16 @@ class AuthController extends GetxController {
 
   void removeVerificationDoc(int docId) {
     uploadedVerificationDocs.removeWhere((doc) => doc['id'] == docId);
+  }
+
+  void onAvatarUploadedInRegister(int fileId, String url) {
+    registerAvatarFileId.value = fileId;
+    registerAvatarPreviewUrl.value = url;
+  }
+
+  void onLogoUploadedInRegister(int fileId, String url) {
+    registerLogoFileId.value = fileId;
+    registerLogoPreviewUrl.value = url;
   }
 
   String _getDocumentTypeName(String type) {
@@ -561,7 +569,6 @@ class AuthController extends GetxController {
         },
         (user) {
           if (user == null) {
-            // User chưa hoàn tất đăng ký - yêu cầu hoàn thành
             return _handleIncompleteGoogleRegistration(firebaseUid);
           }
           _populateCurrentUser(user);
@@ -827,7 +834,7 @@ class AuthController extends GetxController {
       SignupWithEmailAndPasswordParams(
         password: registerPasswordController.text,
         signupParams: SignupParams(
-          idToken: '', // sẽ được thay bằng Firebase token thật trong datasource
+          idToken: '',
           isUser: !registerAsOrganization.value,
           email: registerEmailController.text.trim(),
           phoneNumber: _nullableTrim(registerPhoneController),
@@ -897,7 +904,7 @@ class AuthController extends GetxController {
       university: _nullableTrim(registerUniversityController),
       faculty: _nullableTrim(registerFacultyController),
       major: _nullableTrim(registerMajorController),
-      avatarUrl: _nullableTrim(registerAvatarUrlController),
+      avatarFileId: registerAvatarFileId.value,
       gender: _normalizeGender(selectedGender.value),
       dateOfBirth: selectedBirthDate.value,
     );
@@ -921,7 +928,7 @@ class AuthController extends GetxController {
       organizationName: organizationNameController.text.trim(),
       organizationType: organizationType.value,
       address: _nullableTrim(organizationAddressController),
-      logoUrl: _nullableTrim(organizationLogoUrlController),
+      logoFileId: registerLogoFileId.value,
       description: _nullableTrim(organizationDescriptionController),
     );
   }

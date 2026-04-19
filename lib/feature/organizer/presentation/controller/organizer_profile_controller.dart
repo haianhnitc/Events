@@ -2,12 +2,9 @@ import 'package:events_app/authentication/presentation/controller/auth_controlle
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:events_app/api_template/services/failure.dart';
-import 'package:events_app/feature/common/domain/enum/app_enum.dart';
-import 'package:events_app/feature/common/usecase/upload_file_params.dart';
-import 'package:events_app/feature/common/usecase/upload_file_usecase.dart';
-import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
-import 'package:events_app/common/utils/upload_helper.dart';
 import 'package:events_app/dependency_injection/injection.dart';
+import 'package:events_app/feature/common/domain/enum/app_enum.dart';
+import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
 import 'package:events_app/feature/user_management/domain/entity/organization_profile_entity.dart';
 import 'package:events_app/feature/organizer/organization/domain/usecase/organizer_organization_usecase.dart';
 import 'package:events_app/feature/organizer/organization/domain/usecase/organization_params.dart';
@@ -15,8 +12,6 @@ import 'package:events_app/feature/organizer/organization/domain/usecase/organiz
 class OrganizerProfileController extends GetxController {
   UpdateOrganizerProfileUsecase get _updateProfileUsecase =>
       networkGetIt<UpdateOrganizerProfileUsecase>();
-  UploadFileUsecase get _uploadFileUsecase =>
-      networkGetIt<UploadFileUsecase>();
 
   final formKey = GlobalKey<FormState>();
   final organizationNameController = TextEditingController();
@@ -24,11 +19,11 @@ class OrganizerProfileController extends GetxController {
   final addressController = TextEditingController();
 
   final RxBool isSubmitting = false.obs;
-  final RxBool isUploadingLogo = false.obs;
-  final Rx<String?> logoUrl = Rx<String?>(null);
-  final Rx<OrganizationProfileEntity?> profile = Rx<OrganizationProfileEntity?>(null);
 
-  final ImagePickerService _imagePickerService = ImagePickerService();
+  final Rx<int?> logoFileId = Rx<int?>(null);
+  final Rx<String?> logoPreviewUrl = Rx<String?>(null);
+
+  final Rx<OrganizationProfileEntity?> profile = Rx<OrganizationProfileEntity?>(null);
 
   @override
   void onClose() {
@@ -43,48 +38,19 @@ class OrganizerProfileController extends GetxController {
     organizationNameController.text = p.organizationName ?? '';
     descriptionController.text = p.description ?? '';
     addressController.text = p.address ?? '';
-    logoUrl.value = p.logoUrl;
+    logoFileId.value = null;
+    logoPreviewUrl.value = p.logoUrl;
   }
 
-  void selectLogoUrl(String url) { logoUrl.value = url; }
-
-  Future<void> pickAndUploadLogo() async {
-    if (isUploadingLogo.value) return;
-
-    final result = await _imagePickerService.pickSingleImage();
-    if (result == null) return;
-
-    isUploadingLogo.value = true;
-    AppSnackbarUtils.showInfo('Đang tải lên', 'Đang xử lý logo...');
-
-    final uploadResult = await _uploadFileUsecase(UploadFileParams(
-      filePath: result.filePath,
-      fileType: FileType.organizationLogo,
-    ));
-
-    uploadResult.fold(
-      (failure) {
-        final message = failure.when(
-          serverFailure: (_, msg) => msg,
-          dataParsingFailure: () => 'Lỗi xử lý dữ liệu',
-          noConnectionFailure: () => 'Không có kết nối mạng',
-          systemFailure: (_, msg) => msg,
-        );
-        AppSnackbarUtils.showError('Tải lên thất bại', message ?? 'Lỗi');
-        isUploadingLogo.value = false;
-      },
-      (fileEntity) {
-        logoUrl.value = fileEntity.url;
-        AppSnackbarUtils.showSuccess('Thành công', 'Logo đã được tải lên');
-        isUploadingLogo.value = false;
-      },
-    );
+  void onLogoUploaded(int fileId, String url) {
+    logoFileId.value = fileId;
+    logoPreviewUrl.value = url;
   }
 
   Future<void> showResetPasswordDialog(BuildContext context) async {
     final auth = AuthController.to;
     final emailController = TextEditingController(text: auth.loginEmailController.text);
-    final formKey = GlobalKey<FormState>();
+    final resetFormKey = GlobalKey<FormState>();
 
     await showDialog(
       context: context,
@@ -93,7 +59,7 @@ class OrganizerProfileController extends GetxController {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Đặt lại mật khẩu'),
         content: Form(
-          key: formKey,
+          key: resetFormKey,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -128,7 +94,7 @@ class OrganizerProfileController extends GetxController {
                 onPressed: auth.isLoading.value
                     ? null
                     : () async {
-                        if (!formKey.currentState!.validate()) return;
+                        if (!resetFormKey.currentState!.validate()) return;
                         Navigator.pop(ctx);
                         await auth.sendResetPasswordEmail(email: emailController.text.trim());
                       },
@@ -157,7 +123,7 @@ class OrganizerProfileController extends GetxController {
         organizationName: organizationNameController.text,
         description: descriptionController.text.isEmpty ? null : descriptionController.text,
         address: addressController.text.isEmpty ? null : addressController.text,
-        logoUrl: logoUrl.value,
+        logoFileId: logoFileId.value,
       ),
     ));
 
@@ -193,15 +159,6 @@ class OrganizerProfileController extends GetxController {
     if (value == null || value.isEmpty) return null;
     if (value.length < 10) return 'Địa chỉ phải có ít nhất 10 ký tự';
     if (value.length > 500) return 'Địa chỉ không được quá 500 ký tự';
-    return null;
-  }
-
-  String? validateLogoUrl(String? value) {
-    if (value == null || value.isEmpty) return null;
-    final uri = Uri.tryParse(value);
-    if (uri == null || !uri.hasScheme || !uri.hasAuthority) {
-      return 'Đường dẫn logo không hợp lệ';
-    }
     return null;
   }
 

@@ -14,36 +14,34 @@ import 'package:events_app/feature/user_management/domain/usecase/update_current
 class MyProfileController extends GetxController {
   UpdateCurrentUserUsecase get _updateUsecase =>
       networkGetIt<UpdateCurrentUserUsecase>();
-  UploadFileUsecase get _uploadFileUsecase =>
-      networkGetIt<UploadFileUsecase>();
 
   final formKey = GlobalKey<FormState>();
 
   final fullNameController = TextEditingController();
   final Rx<String?> selectedGender = Rx<String?>(null);
   final Rx<DateTime?> selectedBirthDate = Rx<DateTime?>(null);
+
   final Rx<int?> avatarFileId = Rx<int?>(null);
+  final Rx<String?> avatarPreviewUrl = Rx<String?>(null);
+
+  final Rx<int?> logoFileId = Rx<int?>(null);
+  final Rx<String?> logoPreviewUrl = Rx<String?>(null);
 
   final addressController = TextEditingController();
-  final logoUrlController = TextEditingController();
   final descriptionController = TextEditingController();
 
-  final RxBool isUploadingAvatar = false.obs;
   final RxBool isSubmitting = false.obs;
   final RxBool isLoading = true.obs;
-
-  final ImagePickerService _imagePickerService = ImagePickerService();
 
   @override
   void onClose() {
     fullNameController.dispose();
     addressController.dispose();
-    logoUrlController.dispose();
     descriptionController.dispose();
     super.onClose();
   }
 
-  void _loadCurrentUser() {
+  void loadUser() {
     final user = AuthController.to.currentUser.value;
     if (user == null) {
       isLoading.value = false;
@@ -65,71 +63,66 @@ class MyProfileController extends GetxController {
     selectedGender.value = profile?.gender;
     selectedBirthDate.value = profile?.dateOfBirth;
     avatarFileId.value = null;
+    avatarPreviewUrl.value = profile?.avatarUrl;
   }
-
-  String? get avatarUrl => AuthController.to.currentUser.value?.userProfile?.avatarUrl;
 
   void _loadOrganization(UserEntity user) {
     final org = user.organizationProfile;
     addressController.text = org?.address ?? '';
-    logoUrlController.text = org?.logoUrl ?? '';
     descriptionController.text = org?.description ?? '';
+    logoFileId.value = null;
+    logoPreviewUrl.value = org?.logoUrl;
   }
 
   void setGender(String? gender) { selectedGender.value = gender; }
 
   void setBirthDate(DateTime? date) { selectedBirthDate.value = date; }
 
-  void setLogoUrl(String? url) { logoUrlController.text = url ?? ''; }
-
-  Future<void> pickAndUploadAvatar() async {
-    if (isUploadingAvatar.value) return;
-
-    final result = await _imagePickerService.pickSingleImage();
-    if (result == null) return;
-
-    isUploadingAvatar.value = true;
-    AppSnackbarUtils.showInfo('Đang tải lên', 'Đang xử lý ảnh...');
-
-    final uploadResult = await _uploadFileUsecase(
-      UploadFileParams(
-        filePath: result.filePath,
-        fileType: FileType.avatar,
-      ),
-    );
-
-    uploadResult.fold(
-      (failure) {
-        isUploadingAvatar.value = false;
-        _handleFailure(failure);
-      },
-      (fileEntity) {
-        avatarFileId.value = fileEntity.fileId;
-        _updateUserAvatar(fileEntity.url);
-      },
-    );
+  void onAvatarUploaded(int fileId, String url) {
+    avatarFileId.value = fileId;
+    avatarPreviewUrl.value = url;
   }
 
-  Future<void> _updateUserAvatar(String? newUrl) async {
+  void onLogoUploaded(int fileId, String url) {
+    logoFileId.value = fileId;
+    logoPreviewUrl.value = url;
+  }
+
+  Future<void> updateAvatar() async {
+    if (avatarFileId.value == null) return;
+
     final updateResult = await _updateUsecase(
       UpdateCurrentUserParams(avatarFileId: avatarFileId.value),
     );
 
     updateResult.fold(
       (failure) {
-        isUploadingAvatar.value = false;
         _handleFailure(failure);
       },
       (updated) {
-        isUploadingAvatar.value = false;
         if (updated != null) {
           AuthController.to.currentUser.value = updated;
-          if (updated.role == UserRole.organization) {
-            logoUrlController.text = updated.organizationProfile?.logoUrl ?? '';
-          } else {
-            // user avatarUrl sẽ được cập nhật tự động khi load lại
-          }
           AppSnackbarUtils.showSuccess('Thành công', 'Cập nhật ảnh đại diện thành công.');
+        }
+      },
+    );
+  }
+
+  Future<void> updateLogo() async {
+    if (logoFileId.value == null) return;
+
+    final updateResult = await _updateUsecase(
+      UpdateCurrentUserParams(logoFileId: logoFileId.value),
+    );
+
+    updateResult.fold(
+      (failure) {
+        _handleFailure(failure);
+      },
+      (updated) {
+        if (updated != null) {
+          AuthController.to.currentUser.value = updated;
+          AppSnackbarUtils.showSuccess('Thành công', 'Cập nhật logo thành công.');
         }
       },
     );
@@ -151,15 +144,6 @@ class MyProfileController extends GetxController {
   String? validateDescription(String? value) {
     if (value == null || value.trim().isEmpty) return null;
     if (value.trim().length > 1000) return 'Mô tả không quá 1000 ký tự';
-    return null;
-  }
-
-  String? validateLogoUrl(String? value) {
-    if (value == null || value.trim().isEmpty) return null;
-    final uri = Uri.tryParse(value.trim());
-    if (uri == null || !uri.hasScheme || !uri.hasAuthority) {
-      return 'URL logo không hợp lệ';
-    }
     return null;
   }
 
@@ -206,6 +190,7 @@ class MyProfileController extends GetxController {
           : null,
       gender: selectedGender.value,
       dateOfBirth: selectedBirthDate.value,
+      avatarFileId: avatarFileId.value,
     );
   }
 
@@ -214,9 +199,7 @@ class MyProfileController extends GetxController {
       address: addressController.text.trim().isNotEmpty
           ? addressController.text.trim()
           : null,
-      logoUrl: logoUrlController.text.trim().isNotEmpty
-          ? logoUrlController.text.trim()
-          : null,
+      logoFileId: logoFileId.value,
       description: descriptionController.text.trim().isNotEmpty
           ? descriptionController.text.trim()
           : null,

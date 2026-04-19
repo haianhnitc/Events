@@ -1,4 +1,6 @@
 import 'package:events_app/authentication/presentation/controller/auth_controller.dart';
+import 'package:events_app/common/presentation/widget/avatar_upload_widget.dart';
+import 'package:events_app/feature/common/domain/enum/app_enum.dart';
 import 'package:events_app/feature/organizer/presentation/controller/organizer_profile_controller.dart';
 import 'package:events_app/feature/user_management/domain/entity/organization_profile_entity.dart';
 import 'package:events_app/routes/navbar/organizer_nav_bar_controller.dart';
@@ -117,50 +119,12 @@ class _OrganizerProfilePageState extends State<OrganizerProfilePage> {
       ),
       child: Column(
         children: [
-          Obx(() {
-            final logoUrl = _controller.logoUrl.value;
-            final isUploading = _controller.isUploadingLogo.value;
-            return GestureDetector(
-              onTap: () => _controller.pickAndUploadLogo(),
-              child: Stack(
-                children: [
-                  isUploading
-                      ? const CircleAvatar(
-                          radius: 44,
-                          backgroundColor: Color(0xFFE0F2FE),
-                          child: SizedBox(
-                            width: 36,
-                            height: 36,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Color(0xFF06B6D4),
-                            ),
-                          ),
-                        )
-                      : CircleAvatar(
-                          radius: 44,
-                          backgroundColor: const Color(0xFFE0F2FE),
-                          backgroundImage: logoUrl != null ? NetworkImage(logoUrl) : null,
-                          child: logoUrl == null
-                              ? const Icon(Icons.business, size: 36, color: Color(0xFF06B6D4))
-                              : null,
-                        ),
-                  Positioned(
-                    bottom: 0,
-                    right: 0,
-                    child: Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF06B6D4),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(Icons.camera_alt, size: 14, color: Colors.white),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }),
+          Obx(() => AvatarUploadWidget(
+                previewUrl: _controller.logoPreviewUrl.value,
+                fileType: FileType.organizationLogo,
+                radius: 44,
+                onSuccess: (fileId, url) => _controller.onLogoUploaded(fileId, url),
+              )),
           const SizedBox(height: 12),
           const Text(
             'Logo tổ chức',

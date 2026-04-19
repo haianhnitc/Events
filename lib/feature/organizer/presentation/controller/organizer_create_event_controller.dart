@@ -1,10 +1,6 @@
-import 'package:dartz/dartz.dart';
 import 'package:events_app/api_template/services/failure.dart';
-import 'package:events_app/common/utils/upload_helper.dart';
 import 'package:events_app/dependency_injection/injection.dart';
 import 'package:events_app/feature/common/domain/enum/app_enum.dart';
-import 'package:events_app/feature/common/usecase/upload_file_params.dart';
-import 'package:events_app/feature/common/usecase/upload_file_usecase.dart';
 import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
 import 'package:events_app/feature/event_management/domain/entity/event_entity.dart';
 import 'package:events_app/feature/organizer/event/domain/usecase/event_params.dart';
@@ -23,7 +19,6 @@ class OrganizerCreateEventController extends GetxController {
       networkGetIt<UpdateOrganizerEventUsecase>();
   GetOrganizerEventByIdUsecase get _getEventByIdUsecase =>
       networkGetIt<GetOrganizerEventByIdUsecase>();
-  UploadFileUsecase get _uploadFileUsecase => networkGetIt<UploadFileUsecase>();
 
   final formKey = GlobalKey<FormState>();
 
@@ -36,15 +31,16 @@ class OrganizerCreateEventController extends GetxController {
 
   final RxBool isSubmitting = false.obs;
   final RxBool isLoading = false.obs;
-  final RxBool isUploadingBanner = false.obs;
   final Rx<VenueEntity?> selectedVenue = Rx<VenueEntity?>(null);
   final Rx<EventRecruitmentType> recruitmentType =
       EventRecruitmentType.both.obs;
   final Rx<DateTime?> startTime = Rx<DateTime?>(null);
   final Rx<DateTime?> endTime = Rx<DateTime?>(null);
   final Rx<DateTime?> registerOpenTime = Rx<DateTime?>(null);
+
   final Rx<int?> bannerFileId = Rx<int?>(null);
   final Rx<String?> bannerPreviewUrl = Rx<String?>(null);
+
   final Rx<EventEntity?> editingEvent = Rx<EventEntity?>(null);
   final RxBool isReadOnly = false.obs;
   final RxList<VenueEntity> venueList = <VenueEntity>[].obs;
@@ -120,6 +116,11 @@ class OrganizerCreateEventController extends GetxController {
     feedbackQuestions.clear();
   }
 
+  void onBannerUploaded(int fileId, String url) {
+    bannerFileId.value = fileId;
+    bannerPreviewUrl.value = url;
+  }
+
   Future<void> loadEventForEdit(int eventId) async {
     isLoading.value = true;
     final result = await _getEventByIdUsecase(eventId);
@@ -177,32 +178,6 @@ class OrganizerCreateEventController extends GetxController {
       } else if (result.venue != null) {
         selectedVenue.value = result.venue;
       }
-    }
-  }
-
-  Future<void> pickAndUploadBanner() async {
-    final result = await ImagePickerService().pickSingleImage();
-    if (result == null) return;
-
-    isUploadingBanner.value = true;
-    try {
-      final uploadResult = await _uploadFileUsecase(UploadFileParams(
-        filePath: result.filePath,
-        fileType: FileType.eventBanner,
-      ));
-
-      uploadResult.fold(
-        (failure) {
-          _handleFailure(failure);
-        },
-        (fileEntity) {
-          bannerFileId.value = fileEntity.fileId;
-          bannerPreviewUrl.value = fileEntity.url;
-          AppSnackbarUtils.showSuccess('Thành công', 'Tải ảnh lên thành công');
-        },
-      );
-    } finally {
-      isUploadingBanner.value = false;
     }
   }
 

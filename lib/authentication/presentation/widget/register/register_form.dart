@@ -1,5 +1,6 @@
 import 'package:events_app/authentication/presentation/controller/auth_controller.dart';
 import 'package:events_app/authentication/presentation/widget/terms_privacy_dialog.dart';
+import 'package:events_app/common/presentation/widget/avatar_upload_widget.dart';
 import 'package:events_app/common/presentation/widget/custom_text_field.dart';
 import 'package:events_app/feature/common/domain/enum/app_enum.dart';
 import 'package:flutter/gestures.dart';
@@ -44,6 +45,8 @@ class _RegisterFormState extends State<RegisterForm> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        _buildAvatarUploadSection(authController),
+        const SizedBox(height: 14),
         _buildSectionTitle('Thông tin cá nhân'),
         const SizedBox(height: 14),
         CustomTextField(
@@ -202,6 +205,8 @@ class _RegisterFormState extends State<RegisterForm> {
           },
         ),
         const SizedBox(height: 14),
+        _buildLogoUploadSection(authController),
+        const SizedBox(height: 14),
         CustomTextField(
           controller: authController.organizationAddressController,
           labelText: 'Địa chỉ',
@@ -299,6 +304,100 @@ class _RegisterFormState extends State<RegisterForm> {
         const SizedBox(height: 20),
         _buildSubmitButton(authController),
       ],
+    );
+  }
+
+  Widget _buildAvatarUploadSection(AuthController authController) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Row(
+        children: [
+          Obx(() => AvatarUploadWidget(
+                previewUrl: authController.registerAvatarPreviewUrl.value,
+                fileType: FileType.avatar,
+                radius: 36,
+                onSuccess: (fileId, url) =>
+                    authController.onAvatarUploadedInRegister(fileId, url),
+              )),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Ảnh đại diện',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xff273143),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Nhấn để tải ảnh lên (tùy chọn)',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey.shade500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Icon(Icons.chevron_right, color: Color(0xff94A3B8)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLogoUploadSection(AuthController authController) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Row(
+        children: [
+          Obx(() => AvatarUploadWidget(
+                previewUrl: authController.registerLogoPreviewUrl.value,
+                fileType: FileType.organizationLogo,
+                radius: 36,
+                onSuccess: (fileId, url) =>
+                    authController.onLogoUploadedInRegister(fileId, url),
+              )),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Logo tổ chức',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xff273143),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Nhấn để tải logo lên (tùy chọn)',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey.shade500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Icon(Icons.chevron_right, color: Color(0xff94A3B8)),
+        ],
+      ),
     );
   }
 

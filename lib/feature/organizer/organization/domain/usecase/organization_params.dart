@@ -5,7 +5,7 @@ class OrganizationProfileUpdateParams {
   final String? organizationName;
   final OrganizationType? organizationType;
   final String? address;
-  final String? logoUrl;
+  final int? logoFileId;
   final String? description;
   final VerificationStatus? verificationStatus;
 
@@ -14,7 +14,7 @@ class OrganizationProfileUpdateParams {
     this.organizationName,
     this.organizationType,
     this.address,
-    this.logoUrl,
+    this.logoFileId,
     this.description,
     this.verificationStatus,
   });
@@ -24,7 +24,7 @@ class OrganizationProfileUpdateParams {
         if (organizationName != null) 'organizationName': organizationName,
         if (organizationType != null) 'organizationType': organizationType?.apiValue,
         if (address != null) 'address': address,
-        if (logoUrl != null) 'logoUrl': logoUrl,
+        if (logoFileId != null) 'logoFileId': logoFileId,
         if (description != null) 'description': description,
         if (verificationStatus != null)
           'verificationStatus': verificationStatus?.apiValue,

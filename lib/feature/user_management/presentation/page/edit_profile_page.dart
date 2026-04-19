@@ -1,4 +1,5 @@
 import 'package:events_app/authentication/presentation/controller/auth_controller.dart';
+import 'package:events_app/common/presentation/widget/avatar_upload_widget.dart';
 import 'package:events_app/common/presentation/widget/custom_text_field.dart';
 import 'package:events_app/feature/common/domain/enum/app_enum.dart';
 import 'package:events_app/feature/user_management/presentation/controller/my_profile_controller.dart';
@@ -19,6 +20,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   void initState() {
     super.initState();
     _controller = Get.put(MyProfileController());
+    _controller.loadUser();
   }
 
   @override
@@ -112,65 +114,12 @@ class _EditProfilePageState extends State<EditProfilePage> {
       ),
       child: Column(
         children: [
-          Obx(() {
-            final avatar = _controller.avatarUrl;
-            final isUploading = _controller.isUploadingAvatar.value;
-
-            return Stack(
-              children: [
-                Container(
-                  width: 88,
-                  height: 88,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: const Color(0xff06B6D4).withValues(alpha: 0.1),
-                    border: Border.all(
-                      color: const Color(0xff06B6D4).withValues(alpha: 0.3),
-                      width: 2,
-                    ),
-                  ),
-                  clipBehavior: Clip.antiAlias,
-                  child: isUploading
-                      ? const Center(
-                          child: SizedBox(
-                            width: 28,
-                            height: 28,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          ),
-                        )
-                      : avatar != null && avatar.isNotEmpty
-                          ? Image.network(
-                              avatar,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) =>
-                                  _buildAvatarPlaceholder(),
-                            )
-                          : _buildAvatarPlaceholder(),
-                ),
-                Positioned(
-                  bottom: 0,
-                  right: 0,
-                  child: GestureDetector(
-                    onTap: isUploading ? null : _controller.pickAndUploadAvatar,
-                    child: Container(
-                      width: 30,
-                      height: 30,
-                      decoration: BoxDecoration(
-                        color: const Color(0xff06B6D4),
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 2),
-                      ),
-                      child: const Icon(
-                        Icons.camera_alt,
-                        color: Colors.white,
-                        size: 14,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            );
-          }),
+          Obx(() => AvatarUploadWidget(
+                previewUrl: _controller.avatarPreviewUrl.value,
+                fileType: FileType.avatar,
+                radius: 44,
+                onSuccess: (fileId, url) => _controller.onAvatarUploaded(fileId, url),
+              )),
           const SizedBox(height: 10),
           const Text(
             'Nhấn vào biểu tượng máy ảnh để đổi ảnh',
@@ -180,22 +129,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildAvatarPlaceholder() {
-    return Center(
-      child: Text(
-        (_controller.fullNameController.text.isNotEmpty
-                ? _controller.fullNameController.text[0]
-                : '?')
-            .toUpperCase(),
-        style: const TextStyle(
-          fontSize: 32,
-          fontWeight: FontWeight.w700,
-          color: Color(0xff06B6D4),
-        ),
       ),
     );
   }
@@ -234,15 +167,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
           maxLines: 2,
         ),
         const SizedBox(height: 14),
-        CustomTextField(
-          controller: _controller.logoUrlController,
-          labelText: 'Logo URL (tùy chọn)',
-          hintText: 'https://...',
-          prefixIcon: const Icon(Icons.image_outlined,
-              color: Color(0xff64748B), size: 20),
-          validator: _controller.validateLogoUrl,
-          textInputAction: TextInputAction.next,
-        ),
+        _buildLogoUploadSection(),
         const SizedBox(height: 14),
         CustomTextField(
           controller: _controller.descriptionController,
@@ -256,6 +181,29 @@ class _EditProfilePageState extends State<EditProfilePage> {
         ),
       ]),
     ];
+  }
+
+  Widget _buildLogoUploadSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Logo tổ chức',
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: Color(0xff64748B),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Obx(() => AvatarUploadWidget(
+              previewUrl: _controller.logoPreviewUrl.value,
+              fileType: FileType.organizationLogo,
+              radius: 40,
+              onSuccess: (fileId, url) => _controller.onLogoUploaded(fileId, url),
+            )),
+      ],
+    );
   }
 
   Widget _buildCard(List<Widget> children) {

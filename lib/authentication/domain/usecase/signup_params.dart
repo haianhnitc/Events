@@ -62,7 +62,7 @@ class SignupUserProfileParams {
   final String? university;
   final String? faculty;
   final String? major;
-  final String? avatarUrl;
+  final int? avatarFileId;
 
   const SignupUserProfileParams({
     this.fullName,
@@ -72,7 +72,7 @@ class SignupUserProfileParams {
     this.university,
     this.faculty,
     this.major,
-    this.avatarUrl,
+    this.avatarFileId,
   });
 
   Map<String, dynamic> toJson() {
@@ -84,24 +84,23 @@ class SignupUserProfileParams {
       'university': university,
       'faculty': faculty,
       'major': major,
-      'avatarUrl': avatarUrl,
+      'avatarFileId': avatarFileId,
     };
   }
 }
 
-/// Params for organization profile during signup (ORGANIZATION role).
 class SignupOrganizationProfileParams {
   final String organizationName;
   final OrganizationType organizationType;
   final String? address;
-  final String? logoUrl;
+  final int? logoFileId;
   final String? description;
 
   const SignupOrganizationProfileParams({
     required this.organizationName,
     required this.organizationType,
     this.address,
-    this.logoUrl,
+    this.logoFileId,
     this.description,
   });
 
@@ -110,7 +109,7 @@ class SignupOrganizationProfileParams {
       'organizationName': organizationName,
       'organizationType': organizationType.apiValue,
       'address': address,
-      'logoUrl': logoUrl,
+      'logoFileId': logoFileId,
       'description': description,
     };
   }

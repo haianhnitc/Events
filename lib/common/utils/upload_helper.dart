@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:app_settings/app_settings.dart';
+import 'package:events_app/feature/common/domain/entity/file_entity.dart';
 import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
 import 'package:events_app/common/utils/permission_helper.dart';
 import 'package:file_picker/file_picker.dart';
@@ -289,5 +290,47 @@ String _getMimeType(String path) {
       return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
     default:
       return 'application/octet-stream';
+  }
+}
+
+class FileUploadResult {
+  final int fileId;
+  final String url;
+
+  const FileUploadResult({required this.fileId, required this.url});
+}
+
+class FileUploadHelper {
+  final Future<FileUploadResult> Function(String filePath) uploadCallback;
+  final void Function(int fileId) onFileIdChanged;
+  final void Function(String url) onPreviewUrlChanged;
+  final void Function(bool isUploading) onUploadingChanged;
+  final void Function(String error) onError;
+
+  const FileUploadHelper({
+    required this.uploadCallback,
+    required this.onFileIdChanged,
+    required this.onPreviewUrlChanged,
+    required this.onUploadingChanged,
+    required this.onError,
+  });
+
+  Future<void> pickAndUpload(ImagePickerService picker) async {
+    final result = await picker.pickSingleImage();
+    if (result == null) return;
+
+    onUploadingChanged(true);
+
+    try {
+      final uploadResult = await uploadCallback(result.filePath);
+
+      onFileIdChanged(uploadResult.fileId);
+      onPreviewUrlChanged(uploadResult.url);
+      AppSnackbarUtils.showSuccess('Thành công', 'Tải ảnh lên thành công');
+    } catch (e) {
+      onError(e.toString());
+    } finally {
+      onUploadingChanged(false);
+    }
   }
 }
