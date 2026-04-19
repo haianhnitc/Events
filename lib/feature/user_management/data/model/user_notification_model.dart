@@ -10,8 +10,8 @@ class UserNotificationModel with _$UserNotificationModel {
     int? userNotificationId,
     int? userId,
     int? notificationId,
-    @Default(false) bool? isRead,
-    @Default(false) bool? isDeleted,
+    bool? isRead,
+    bool? isDeleted,
     DateTime? createdTime,
     DateTime? deletedAt,
   }) = _UserNotificationModel;

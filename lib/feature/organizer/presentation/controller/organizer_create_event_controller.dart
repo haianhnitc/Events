@@ -1,0 +1,412 @@
+import 'package:dartz/dartz.dart';
+import 'package:events_app/api_template/services/failure.dart';
+import 'package:events_app/common/utils/upload_helper.dart';
+import 'package:events_app/dependency_injection/injection.dart';
+import 'package:events_app/feature/common/domain/enum/app_enum.dart';
+import 'package:events_app/feature/common/usecase/upload_file_params.dart';
+import 'package:events_app/feature/common/usecase/upload_file_usecase.dart';
+import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
+import 'package:events_app/feature/event_management/domain/entity/event_entity.dart';
+import 'package:events_app/feature/organizer/event/domain/usecase/event_params.dart';
+import 'package:events_app/feature/organizer/event/domain/usecase/organizer_event_usecase.dart';
+import 'package:events_app/feature/organizer/event/domain/usecase/organizer_venue_usecase.dart';
+import 'package:events_app/feature/organizer/event/domain/usecase/venue_params.dart';
+import 'package:events_app/feature/organizer/presentation/widget/event/venue_picker_dialog.dart';
+import 'package:events_app/feature/venue/domain/entity/venue_entity.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+
+class OrganizerCreateEventController extends GetxController {
+  CreateOrganizerEventUsecase get _createEventUsecase =>
+      networkGetIt<CreateOrganizerEventUsecase>();
+  UpdateOrganizerEventUsecase get _updateEventUsecase =>
+      networkGetIt<UpdateOrganizerEventUsecase>();
+  GetOrganizerEventByIdUsecase get _getEventByIdUsecase =>
+      networkGetIt<GetOrganizerEventByIdUsecase>();
+  UploadFileUsecase get _uploadFileUsecase => networkGetIt<UploadFileUsecase>();
+
+  final formKey = GlobalKey<FormState>();
+
+  final titleController = TextEditingController();
+  final descriptionController = TextEditingController();
+  final priceController = TextEditingController();
+  final rewardCoinController = TextEditingController();
+  final youthUnionPointController = TextEditingController();
+  final certificateNameController = TextEditingController();
+
+  final RxBool isSubmitting = false.obs;
+  final RxBool isLoading = false.obs;
+  final RxBool isUploadingBanner = false.obs;
+  final Rx<VenueEntity?> selectedVenue = Rx<VenueEntity?>(null);
+  final Rx<EventRecruitmentType> recruitmentType =
+      EventRecruitmentType.both.obs;
+  final Rx<DateTime?> startTime = Rx<DateTime?>(null);
+  final Rx<DateTime?> endTime = Rx<DateTime?>(null);
+  final Rx<DateTime?> registerOpenTime = Rx<DateTime?>(null);
+  final Rx<int?> bannerFileId = Rx<int?>(null);
+  final Rx<String?> bannerPreviewUrl = Rx<String?>(null);
+  final Rx<EventEntity?> editingEvent = Rx<EventEntity?>(null);
+  final RxBool isReadOnly = false.obs;
+  final RxList<VenueEntity> venueList = <VenueEntity>[].obs;
+  final RxBool isLoadingVenues = false.obs;
+
+  final RxList<int> selectedCategoryOptionIds = <int>[].obs;
+  final RxList<FeedbackQuestionCreateParams> feedbackQuestions =
+      <FeedbackQuestionCreateParams>[].obs;
+
+  bool get isEditMode => editingEvent.value != null;
+
+  @override
+  void onClose() {
+    titleController.dispose();
+    descriptionController.dispose();
+    priceController.dispose();
+    rewardCoinController.dispose();
+    youthUnionPointController.dispose();
+    certificateNameController.dispose();
+    super.onClose();
+  }
+
+  void initForEdit(EventEntity event, {bool readOnly = false}) {
+    editingEvent.value = event;
+    isReadOnly.value = readOnly;
+    titleController.text = event.title ?? '';
+    descriptionController.text = event.description ?? '';
+    bannerPreviewUrl.value = event.banner;
+    bannerFileId.value = null;
+    recruitmentType.value = event.recruitmentType ?? EventRecruitmentType.both;
+    startTime.value = event.startTime;
+    endTime.value = event.endTime;
+    registerOpenTime.value = event.registerOpenTime;
+    if (event.venue != null) {
+      selectedVenue.value = event.venue;
+    }
+    priceController.text = (event.price ?? 0).toString();
+    rewardCoinController.text = (event.rewardCoin ?? 0).toString();
+    youthUnionPointController.text = (event.youthUnionPoint ?? 0).toString();
+    certificateNameController.text = event.certificateName ?? '';
+
+    selectedCategoryOptionIds.clear();
+    if (event.categories != null) {
+      for (final cat in event.categories!) {
+        if (cat.options != null) {
+          for (final opt in cat.options!) {
+            if (opt.categoryOptionId != null) {
+              selectedCategoryOptionIds.add(opt.categoryOptionId!);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  void initForCreate() {
+    editingEvent.value = null;
+    isReadOnly.value = false;
+    titleController.clear();
+    descriptionController.clear();
+    bannerFileId.value = null;
+    bannerPreviewUrl.value = null;
+    priceController.text = '0';
+    rewardCoinController.text = '0';
+    youthUnionPointController.text = '0';
+    certificateNameController.clear();
+    selectedVenue.value = null;
+    recruitmentType.value = EventRecruitmentType.both;
+    startTime.value = null;
+    endTime.value = null;
+    registerOpenTime.value = null;
+    selectedCategoryOptionIds.clear();
+    feedbackQuestions.clear();
+  }
+
+  Future<void> loadEventForEdit(int eventId) async {
+    isLoading.value = true;
+    final result = await _getEventByIdUsecase(eventId);
+    final eventOrFailure = result.fold(
+      (failure) => failure,
+      (event) => event,
+    );
+
+    if (eventOrFailure is FailureEntity) {
+      _handleFailure(eventOrFailure);
+      isLoading.value = false;
+      Get.back();
+      return;
+    }
+
+    final event = eventOrFailure as EventEntity;
+    final isNotDraft = event.status != null && event.status != EventStatus.draft;
+    initForEdit(event, readOnly: isNotDraft);
+    isLoading.value = false;
+    await loadVenues();
+  }
+
+  Future<void> loadVenues() async {
+    isLoadingVenues.value = true;
+    try {
+      final usecase = networkGetIt<GetOrganizerVenuesUsecase>();
+      final result =
+          await usecase.call(const VenueListParams(page: 0, size: 100));
+      result.fold(
+        (failure) {
+          _handleFailure(failure);
+        },
+        (data) {
+          venueList.assignAll(data.items);
+        },
+      );
+    } catch (e) {
+      AppSnackbarUtils.showError('Lỗi', 'Không thể tải danh sách địa điểm');
+    } finally {
+      isLoadingVenues.value = false;
+    }
+  }
+
+  Future<void> openVenuePicker() async {
+    final result = await VenuePickerDialog.show(
+      Get.context!,
+      selectedVenue: selectedVenue.value,
+    );
+    if (result != null) {
+      if (result.createdNew && result.venue != null) {
+        if (!venueList.any((v) => v.venueId == result.venue!.venueId)) {
+          venueList.add(result.venue!);
+        }
+        selectedVenue.value = result.venue;
+      } else if (result.venue != null) {
+        selectedVenue.value = result.venue;
+      }
+    }
+  }
+
+  Future<void> pickAndUploadBanner() async {
+    final result = await ImagePickerService().pickSingleImage();
+    if (result == null) return;
+
+    isUploadingBanner.value = true;
+    try {
+      final uploadResult = await _uploadFileUsecase(UploadFileParams(
+        filePath: result.filePath,
+        fileType: FileType.eventBanner,
+      ));
+
+      uploadResult.fold(
+        (failure) {
+          _handleFailure(failure);
+        },
+        (fileEntity) {
+          bannerFileId.value = fileEntity.fileId;
+          bannerPreviewUrl.value = fileEntity.url;
+          AppSnackbarUtils.showSuccess('Thành công', 'Tải ảnh lên thành công');
+        },
+      );
+    } finally {
+      isUploadingBanner.value = false;
+    }
+  }
+
+  void setStartTime(DateTime? dt) {
+    startTime.value = dt;
+  }
+
+  void setEndTime(DateTime? dt) {
+    endTime.value = dt;
+  }
+
+  void setRegisterOpenTime(DateTime? dt) {
+    registerOpenTime.value = dt;
+  }
+
+  void setRecruitmentType(EventRecruitmentType type) {
+    recruitmentType.value = type;
+  }
+
+  void toggleCategoryOption(int categoryOptionId) {
+    if (selectedCategoryOptionIds.contains(categoryOptionId)) {
+      selectedCategoryOptionIds.remove(categoryOptionId);
+    } else {
+      selectedCategoryOptionIds.add(categoryOptionId);
+    }
+  }
+
+  void addFeedbackQuestion(FeedbackQuestionCreateParams question) {
+    feedbackQuestions.add(question);
+  }
+
+  void removeFeedbackQuestion(int index) {
+    if (index >= 0 && index < feedbackQuestions.length) {
+      feedbackQuestions.removeAt(index);
+    }
+  }
+
+  void updateFeedbackQuestion(
+      int index, FeedbackQuestionCreateParams question) {
+    if (index >= 0 && index < feedbackQuestions.length) {
+      feedbackQuestions[index] = question;
+    }
+  }
+
+  Future<void> submit() async {
+    if (!formKey.currentState!.validate()) return;
+    if (isSubmitting.value) return;
+    isSubmitting.value = true;
+
+    final createParams = EventCreateParams(
+      venueId: selectedVenue.value?.venueId,
+      venue: null,
+      title: titleController.text,
+      bannerFileId: bannerFileId.value,
+      description: descriptionController.text,
+      price: int.tryParse(priceController.text) ?? 0,
+      startTime: startTime.value,
+      endTime: endTime.value,
+      registerOpenTime: registerOpenTime.value,
+      recruitmentType: recruitmentType.value,
+      attendeeRewardCoin: int.tryParse(rewardCoinController.text),
+      attendeeYouthUnionPoint: int.tryParse(youthUnionPointController.text),
+      attendeeCertificateName: certificateNameController.text.isEmpty
+          ? null
+          : certificateNameController.text,
+      categoryOptionIds: selectedCategoryOptionIds.isEmpty
+          ? null
+          : selectedCategoryOptionIds.toList(),
+      feedbackQuestions:
+          feedbackQuestions.isEmpty ? null : feedbackQuestions.toList(),
+    );
+
+    final result = isEditMode
+        ? await _updateEventUsecase(UpdateOrganizerEventParams(
+            eventId: editingEvent.value!.eventId!,
+            params: EventUpdateParams(
+              venueId: selectedVenue.value?.venueId,
+              venue: null,
+              title: titleController.text,
+              bannerFileId: bannerFileId.value,
+              description: descriptionController.text,
+              price: int.tryParse(priceController.text) ?? 0,
+              startTime: startTime.value,
+              endTime: endTime.value,
+              registerOpenTime: registerOpenTime.value,
+              recruitmentType: recruitmentType.value,
+              attendeeRewardCoin: int.tryParse(rewardCoinController.text),
+              attendeeYouthUnionPoint:
+                  int.tryParse(youthUnionPointController.text),
+              attendeeCertificateName: certificateNameController.text.isEmpty
+                  ? null
+                  : certificateNameController.text,
+              categoryOptionIds: selectedCategoryOptionIds.isEmpty
+                  ? null
+                  : selectedCategoryOptionIds.toList(),
+            ),
+          ))
+        : await _createEventUsecase(createParams);
+
+    result.fold(
+      (failure) {
+        _handleFailure(failure);
+        isSubmitting.value = false;
+      },
+      (event) {
+        AppSnackbarUtils.showSuccess(
+            'Thành công',
+            isEditMode
+                ? 'Cập nhật sự kiện thành công'
+                : 'Tạo sự kiện thành công');
+        isSubmitting.value = false;
+        Get.back(result: event);
+      },
+    );
+  }
+
+  String? validateTitle(String? value) {
+    if (value == null || value.isEmpty) return 'Vui lòng nhập tiêu đề';
+    if (value.length < 10) return 'Tiêu đề phải có ít nhất 10 ký tự';
+    if (value.length > 200) return 'Tiêu đề không được quá 200 ký tự';
+    return null;
+  }
+
+  String? validateDescription(String? value) {
+    if (value == null || value.isEmpty) return 'Vui lòng nhập mô tả';
+    if (value.length < 50) return 'Mô tả phải có ít nhất 50 ký tự';
+    if (value.length > 5000) return 'Mô tả không được quá 5000 ký tự';
+    return null;
+  }
+
+  String? validateStartTime(DateTime? value) {
+    if (value == null) return 'Vui lòng chọn thời gian bắt đầu';
+    if (value.isBefore(DateTime.now())) {
+      return 'Thời gian bắt đầu phải sau thời điểm hiện tại';
+    }
+    return null;
+  }
+
+  String? validateEndTime(DateTime? value) {
+    if (value == null) return 'Vui lòng chọn thời gian kết thúc';
+    if (startTime.value != null && value.isBefore(startTime.value!)) {
+      return 'Thời gian kết thúc phải sau thời gian bắt đầu';
+    }
+    return null;
+  }
+
+  String? validateVenue(String? value) {
+    if (selectedVenue.value == null) {
+      return 'Vui lòng chọn địa điểm';
+    }
+    return null;
+  }
+
+  String? validatePrice(String? value) {
+    if (value == null || value.isEmpty) return null;
+    final price = int.tryParse(value);
+    if (price == null) return 'Giá vé không hợp lệ';
+    if (price < 0) return 'Giá vé không được nhỏ hơn 0';
+    if (price > 100000000) return 'Giá vé không được quá 100.000.000 đ';
+    return null;
+  }
+
+  String? validateRewardCoin(String? value) {
+    if (value == null || value.isEmpty) return null;
+    final coin = int.tryParse(value);
+    if (coin == null) return 'Số coin không hợp lệ';
+    if (coin < 0) return 'Số coin không được nhỏ hơn 0';
+    if (coin > 100000) return 'Số coin không được quá 100.000';
+    return null;
+  }
+
+  String? validateYouthUnionPoint(String? value) {
+    if (value == null || value.isEmpty) return null;
+    final point = int.tryParse(value);
+    if (point == null) return 'Số điểm không hợp lệ';
+    if (point < 0) return 'Số điểm không được nhỏ hơn 0';
+    if (point > 100) return 'Số điểm không được quá 100';
+    return null;
+  }
+
+  String? validateCertificateName(String? value) {
+    if (value == null || value.isEmpty) return null;
+    if (value.length > 200) return 'Tên chứng chỉ không được quá 200 ký tự';
+    return null;
+  }
+
+  String? validateRegisterOpenTime(DateTime? value) {
+    if (value == null) return null;
+    if (startTime.value != null && value.isAfter(startTime.value!)) {
+      return 'Thời gian mở đăng ký phải trước thời gian bắt đầu';
+    }
+    return null;
+  }
+
+  void _handleFailure(FailureEntity failure) {
+    failure.when(
+      serverFailure: (_, message) =>
+          AppSnackbarUtils.showError('Lỗi', message ?? 'Thao tác thất bại'),
+      dataParsingFailure: () =>
+          AppSnackbarUtils.showError('Lỗi', 'Không đọc được dữ liệu'),
+      noConnectionFailure: () =>
+          AppSnackbarUtils.showError('Lỗi', 'Không có kết nối mạng'),
+      systemFailure: (_, message) =>
+          AppSnackbarUtils.showError('Lỗi', message ?? 'Lỗi hệ thống'),
+    );
+  }
+}

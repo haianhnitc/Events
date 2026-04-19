@@ -5,7 +5,6 @@ part 'common_meta.g.dart';
 
 @freezed
 class CommonMeta with _$CommonMeta {
-  @JsonSerializable(fieldRename: FieldRename.snake)
   const factory CommonMeta({
     dynamic code,
     dynamic page,

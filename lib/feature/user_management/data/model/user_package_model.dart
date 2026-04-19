@@ -11,10 +11,10 @@ class UserPackageModel with _$UserPackageModel {
     int? userPackageId,
     int? userId,
     int? packageId,
-    @Default(UserPackageStatus.active) UserPackageStatus? status,
+    UserPackageStatus? status,
     DateTime? startTime,
     DateTime? endTime,
-    @Default(false) bool? autoRenew,
+    bool? autoRenew,
     DateTime? createdTime,
   }) = _UserPackageModel;
 

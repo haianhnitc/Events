@@ -1,0 +1,19 @@
+targets:
+  $default:
+    builders:
+      freezed:
+        generate_for:
+          exclude:
+            - test/**
+      json_serializable:
+        generate_for:
+          exclude:
+            - test/**
+      injectable_generator:injectable_builder:
+        generate_for:
+          exclude:
+            - test/**
+      injectable_generator:injectable_config_builder:
+        generate_for:
+          exclude:
+            - test/**

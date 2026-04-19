@@ -8,4 +8,4 @@ class BottomNavBarController extends GetxController {
   }
 }
 
-enum NavBarOptions { home, events, news, search }
+enum NavBarOptions { home, events, ctv, news, myAccount }

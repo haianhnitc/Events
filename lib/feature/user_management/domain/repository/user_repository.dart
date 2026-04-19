@@ -1,18 +1,19 @@
 import 'package:dartz/dartz.dart';
 import 'package:events_app/api_template/services/failure.dart';
+import 'package:events_app/feature/event_management/domain/entity/event_summary_entity.dart';
 import 'package:events_app/feature/user_management/domain/entity/user_entity.dart';
+import 'package:events_app/feature/user_management/domain/usecase/update_current_user_usecase.dart';
 
 abstract class UserRepository {
-  /// Get user by Firebase UID
-  Future<Either<FailureEntity, UserEntity?>> getUserByFirebaseUid(
-      String firebaseUid);
+  Future<Either<FailureEntity, UserEntity?>> getCurrentUser();
 
-  /// Get user by user ID
-  Future<Either<FailureEntity, UserEntity?>> getUserById(int userId);
+  Future<Either<FailureEntity, UserEntity?>> updateCurrentUser(
+      UpdateCurrentUserParams params);
 
-  /// Create new user
-  Future<Either<FailureEntity, UserEntity>> createUser(UserEntity user);
-
-  /// Update user
-  Future<Either<FailureEntity, UserEntity>> updateUser(UserEntity user);
+  Future<Either<FailureEntity, List<EventSummaryEntity>>> getUserParticipatedEvents({
+    required int userId,
+    String? participantType,
+    int page = 0,
+    int size = 20,
+  });
 }

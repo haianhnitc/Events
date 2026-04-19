@@ -11,8 +11,8 @@ class MessageModel with _$MessageModel {
     int? conversationId,
     int? senderId,
     String? content,
-    @Default(false) bool? isRead,
-    @Default(false) bool? isDeleted,
+    bool? isRead,
+    bool? isDeleted,
     DateTime? createdTime,
     DateTime? deletedAt,
   }) = _MessageModel;

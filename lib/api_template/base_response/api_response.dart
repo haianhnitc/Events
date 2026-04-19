@@ -11,6 +11,7 @@ class ApiResponse<Model> with _$ApiResponse<Model> {
       _Unauthorized;
   const factory ApiResponse.forbidden(ApiResponseError error) = _Forbidden;
   const factory ApiResponse.notFound(ApiResponseError error) = _NotFound;
+  const factory ApiResponse.conflict(ApiResponseError error) = _Conflict;
   const factory ApiResponse.internalServerError() = _InternalServerError;
   const factory ApiResponse.badGateway() = _BadGateway;
   const factory ApiResponse.serviceUnavailable() = _ServiceUnavailable;

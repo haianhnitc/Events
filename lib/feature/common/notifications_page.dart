@@ -42,7 +42,7 @@ class _NotificationsPageState extends State<NotificationsPage>
     } else if (filter == 'system') {
       return items.where((i) => i.category == 'system').length;
     }
-    return items.length; // all
+    return items.length; 
   }
 
   Widget _buildTabWithBadge(String text, int count) {
@@ -232,7 +232,6 @@ class _NotificationsPageState extends State<NotificationsPage>
         );
       }
 
-      // group: recent (<24h) and earlier
       final recent = filtered
           .where((i) => now.difference(i.timestamp).inHours < 24)
           .toList();
@@ -311,16 +310,7 @@ class _NotificationsPageState extends State<NotificationsPage>
 
       return RefreshIndicator(
         onRefresh: () async {
-          // Simulate refresh
-          await Future.delayed(const Duration(seconds: 1));
-          // In real app, fetch new notifications
-          ctrl.add(NotificationItem(
-            id: DateTime.now().millisecondsSinceEpoch.toString(),
-            title: 'Thông báo mới',
-            body: 'Đã làm mới danh sách thông báo.',
-            timestamp: DateTime.now(),
-            category: 'system',
-          ));
+          await ctrl.refreshNotifications();
         },
         color: const Color(0xFF00BFA6),
         child: ListView(
@@ -345,7 +335,6 @@ class _NotificationsPageState extends State<NotificationsPage>
                   onChanged: (value) => setState(() {}),
                 ),
               ),
-            // sections
             buildSection('Mới', recent),
             buildSection('Trước đó', earlier),
             const SizedBox(height: 24),

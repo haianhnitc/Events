@@ -67,7 +67,7 @@ class FooterHomePage extends StatelessWidget {
               shape: BoxShape.circle,
               color: period == 2
                   ? const Color(0xffDB0025).withOpacity(0.1)
-                  : const Color(0xff06B6D4),
+                  : const Color(0xff06B6D4).withOpacity(0.1),
             ),
             child: Center(
               child: SvgPicture.asset(

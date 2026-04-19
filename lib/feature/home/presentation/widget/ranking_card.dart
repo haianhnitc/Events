@@ -18,10 +18,11 @@ class RankingCard extends StatelessWidget {
               blurRadius: 15,
               spreadRadius: -3)
         ],
-        gradient: const LinearGradient(
-            colors: [Color(0xffECFEFF), Color(0xffFAA5AB), Color(0xffFAA5AB)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight),
+        // gradient: const LinearGradient(
+        //     colors: [Color(0xffECFEFF), Color(0xffFAA5AB), Color(0xffFAA5AB)],
+        //     begin: Alignment.topLeft,
+        //     end: Alignment.bottomRight),
+        color: Color(0xffFAA5AB).withOpacity(0.7),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Stack(

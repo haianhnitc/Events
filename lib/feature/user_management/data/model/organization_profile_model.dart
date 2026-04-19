@@ -10,12 +10,12 @@ class OrganizationProfileModel with _$OrganizationProfileModel {
   const factory OrganizationProfileModel({
     int? userId,
     String? organizationName,
-    OrganizationType? organizationType,
-    String? address,
-    String? logoUrl,
     String? description,
-    @Default(VerificationStatus.pending) VerificationStatus? verificationStatus,
+    OrganizationType? organizationType,
+    String? logoUrl,
+    VerificationStatus? verificationStatus,
     DateTime? verifiedTime,
+    String? address,
   }) = _OrganizationProfileModel;
 
   factory OrganizationProfileModel.fromJson(Map<String, dynamic> json) =>
@@ -26,12 +26,12 @@ class OrganizationProfileModel with _$OrganizationProfileModel {
     return OrganizationProfileModel(
       userId: entity.userId,
       organizationName: entity.organizationName,
-      organizationType: entity.organizationType,
-      address: entity.address,
-      logoUrl: entity.logoUrl,
       description: entity.description,
+      organizationType: entity.organizationType,
+      logoUrl: entity.logoUrl,
       verificationStatus: entity.verificationStatus,
       verifiedTime: entity.verifiedTime,
+      address: entity.address,
     );
   }
 }
@@ -41,12 +41,12 @@ extension OrganizationProfileModelExtension on OrganizationProfileModel {
     return OrganizationProfileEntity(
       userId: userId,
       organizationName: organizationName,
-      organizationType: organizationType,
-      address: address,
-      logoUrl: logoUrl,
       description: description,
+      organizationType: organizationType,
+      logoUrl: logoUrl,
       verificationStatus: verificationStatus,
       verifiedTime: verifiedTime,
+      address: address,
     );
   }
 }

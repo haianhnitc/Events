@@ -79,7 +79,10 @@ class HeaderHomePage extends StatelessWidget {
             borderRadius: BorderRadius.circular(16), color: Colors.white),
         child: const Row(
           children: [
-            Icon(Icons.search_outlined),
+            Icon(
+              Icons.search_outlined,
+              color: Color(0xff67688C),
+            ),
             SizedBox(width: 12),
             Expanded(
               child: TextField(

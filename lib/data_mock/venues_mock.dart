@@ -1,7 +1,7 @@
-import 'package:events_app/feature/venue/data/model/venue_model.dart';
+import 'package:events_app/feature/venue/domain/entity/venue_entity.dart';
 
-final List<VenueModel> venuesMock = [
-  VenueModel(
+final List<VenueEntity> venuesMock = [
+  VenueEntity(
     venueId: 1,
     name: 'Hoi truong A - Truong DH Bach Khoa',
     address: '268 Ly Thuong Kiet, Phuong 14, Quan 10, TP.HCM',
@@ -11,7 +11,7 @@ final List<VenueModel> venuesMock = [
     capacity: 500,
     createdTime: DateTime(2025, 1, 10, 9, 0),
   ),
-  VenueModel(
+  VenueEntity(
     venueId: 2,
     name: 'Trung tam Khoi nghiep Sang tao',
     address: '01 Vo Van Ngan, Thu Duc, TP.HCM',
@@ -21,7 +21,7 @@ final List<VenueModel> venuesMock = [
     capacity: 200,
     createdTime: DateTime(2025, 1, 15, 10, 30),
   ),
-  VenueModel(
+  VenueEntity(
     venueId: 3,
     name: 'Phong Hoi nghi B5 - DH Cong nghe',
     address: 'Khu Cong vien Phan mem Quang Trung, Quan 12, TP.HCM',
@@ -31,7 +31,7 @@ final List<VenueModel> venuesMock = [
     capacity: 300,
     createdTime: DateTime(2025, 2, 1, 8, 15),
   ),
-  VenueModel(
+  VenueEntity(
     venueId: 4,
     name: 'San van dong Thong Nhat',
     address: '138 Dao Duy Anh, Phuong 9, Phu Nhuan, TP.HCM',
@@ -41,7 +41,7 @@ final List<VenueModel> venuesMock = [
     capacity: 2000,
     createdTime: DateTime(2024, 12, 20, 14, 0),
   ),
-  VenueModel(
+  VenueEntity(
     venueId: 5,
     name: 'Co working space Innovation Hub',
     address: '72-74 Nguyen Thi Minh Khai, Phuong 6, Quan 3, TP.HCM',

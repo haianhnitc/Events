@@ -22,4 +22,42 @@ class EventStaffApplicationEntity {
     this.appliedTime,
     this.reviewedTime,
   });
+
+  EventStaffApplicationEntity copyWith({
+    int? eventStaffApplicationId,
+    int? eventId,
+    int? userId,
+    String? position,
+    StaffApplicationStatus? status,
+    String? cvUrl,
+    String? rejectReason,
+    DateTime? appliedTime,
+    DateTime? reviewedTime,
+  }) {
+    return EventStaffApplicationEntity(
+      eventStaffApplicationId: eventStaffApplicationId ?? this.eventStaffApplicationId,
+      eventId: eventId ?? this.eventId,
+      userId: userId ?? this.userId,
+      position: position ?? this.position,
+      status: status ?? this.status,
+      cvUrl: cvUrl ?? this.cvUrl,
+      rejectReason: rejectReason ?? this.rejectReason,
+      appliedTime: appliedTime ?? this.appliedTime,
+      reviewedTime: reviewedTime ?? this.reviewedTime,
+    );
+  }
+
+  @override
+  String toString() =>
+      'EventStaffApplicationEntity(id: $eventStaffApplicationId, status: $status)';
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is EventStaffApplicationEntity &&
+        other.eventStaffApplicationId == eventStaffApplicationId;
+  }
+
+  @override
+  int get hashCode => Object.hash(eventStaffApplicationId, eventId);
 }

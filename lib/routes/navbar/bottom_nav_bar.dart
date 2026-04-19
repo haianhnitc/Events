@@ -12,8 +12,6 @@ class BottomNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Obx(
       () => BottomAppBar(
-        // shape: const CircularNotchedRectangle(),
-        // notchMargin: 6,
         height: 56 + 7,
         padding: const EdgeInsets.only(top: 0, bottom: 7),
         color: Colors.white,
@@ -48,21 +46,21 @@ class BottomNavBar extends StatelessWidget {
                         name: 'Sự kiện',
                         imagePath: AssetPath.events),
                 const Spacer(),
+                controller.selectedPage.value == NavBarOptions.ctv
+                    ? _buildSelectedItem(
+                        name: 'Việc làm', imagePath: AssetPath.ctv)
+                    : _buildItem(
+                        page: NavBarOptions.ctv,
+                        name: 'Việc làm',
+                        imagePath: AssetPath.ctv),
+                const SizedBox(width: 25),
+
                 controller.selectedPage.value == NavBarOptions.news
                     ? _buildSelectedItem(
-                        name: 'Tin tức', imagePath: AssetPath.news)
+                        name: 'Tin tức', imagePath: AssetPath.search)
                     : _buildItem(
                         page: NavBarOptions.news,
                         name: 'Tin tức',
-                        imagePath: AssetPath.news),
-                const SizedBox(width: 25),
-
-                controller.selectedPage.value == NavBarOptions.search
-                    ? _buildSelectedItem(
-                        name: 'Tra cứu', imagePath: AssetPath.search)
-                    : _buildItem(
-                        page: NavBarOptions.search,
-                        name: 'Tra cứu',
                         imagePath: AssetPath.search),
                 const SizedBox(width: 25),
 

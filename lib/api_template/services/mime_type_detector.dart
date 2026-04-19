@@ -18,7 +18,6 @@ class MimeTypeDetector {
     };
     final extension = fileName.split('.').last.toLowerCase();
 
-    // Return the corresponding MIME type or null if the extension is not found
     return mimeTypes[extension] ?? 'image/png';
   }
 }

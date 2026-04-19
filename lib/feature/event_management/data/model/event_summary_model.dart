@@ -14,11 +14,16 @@ class EventSummaryModel with _$EventSummaryModel {
     String? banner,
     DateTime? startTime,
     DateTime? endTime,
+    DateTime? registerOpenTime,
     EventStatus? status,
     int? price,
+    String? certificateName,
     List<CategoryModel>? categories,
     int? capacity,
     int? totalParticipants,
+    UserEventState? userEventState,
+    int? youthUnionPoint,
+    EventRecruitmentType? recruitmentType,
   }) = _EventSummaryModel;
 
   factory EventSummaryModel.fromJson(Map<String, dynamic> json) =>
@@ -31,11 +36,16 @@ class EventSummaryModel with _$EventSummaryModel {
       banner: entity.banner,
       startTime: entity.startTime,
       endTime: entity.endTime,
+      registerOpenTime: entity.registerOpenTime,
       status: entity.status,
       price: entity.price,
+      certificateName: entity.certificateName,
       categories: entity.categories?.map(CategoryModel.fromEntity).toList(),
       capacity: entity.capacity,
       totalParticipants: entity.totalParticipants,
+      userEventState: entity.userEventState,
+      youthUnionPoint: entity.youthUnionPoint,
+      recruitmentType: entity.recruitmentType,
     );
   }
 }
@@ -48,11 +58,16 @@ extension EventSummaryModelExtension on EventSummaryModel {
       banner: banner,
       startTime: startTime,
       endTime: endTime,
+      registerOpenTime: registerOpenTime,
       status: status,
       price: price,
+      certificateName: certificateName,
       categories: categories?.map((category) => category.toEntity()).toList(),
       capacity: capacity,
       totalParticipants: totalParticipants,
+      userEventState: userEventState,
+      youthUnionPoint: youthUnionPoint,
+      recruitmentType: recruitmentType,
     );
   }
 }

@@ -10,7 +10,6 @@ final List<UserModel> usersMock = [
     role: UserRole.organization,
     status: UserStatus.active,
     currentCoin: 1500,
-    remainingFreePortfolios: 5,
     createdTime: DateTime(2025, 1, 5, 9, 0),
   ),
   UserModel(
@@ -21,7 +20,6 @@ final List<UserModel> usersMock = [
     role: UserRole.organization,
     status: UserStatus.active,
     currentCoin: 2200,
-    remainingFreePortfolios: 3,
     createdTime: DateTime(2025, 1, 8, 10, 30),
   ),
   UserModel(
@@ -32,7 +30,6 @@ final List<UserModel> usersMock = [
     role: UserRole.organization,
     status: UserStatus.active,
     currentCoin: 800,
-    remainingFreePortfolios: 2,
     createdTime: DateTime(2025, 1, 12, 8, 45),
   ),
   UserModel(
@@ -43,7 +40,6 @@ final List<UserModel> usersMock = [
     role: UserRole.organization,
     status: UserStatus.active,
     currentCoin: 3000,
-    remainingFreePortfolios: 7,
     createdTime: DateTime(2025, 1, 3, 14, 20),
   ),
   UserModel(
@@ -54,7 +50,6 @@ final List<UserModel> usersMock = [
     role: UserRole.user,
     status: UserStatus.active,
     currentCoin: 500,
-    remainingFreePortfolios: 3,
     createdTime: DateTime(2025, 2, 1, 11, 10),
   ),
 ];

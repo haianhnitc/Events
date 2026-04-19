@@ -1,4 +1,4 @@
-﻿import 'package:events_app/feature/common/domain/entity/category_entity.dart';
+import 'package:events_app/feature/common/domain/entity/category_entity.dart';
 import 'package:events_app/feature/common/domain/entity/category_option_entity.dart';
 import 'package:events_app/feature/common/domain/enum/app_enum.dart';
 import 'package:events_app/feature/event_management/domain/entity/event_summary_entity.dart';
@@ -21,14 +21,12 @@ final List<EventSummaryEntity> eventSummaryMock = [
           CategoryOptionEntity(
             categoryOptionId: 1,
             categoryId: 1,
-            value: 'ai',
-            label: 'Artificial Intelligence',
+            value: 'Artificial Intelligence',
           ),
           CategoryOptionEntity(
             categoryOptionId: 2,
             categoryId: 1,
-            value: 'machine-learning',
-            label: 'Machine Learning',
+            value: 'Machine Learning',
           ),
         ],
       ),
@@ -40,8 +38,7 @@ final List<EventSummaryEntity> eventSummaryMock = [
           CategoryOptionEntity(
             categoryOptionId: 5,
             categoryId: 2,
-            value: 'hands-on',
-            label: 'Hands-on Workshop',
+            value: 'Hands-on Workshop',
           ),
         ],
       ),
@@ -53,8 +50,7 @@ final List<EventSummaryEntity> eventSummaryMock = [
           CategoryOptionEntity(
             categoryOptionId: 8,
             categoryId: 3,
-            value: 'hcmut',
-            label: 'ĐH Bách Khoa TPHCM',
+            value: 'ĐH Bách Khoa TPHCM',
           ),
         ],
       ),
@@ -78,14 +74,12 @@ final List<EventSummaryEntity> eventSummaryMock = [
           CategoryOptionEntity(
             categoryOptionId: 10,
             categoryId: 4,
-            value: 'startup',
-            label: 'Startup',
+            value: 'Startup',
           ),
           CategoryOptionEntity(
             categoryOptionId: 11,
             categoryId: 4,
-            value: 'investment',
-            label: 'Investment',
+            value: 'Investment',
           ),
         ],
       ),
@@ -97,8 +91,7 @@ final List<EventSummaryEntity> eventSummaryMock = [
           CategoryOptionEntity(
             categoryOptionId: 15,
             categoryId: 5,
-            value: 'pitch',
-            label: 'Pitching',
+            value: 'Pitching',
           ),
         ],
       ),
@@ -110,8 +103,7 @@ final List<EventSummaryEntity> eventSummaryMock = [
           CategoryOptionEntity(
             categoryOptionId: 20,
             categoryId: 6,
-            value: 'uit',
-            label: 'ĐH Công nghệ Thông tin',
+            value: 'ĐH Công nghệ Thông tin',
           ),
         ],
       ),
@@ -135,14 +127,12 @@ final List<EventSummaryEntity> eventSummaryMock = [
           CategoryOptionEntity(
             categoryOptionId: 3,
             categoryId: 1,
-            value: 'cybersecurity',
-            label: 'Cyber Security',
+            value: 'Cyber Security',
           ),
           CategoryOptionEntity(
             categoryOptionId: 4,
             categoryId: 1,
-            value: 'networking',
-            label: 'Networking',
+            value: 'Networking',
           ),
         ],
       ),
@@ -154,8 +144,7 @@ final List<EventSummaryEntity> eventSummaryMock = [
           CategoryOptionEntity(
             categoryOptionId: 25,
             categoryId: 7,
-            value: 'intensive',
-            label: 'Intensive Training',
+            value: 'Intensive Training',
           ),
         ],
       ),
@@ -167,8 +156,7 @@ final List<EventSummaryEntity> eventSummaryMock = [
           CategoryOptionEntity(
             categoryOptionId: 30,
             categoryId: 8,
-            value: 'hcmus',
-            label: 'ĐH Khoa học Tự nhiên',
+            value: 'ĐH Khoa học Tự nhiên',
           ),
         ],
       ),
@@ -192,14 +180,12 @@ final List<EventSummaryEntity> eventSummaryMock = [
           CategoryOptionEntity(
             categoryOptionId: 35,
             categoryId: 9,
-            value: 'job-fair',
-            label: 'Job Fair',
+            value: 'Job Fair',
           ),
           CategoryOptionEntity(
             categoryOptionId: 36,
             categoryId: 9,
-            value: 'recruitment',
-            label: 'Recruitment',
+            value: 'Recruitment',
           ),
         ],
       ),
@@ -211,8 +197,7 @@ final List<EventSummaryEntity> eventSummaryMock = [
           CategoryOptionEntity(
             categoryOptionId: 40,
             categoryId: 10,
-            value: 'career-networking',
-            label: 'Career Networking',
+            value: 'Career Networking',
           ),
         ],
       ),
@@ -224,8 +209,7 @@ final List<EventSummaryEntity> eventSummaryMock = [
           CategoryOptionEntity(
             categoryOptionId: 45,
             categoryId: 11,
-            value: 'all-schools',
-            label: 'Tất cả sinh viên',
+            value: 'Tất cả sinh viên',
           ),
         ],
       ),
@@ -249,14 +233,12 @@ final List<EventSummaryEntity> eventSummaryMock = [
           CategoryOptionEntity(
             categoryOptionId: 50,
             categoryId: 12,
-            value: 'ux-ui',
-            label: 'UX/UI Design',
+            value: 'UX/UI Design',
           ),
           CategoryOptionEntity(
             categoryOptionId: 51,
             categoryId: 12,
-            value: 'product-design',
-            label: 'Product Design',
+            value: 'Product Design',
           ),
         ],
       ),
@@ -268,8 +250,7 @@ final List<EventSummaryEntity> eventSummaryMock = [
           CategoryOptionEntity(
             categoryOptionId: 6,
             categoryId: 2,
-            value: 'interactive',
-            label: 'Interactive Workshop',
+            value: 'Interactive Workshop',
           ),
         ],
       ),
@@ -281,8 +262,7 @@ final List<EventSummaryEntity> eventSummaryMock = [
           CategoryOptionEntity(
             categoryOptionId: 8,
             categoryId: 3,
-            value: 'hcmut',
-            label: 'ĐH Bách Khoa TPHCM',
+            value: 'ĐH Bách Khoa TPHCM',
           ),
         ],
       ),
@@ -306,14 +286,12 @@ final List<EventSummaryEntity> eventSummaryMock = [
           CategoryOptionEntity(
             categoryOptionId: 1,
             categoryId: 1,
-            value: 'ai',
-            label: 'Artificial Intelligence',
+            value: 'Artificial Intelligence',
           ),
           CategoryOptionEntity(
             categoryOptionId: 55,
             categoryId: 1,
-            value: 'iot',
-            label: 'Internet of Things',
+            value: 'Internet of Things',
           ),
         ],
       ),
@@ -325,8 +303,7 @@ final List<EventSummaryEntity> eventSummaryMock = [
           CategoryOptionEntity(
             categoryOptionId: 60,
             categoryId: 5,
-            value: 'hackathon',
-            label: 'Hackathon',
+            value: 'Hackathon',
           ),
         ],
       ),
@@ -338,8 +315,7 @@ final List<EventSummaryEntity> eventSummaryMock = [
           CategoryOptionEntity(
             categoryOptionId: 20,
             categoryId: 6,
-            value: 'uit',
-            label: 'ĐH Công nghệ Thông tin',
+            value: 'ĐH Công nghệ Thông tin',
           ),
         ],
       ),
@@ -363,14 +339,12 @@ final List<EventSummaryEntity> eventSummaryMock = [
           CategoryOptionEntity(
             categoryOptionId: 65,
             categoryId: 13,
-            value: 'digital-marketing',
-            label: 'Digital Marketing',
+            value: 'Digital Marketing',
           ),
           CategoryOptionEntity(
             categoryOptionId: 66,
             categoryId: 13,
-            value: 'social-media',
-            label: 'Social Media',
+            value: 'Social Media',
           ),
         ],
       ),
@@ -382,8 +356,7 @@ final List<EventSummaryEntity> eventSummaryMock = [
           CategoryOptionEntity(
             categoryOptionId: 70,
             categoryId: 14,
-            value: 'masterclass',
-            label: 'Masterclass',
+            value: 'Masterclass',
           ),
         ],
       ),
@@ -395,8 +368,7 @@ final List<EventSummaryEntity> eventSummaryMock = [
           CategoryOptionEntity(
             categoryOptionId: 75,
             categoryId: 15,
-            value: 'tdtu',
-            label: 'ĐH Tôn Đức Thắng',
+            value: 'ĐH Tôn Đức Thắng',
           ),
         ],
       ),
@@ -420,14 +392,12 @@ final List<EventSummaryEntity> eventSummaryMock = [
           CategoryOptionEntity(
             categoryOptionId: 80,
             categoryId: 1,
-            value: 'blockchain',
-            label: 'Blockchain',
+            value: 'Blockchain',
           ),
           CategoryOptionEntity(
             categoryOptionId: 81,
             categoryId: 1,
-            value: 'web3',
-            label: 'Web3',
+            value: 'Web3',
           ),
         ],
       ),
@@ -439,8 +409,7 @@ final List<EventSummaryEntity> eventSummaryMock = [
           CategoryOptionEntity(
             categoryOptionId: 85,
             categoryId: 16,
-            value: 'international',
-            label: 'International Conference',
+            value: 'International Conference',
           ),
         ],
       ),
@@ -452,8 +421,7 @@ final List<EventSummaryEntity> eventSummaryMock = [
           CategoryOptionEntity(
             categoryOptionId: 45,
             categoryId: 11,
-            value: 'all-schools',
-            label: 'Tất cả sinh viên',
+            value: 'Tất cả sinh viên',
           ),
         ],
       ),

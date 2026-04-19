@@ -1,7 +1,7 @@
 class AssetPath {
   static const home = 'assets/icons/home.svg';
   static const events = 'assets/icons/events.svg';
-  static const news = 'assets/icons/news.svg';
+  static const ctv = 'assets/icons/ctv.svg';
   static const search = 'assets/icons/search.svg';
   static const contact = 'assets/icons/contact.svg';
   static const notification = 'assets/icons/notification.svg';
@@ -19,4 +19,12 @@ class AssetPath {
   static const calendarIcon = 'assets/icons/calendar.svg';
   static const certificateIcon = 'assets/icons/certificate.svg';
   static const networkIcon = 'assets/icons/network.svg';
+  static const scheduleIcon = 'assets/icons/schedule.svg';
+  static const tickIcon = 'assets/icons/tick.svg';
+  static const organizationIcon = 'assets/icons/organization.svg';
+  static const locationIcon = 'assets/icons/location.svg';
+  static const editIcon = 'assets/icons/edit.svg';
+  static const folderIcon = 'assets/icons/folder.svg';
+  static const logoutIcon = 'assets/icons/logout.svg';
+  static const googleIcon = 'assets/icons/google.svg';
 }

@@ -37,14 +37,12 @@ abstract class ApiProvider {
           requireAuth: requireAuth);
 
   Future<ApiResponse<Model>> post<Model>(
-    String path,
-    ResponseParser<Model> parser, {
-    ApiRequestBody? body,
-    Map<String, String>? headers,
-    Map<String, dynamic>? queryParameters,
-    List<Map<String, String>>? queryParametersList,
-    bool requireAuth = true,
-  }) =>
+          String path, ResponseParser<Model> parser,
+          {ApiRequestBody? body,
+          Map<String, String>? headers,
+          Map<String, dynamic>? queryParameters,
+          List<Map<String, String>>? queryParametersList,
+          bool requireAuth = true}) =>
       _request(
           ApiRequest(
             path: path,

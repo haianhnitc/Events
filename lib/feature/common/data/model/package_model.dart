@@ -12,7 +12,7 @@ class PackageModel with _$PackageModel {
     String? description,
     int? price,
     int? durationDays,
-    @Default(true) bool? isActive,
+    bool? isActive,
     DateTime? createdTime,
   }) = _PackageModel;
 

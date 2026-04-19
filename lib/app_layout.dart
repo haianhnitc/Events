@@ -2,9 +2,10 @@ import 'package:events_app/common/path/asset_path.dart';
 import 'package:events_app/feature/common/notifications_page.dart';
 import 'package:events_app/feature/common/notifications_controller.dart';
 import 'package:events_app/feature/common/qr/qr_scanner_page.dart';
+import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
+import 'package:events_app/routes/app_layout_controller.dart';
 import 'package:events_app/routes/navbar/bottom_nav_bar.dart';
 import 'package:events_app/routes/navbar/bottom_nav_bar_controller.dart';
-import 'package:events_app/routes/page_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
@@ -13,6 +14,7 @@ class AppLayout extends StatelessWidget {
   AppLayout({super.key});
 
   final navBarcontroller = Get.put(BottomNavBarController(), permanent: true);
+  final appLayoutController = Get.put(AppLayoutController(), permanent: true);
   final NotificationsController _notifCtrl =
       Get.put(NotificationsController(), permanent: true);
 
@@ -89,7 +91,10 @@ class AppLayout extends StatelessWidget {
                       ),
                       const SizedBox(width: 12),
                       GestureDetector(
-                        onTap: () {},
+                        onTap: () {
+                          navBarcontroller.selectedPage.value =
+                              NavBarOptions.myAccount;
+                        },
                         child: Container(
                           padding: const EdgeInsets.all(6),
                           decoration: BoxDecoration(
@@ -118,8 +123,9 @@ class AppLayout extends StatelessWidget {
         backgroundColor: Colors.white,
         resizeToAvoidBottomInset: true,
         body: Obx(
-          () => Container(
-            child: routes[navBarcontroller.selectedPage.value],
+          () => IndexedStack(
+            index: appLayoutController.currentIndex,
+            children: appLayoutController.pages,
           ),
         ),
         bottomNavigationBar: BottomNavBar(),
@@ -139,8 +145,14 @@ class AppLayout extends StatelessWidget {
             ],
           ),
           child: FloatingActionButton(
-            onPressed: () {
-              Get.to(() => const QrScannerPage());
+            onPressed: () async {
+              final result = await Get.to(() => const QrScannerPage());
+              if (result == true) {
+                AppSnackbarUtils.showSuccess(
+                  'Hoàn tất',
+                  'Thao tác đã được ghi nhận thành công.',
+                );
+              }
             },
             elevation: 0,
             backgroundColor: Colors.transparent,

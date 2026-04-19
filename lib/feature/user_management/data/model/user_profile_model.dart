@@ -16,6 +16,7 @@ class UserProfileModel with _$UserProfileModel {
     String? faculty,
     String? major,
     String? studentCode,
+    @Default(0) int remainingFreePortfolios,
   }) = _UserProfileModel;
 
   factory UserProfileModel.fromJson(Map<String, dynamic> json) =>
@@ -32,6 +33,7 @@ class UserProfileModel with _$UserProfileModel {
       faculty: entity.faculty,
       major: entity.major,
       studentCode: entity.studentCode,
+      remainingFreePortfolios: entity.remainingFreePortfolios,
     );
   }
 }
@@ -48,6 +50,7 @@ extension UserProfileModelExtension on UserProfileModel {
       faculty: faculty,
       major: major,
       studentCode: studentCode,
+      remainingFreePortfolios: remainingFreePortfolios,
     );
   }
 }

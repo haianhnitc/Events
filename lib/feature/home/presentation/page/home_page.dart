@@ -1,26 +1,24 @@
-import 'package:events_app/data_mock/event_summary_mock.dart';
 import 'package:events_app/feature/event_management/domain/entity/event_summary_entity.dart';
 import 'package:events_app/feature/home/presentation/widget/footer_home_page.dart';
 import 'package:events_app/feature/home/presentation/widget/header_home_page.dart';
 import 'package:events_app/feature/home/presentation/widget/item_featured_event.dart';
 import 'package:events_app/feature/home/presentation/widget/ranking_card.dart';
+import 'package:events_app/routes/navbar/bottom_nav_bar_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class HomePage extends StatelessWidget {
-  const HomePage({super.key, this.featuredEvents});
+  HomePage({super.key, required this.featuredEvents});
 
-  final List<EventSummaryEntity>? featuredEvents;
-
+  final List<EventSummaryEntity> featuredEvents;
+  final bottomNavBarController = Get.find<BottomNavBarController>();
   @override
   Widget build(BuildContext context) {
-    final List<EventSummaryEntity> eventFeatureSummary =
-        featuredEvents ?? eventSummaryMock;
-
     return Scaffold(
       backgroundColor: const Color(0xffF5F5F5),
       body: SafeArea(
         child: CustomScrollView(
+          key: const PageStorageKey<String>('home_page_scroll'),
           physics: const ClampingScrollPhysics(),
           slivers: [
             SliverToBoxAdapter(
@@ -42,7 +40,7 @@ class HomePage extends StatelessWidget {
                       const SizedBox(height: 24),
                       const RankingCard(),
                       const SizedBox(height: 24),
-                      _buildFeaturedEventHeader(),
+                      _buildFeaturedEventHeader(true),
                       const SizedBox(height: 16),
                     ],
                   ).marginSymmetric(horizontal: 16, vertical: 24),
@@ -52,7 +50,7 @@ class HomePage extends StatelessWidget {
             SliverPadding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
               sliver: SliverGrid.builder(
-                itemCount: eventFeatureSummary.length,
+                itemCount: featuredEvents.length,
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
                   crossAxisSpacing: 12,
@@ -61,7 +59,7 @@ class HomePage extends StatelessWidget {
                 ),
                 itemBuilder: (context, index) {
                   return ItemFeaturedEvent(
-                    eventFeatured: eventFeatureSummary[index],
+                    eventFeatured: featuredEvents[index],
                   );
                 },
               ),
@@ -75,15 +73,20 @@ class HomePage extends StatelessWidget {
 
   _buildTwoItemSubHEader() => Row(
         children: [
-          _buildEventActionCard(true, null),
+          _buildEventActionCard(true),
           const SizedBox(width: 12),
-          _buildEventActionCard(false, null),
+          _buildEventActionCard(false),
         ],
       );
 
-  _buildEventActionCard(bool isEvent, void Function()? onTap) => Expanded(
+  _buildEventActionCard(bool isEvent) => Expanded(
         child: GestureDetector(
-          onTap: onTap,
+          onTap: () {
+            isEvent
+                ? bottomNavBarController.selectedPage.value =
+                    NavBarOptions.events
+                : bottomNavBarController.selectedPage.value = NavBarOptions.ctv;
+          },
           child: Container(
               padding: const EdgeInsets.only(top: 16),
               height: 116,
@@ -143,7 +146,7 @@ class HomePage extends StatelessWidget {
         ),
       );
 
-  Widget _buildFeaturedEventHeader() {
+  Widget _buildFeaturedEventHeader(bool isEvent) {
     return Row(
       children: [
         const Text(
@@ -156,7 +159,9 @@ class HomePage extends StatelessWidget {
         ),
         const Spacer(),
         GestureDetector(
-          onTap: () {},
+          onTap: () {
+            bottomNavBarController.selectedPage.value = NavBarOptions.events;
+          },
           child: const Row(
             children: [
               Text(

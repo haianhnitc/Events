@@ -8,12 +8,16 @@ part 'event_statistic_model.g.dart';
 class EventStatisticModel with _$EventStatisticModel {
   const factory EventStatisticModel({
     int? eventId,
+    String? eventTitle,
+    String? recruitmentType,
     @Default(0) int? totalRegistered,
-    @Default(0) int? totalAttended,
-    @Default(0) int? totalNoShow,
-    @Default(0) int? totalRevenue,
-    double? avgRating,
-    DateTime? updatedTime,
+    @Default(0) int? totalCheckedIn,
+    @Default(0) int? totalCheckedOut,
+    @Default(0) int? totalAttendees,
+    @Default(0) int? totalCtv,
+    @Default(0) int? totalTicketsSold,
+    @Default(0) int? totalFeedbacks,
+    DateTime? lastUpdateTime,
   }) = _EventStatisticModel;
 
   factory EventStatisticModel.fromJson(Map<String, dynamic> json) =>
@@ -22,12 +26,16 @@ class EventStatisticModel with _$EventStatisticModel {
   factory EventStatisticModel.fromEntity(EventStatisticEntity entity) {
     return EventStatisticModel(
       eventId: entity.eventId,
+      eventTitle: entity.eventTitle,
+      recruitmentType: entity.recruitmentType,
       totalRegistered: entity.totalRegistered,
-      totalAttended: entity.totalAttended,
-      totalNoShow: entity.totalNoShow,
-      totalRevenue: entity.totalRevenue,
-      avgRating: entity.avgRating,
-      updatedTime: entity.updatedTime,
+      totalCheckedIn: entity.totalCheckedIn,
+      totalCheckedOut: entity.totalCheckedOut,
+      totalAttendees: entity.totalAttendees,
+      totalCtv: entity.totalCtv,
+      totalTicketsSold: entity.totalTicketsSold,
+      totalFeedbacks: entity.totalFeedbacks,
+      lastUpdateTime: entity.lastUpdateTime,
     );
   }
 }
@@ -36,12 +44,16 @@ extension EventStatisticModelExtension on EventStatisticModel {
   EventStatisticEntity toEntity() {
     return EventStatisticEntity(
       eventId: eventId,
+      eventTitle: eventTitle,
+      recruitmentType: recruitmentType,
       totalRegistered: totalRegistered,
-      totalAttended: totalAttended,
-      totalNoShow: totalNoShow,
-      totalRevenue: totalRevenue,
-      avgRating: avgRating,
-      updatedTime: updatedTime,
+      totalCheckedIn: totalCheckedIn,
+      totalCheckedOut: totalCheckedOut,
+      totalAttendees: totalAttendees,
+      totalCtv: totalCtv,
+      totalTicketsSold: totalTicketsSold,
+      totalFeedbacks: totalFeedbacks,
+      lastUpdateTime: lastUpdateTime,
     );
   }
 }

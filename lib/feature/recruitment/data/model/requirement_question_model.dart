@@ -1,6 +1,8 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:events_app/feature/common/domain/enum/app_enum.dart';
-import '../../domain/entity/requirement_question_entity.dart';
+import 'package:events_app/feature/recruitment/domain/entity/question_option_entity.dart';
+import 'package:events_app/feature/recruitment/domain/entity/requirement_question_entity.dart';
+import 'question_option_model.dart';
 
 part 'requirement_question_model.freezed.dart';
 part 'requirement_question_model.g.dart';
@@ -8,11 +10,12 @@ part 'requirement_question_model.g.dart';
 @freezed
 class RequirementQuestionModel with _$RequirementQuestionModel {
   const factory RequirementQuestionModel({
-    int? requirementQuestionId,
+    int? questionId,
     int? ctvRecruitmentId,
-    String? questionContent,
+    String? questionText,
     RequirementQuestionType? questionType,
-    @Default(false) bool? isRequired,
+    bool? isRequired,
+    List<QuestionOptionModel>? options,
   }) = _RequirementQuestionModel;
 
   factory RequirementQuestionModel.fromJson(Map<String, dynamic> json) =>
@@ -21,11 +24,12 @@ class RequirementQuestionModel with _$RequirementQuestionModel {
   factory RequirementQuestionModel.fromEntity(
       RequirementQuestionEntity entity) {
     return RequirementQuestionModel(
-      requirementQuestionId: entity.requirementQuestionId,
+      questionId: entity.questionId,
       ctvRecruitmentId: entity.ctvRecruitmentId,
-      questionContent: entity.questionContent,
+      questionText: entity.questionText,
       questionType: entity.questionType,
       isRequired: entity.isRequired,
+      options: entity.options?.map(QuestionOptionModel.fromEntity).toList(),
     );
   }
 }
@@ -33,11 +37,16 @@ class RequirementQuestionModel with _$RequirementQuestionModel {
 extension RequirementQuestionModelExtension on RequirementQuestionModel {
   RequirementQuestionEntity toEntity() {
     return RequirementQuestionEntity(
-      requirementQuestionId: requirementQuestionId,
+      questionId: questionId,
       ctvRecruitmentId: ctvRecruitmentId,
-      questionContent: questionContent,
+      questionText: questionText,
       questionType: questionType,
       isRequired: isRequired,
+      options: options?.map((o) => QuestionOptionEntity(
+        optionId: o.optionId,
+        questionId: o.questionId,
+        optionValue: o.optionValue,
+      )).toList(),
     );
   }
 }

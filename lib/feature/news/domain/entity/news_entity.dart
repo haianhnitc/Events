@@ -9,6 +9,7 @@ class NewsEntity {
   final NewsTargetType? targetType;
   final int? targetId;
   final int? totalRewardCoin;
+  final int? remainingRewardCoin;
   final int? rewardPerMinute;
   final int? viewCount;
   final DateTime? createdTime;
@@ -22,6 +23,7 @@ class NewsEntity {
     this.targetType,
     this.targetId,
     this.totalRewardCoin,
+    this.remainingRewardCoin,
     this.rewardPerMinute,
     this.viewCount,
     this.createdTime,

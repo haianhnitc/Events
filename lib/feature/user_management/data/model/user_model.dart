@@ -1,5 +1,8 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:events_app/feature/common/domain/enum/app_enum.dart';
+import 'package:events_app/feature/user_management/data/model/user_profile_model.dart';
+import 'package:events_app/feature/user_management/data/model/organization_profile_model.dart';
+import 'package:events_app/feature/user_management/data/model/verification_document_model.dart';
 import '../../domain/entity/user_entity.dart';
 
 part 'user_model.freezed.dart';
@@ -14,9 +17,11 @@ class UserModel with _$UserModel {
     String? phoneNumber,
     @Default(UserRole.user) UserRole? role,
     @Default(UserStatus.active) UserStatus? status,
-    @Default(0) int? currentCoin,
-    @Default(0) int remainingFreePortfolios,
+    @Default(0) int currentCoin,
     DateTime? createdTime,
+    UserProfileModel? userProfile,
+    OrganizationProfileModel? organizationProfile,
+    List<VerificationDocumentModel>? verificationDocuments,
   }) = _UserModel;
 
   factory UserModel.fromJson(Map<String, dynamic> json) =>
@@ -31,8 +36,16 @@ class UserModel with _$UserModel {
       role: entity.role,
       status: entity.status,
       currentCoin: entity.currentCoin,
-      remainingFreePortfolios: entity.remainingFreePortfolios,
       createdTime: entity.createdTime,
+      userProfile: entity.userProfile != null
+          ? UserProfileModel.fromEntity(entity.userProfile!)
+          : null,
+      organizationProfile: entity.organizationProfile != null
+          ? OrganizationProfileModel.fromEntity(entity.organizationProfile!)
+          : null,
+      verificationDocuments: entity.verificationDocuments
+          ?.map((e) => VerificationDocumentModel.fromEntity(e))
+          .toList(),
     );
   }
 }
@@ -47,8 +60,11 @@ extension UserModelExtension on UserModel {
       role: role,
       status: status,
       currentCoin: currentCoin,
-      remainingFreePortfolios: remainingFreePortfolios,
       createdTime: createdTime,
+      userProfile: userProfile?.toEntity(),
+      organizationProfile: organizationProfile?.toEntity(),
+      verificationDocuments:
+          verificationDocuments?.map((e) => e.toEntity()).toList(),
     );
   }
 }

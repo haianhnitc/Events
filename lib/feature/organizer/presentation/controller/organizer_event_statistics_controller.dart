@@ -1,0 +1,70 @@
+import 'package:get/get.dart';
+import 'package:events_app/api_template/services/failure.dart';
+import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
+import 'package:events_app/dependency_injection/injection.dart';
+import 'package:events_app/feature/event_management/domain/entity/event_statistic_entity.dart';
+import 'package:events_app/feature/event_management/domain/entity/event_analytics_entity.dart';
+import 'package:events_app/feature/organizer/event/domain/usecase/organizer_event_usecase.dart';
+
+class OrganizerEventStatisticsController extends GetxController {
+  GetOrganizerEventStatisticsUsecase get _getStatisticsUsecase =>
+      networkGetIt<GetOrganizerEventStatisticsUsecase>();
+  GetOrganizerEventAnalyticsUsecase get _getAnalyticsUsecase =>
+      networkGetIt<GetOrganizerEventAnalyticsUsecase>();
+
+  final Rx<EventStatisticEntity?> statistics = Rx<EventStatisticEntity?>(null);
+  final Rx<EventAnalyticsEntity?> analytics = Rx<EventAnalyticsEntity?>(null);
+  final RxBool isLoadingStats = false.obs;
+  final RxBool isLoadingAnalytics = false.obs;
+  final RxBool isRefreshing = false.obs;
+
+  int? _eventId;
+
+  void setEventId(int id) {
+    _eventId = id;
+    loadAll();
+  }
+
+  Future<void> loadAll() async {
+    if (_eventId == null) return;
+    await Future.wait([loadStatistics(), loadAnalytics()]);
+  }
+
+  Future<void> loadStatistics() async {
+    if (_eventId == null || isLoadingStats.value) return;
+    isLoadingStats.value = true;
+    final result = await _getStatisticsUsecase(_eventId!);
+    result.fold(
+      (failure) => _handleFailure(failure),
+      (data) => statistics.value = data,
+    );
+    isLoadingStats.value = false;
+  }
+
+  Future<void> loadAnalytics() async {
+    if (_eventId == null || isLoadingAnalytics.value) return;
+    isLoadingAnalytics.value = true;
+    final result = await _getAnalyticsUsecase(_eventId!);
+    result.fold(
+      (failure) => _handleFailure(failure),
+      (data) => analytics.value = data,
+    );
+    isLoadingAnalytics.value = false;
+  }
+
+  Future<void> refresh() async {
+    if (isRefreshing.value) return;
+    isRefreshing.value = true;
+    await loadAll();
+    isRefreshing.value = false;
+  }
+
+  void _handleFailure(FailureEntity failure) {
+    failure.when(
+      serverFailure: (_, message) => AppSnackbarUtils.showError('Lỗi', message ?? 'Lấy thống kê thất bại'),
+      dataParsingFailure: () => AppSnackbarUtils.showError('Lỗi', 'Không đọc được dữ liệu thống kê'),
+      noConnectionFailure: () => AppSnackbarUtils.showError('Lỗi', 'Không có kết nối mạng'),
+      systemFailure: (_, message) => AppSnackbarUtils.showError('Lỗi', message ?? 'Lỗi hệ thống'),
+    );
+  }
+}

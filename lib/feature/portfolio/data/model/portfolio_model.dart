@@ -9,13 +9,13 @@ class PortfolioModel with _$PortfolioModel {
   const factory PortfolioModel({
     int? portfolioId,
     int? userId,
-    @Default(0) int? price,
+    int? price,
     String? title,
     String? description,
     String? portfolioCode,
-    @Default(false) bool? isPublished,
-    @Default(0) int? viewCount,
-    @Default(0) int? downloadCount,
+    bool? isPublished,
+    int? viewCount,
+    int? downloadCount,
     DateTime? createdTime,
     DateTime? publishTime,
   }) = _PortfolioModel;

@@ -8,8 +8,7 @@ part 'question_option_model.g.dart';
 class QuestionOptionModel with _$QuestionOptionModel {
   const factory QuestionOptionModel({
     int? optionId,
-    int? requirementQuestionId,
-    String? optionLabel,
+    int? questionId,
     String? optionValue,
   }) = _QuestionOptionModel;
 
@@ -19,8 +18,7 @@ class QuestionOptionModel with _$QuestionOptionModel {
   factory QuestionOptionModel.fromEntity(QuestionOptionEntity entity) {
     return QuestionOptionModel(
       optionId: entity.optionId,
-      requirementQuestionId: entity.requirementQuestionId,
-      optionLabel: entity.optionLabel,
+      questionId: entity.questionId,
       optionValue: entity.optionValue,
     );
   }
@@ -30,8 +28,7 @@ extension QuestionOptionModelExtension on QuestionOptionModel {
   QuestionOptionEntity toEntity() {
     return QuestionOptionEntity(
       optionId: optionId,
-      requirementQuestionId: requirementQuestionId,
-      optionLabel: optionLabel,
+      questionId: questionId,
       optionValue: optionValue,
     );
   }

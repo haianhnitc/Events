@@ -9,7 +9,6 @@ class CategoryOptionModel with _$CategoryOptionModel {
   const factory CategoryOptionModel({
     int? categoryOptionId,
     int? categoryId,
-    String? label,
     String? value,
   }) = _CategoryOptionModel;
 
@@ -20,7 +19,6 @@ class CategoryOptionModel with _$CategoryOptionModel {
     return CategoryOptionModel(
       categoryOptionId: entity.categoryOptionId,
       categoryId: entity.categoryId,
-      label: entity.label,
       value: entity.value,
     );
   }
@@ -31,7 +29,6 @@ extension CategoryOptionModelExtension on CategoryOptionModel {
     return CategoryOptionEntity(
       categoryOptionId: categoryOptionId,
       categoryId: categoryId,
-      label: label,
       value: value,
     );
   }

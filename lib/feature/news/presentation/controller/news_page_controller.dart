@@ -1,65 +1,142 @@
-// import 'package:get/get.dart';
-// import 'package:events_app/feature/news/data/models/news_model.dart';
-// import 'package:events_app/data_mock/news_mock.dart';
+import 'package:events_app/api_template/services/failure.dart';
+import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
+import 'package:events_app/feature/news/domain/entity/news_entity.dart';
+import 'package:events_app/feature/news/domain/usecase/news_usecase.dart';
+import 'package:get/get.dart';
+import 'package:mocktail/mocktail.dart';
 
-// class NewsPageController extends GetxController {
-//   // explicit Rx types
-//   final RxList<NewsModel> all = RxList<NewsModel>();
-//   final RxString query = RxString('');
-//   final RxInt selectedTab = RxInt(0); // 0: all, 1: featured, 2: saved
-//   final RxSet<int> saved = RxSet<int>();
+class MockGetNewsListUsecase extends Mock implements GetNewsListUsecase {}
 
-//   @override
-//   void onInit() {
-//     super.onInit();
-//     loadMock();
-//   }
+class FakeGetNewsListParams extends Fake implements GetNewsListParams {}
 
-//   void loadMock() {
-//     all.assignAll(newsMock);
-//   }
+class NewsPageController extends GetxController {
+  NewsPageController({GetNewsListUsecase? getNewsListUsecase}) {
+    _getNewsListUsecase = getNewsListUsecase ?? MockGetNewsListUsecase();
+  }
 
-//   void setQuery(String q) => query.value = q;
+  late final GetNewsListUsecase _getNewsListUsecase;
 
-//   void setTab(int i) => selectedTab.value = i;
+  final RxList<NewsEntity> all = <NewsEntity>[].obs;
+  final RxString query = ''.obs;
+  final RxInt selectedTab = 0.obs;
+  final RxSet<int> saved = <int>{}.obs;
+  final RxBool isLoading = true.obs;
 
-//   void toggleSaved(int id) {
-//     if (saved.contains(id)) {
-//       saved.remove(id);
-//     } else {
-//       saved.add(id);
-//     }
-//     // ensure observers are notified
-//     saved.refresh();
-//   }
+  final int _pageSize = 20;
+  int currentPage = 0;
+  bool hasMore = true;
 
-//   bool isSaved(int id) => saved.contains(id);
+  @override
+  void onInit() {
+    super.onInit();
+    loadNews();
+  }
 
-//   List<NewsModel> get filtered {
-//     final q = query.value.trim().toLowerCase();
-//     Iterable<NewsModel> it = all;
+  Future<void> loadNews({bool refresh = false}) async {
+    if (isLoading.value) return;
 
-//     // apply tab filter efficiently (no early copying)
-//     if (selectedTab.value == 1) {
-//       // Defensive access: avoid crashing if a hot-reload left invalid objects in memory.
-//       it = it.where((n) {
-//         try {
-//           return n.featured == true;
-//         } catch (_) {
-//           return false;
-//         }
-//       });
-//     } else if (selectedTab.value == 2) {
-//       it = it.where((n) => saved.contains(n.id));
-//     }
+    if (refresh) {
+      currentPage = 0;
+      hasMore = true;
+      all.clear();
+    }
 
-//     if (q.isNotEmpty) {
-//       it = it.where((n) =>
-//           n.title.toLowerCase().contains(q) ||
-//           n.excerpt.toLowerCase().contains(q) ||
-//           n.category.toLowerCase().contains(q));
-//     }
+    if (!hasMore && !refresh) return;
 
-//     return it.toList();
-//   }
-// }
+    isLoading.value = true;
+
+    final result = await _getNewsListUsecase(
+      GetNewsListParams(
+        page: currentPage,
+        size: _pageSize,
+        keyword: query.value.isEmpty ? null : query.value,
+      ),
+    );
+
+    result.fold(
+      (failure) {
+        _handleFailure(failure);
+        isLoading.value = false;
+      },
+      (data) {
+        if (data.isEmpty) {
+          hasMore = false;
+        } else {
+          if (refresh) {
+            all.clear();
+          }
+          all.addAll(data);
+          currentPage++;
+          hasMore = data.length >= _pageSize;
+        }
+        isLoading.value = false;
+      },
+    );
+  }
+
+  void loadMore() {
+    if (isLoading.value || !hasMore) return;
+    loadNews();
+  }
+
+  void setQuery(String q) {
+    query.value = q.trim().toLowerCase();
+    loadNews(refresh: true);
+  }
+
+  void setTab(int i) {
+    selectedTab.value = i;
+  }
+
+  void toggleSaved(int? id) {
+    if (id == null) return;
+    if (saved.contains(id)) {
+      saved.remove(id);
+    } else {
+      saved.add(id);
+    }
+    saved.refresh();
+  }
+
+  bool isSaved(int? id) => id != null && saved.contains(id);
+
+  List<NewsEntity> get filtered {
+    final q = query.value.trim().toLowerCase();
+    Iterable<NewsEntity> it = all;
+
+    if (selectedTab.value == 1) {
+      it = it.where((n) {
+        try {
+          return (n.tag ?? '').trim().toLowerCase().contains('featured') ||
+              (n.tag ?? '').contains('nổi bật');
+        } catch (_) {
+          return false;
+        }
+      });
+    } else if (selectedTab.value == 2) {
+      it = it.where((n) => saved.contains(n.newsId ?? -1));
+    }
+
+    if (q.isNotEmpty) {
+      it = it.where((n) =>
+          (n.title ?? '').toLowerCase().contains(q) ||
+          (n.content ?? '').toLowerCase().contains(q) ||
+          (n.tag ?? '').toLowerCase().contains(q));
+    }
+
+    return it.toList();
+  }
+
+  void _handleFailure(FailureEntity failure) {
+    failure.when(
+      serverFailure: (_, message) =>
+          AppSnackbarUtils.showError('Lỗi', message),
+      dataParsingFailure: () =>
+          AppSnackbarUtils.showError('Lỗi', 'Không đọc được dữ liệu'),
+      noConnectionFailure: () =>
+          AppSnackbarUtils.showError('Lỗi', 'Không có kết nối mạng'),
+      systemFailure: (_, message) =>
+          AppSnackbarUtils.showError('Lỗi', message),
+    );
+  }
+}
