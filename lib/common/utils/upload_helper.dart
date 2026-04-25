@@ -104,7 +104,6 @@ class ImagePickerService {
         mimeType: _getMimeType(file.path),
       );
     } catch (e) {
-      debugPrint('Error picking image: $e');
       return null;
     }
   }
@@ -148,7 +147,6 @@ class ImagePickerService {
 
       return results;
     } catch (e) {
-      debugPrint('Error picking multiple images: $e');
       return [];
     }
   }
@@ -215,7 +213,6 @@ class FilePickerService {
         mimeType: _getMimeType(path),
       );
     } catch (e) {
-      debugPrint('Error picking document: $e');
       return null;
     }
   }
@@ -252,7 +249,6 @@ class FilePickerService {
 
       return results;
     } catch (e) {
-      debugPrint('Error picking multiple documents: $e');
       return [];
     }
   }

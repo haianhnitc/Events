@@ -4,20 +4,24 @@ class UserPackageEntity {
   final int? userPackageId;
   final int? userId;
   final int? packageId;
+  final String? packageName;
   final UserPackageStatus? status;
   final DateTime? startTime;
   final DateTime? endTime;
-  final bool? autoRenew;
+  final String? notes;
   final DateTime? createdTime;
+  final bool? autoRenew;
 
   UserPackageEntity({
     this.userPackageId,
     this.userId,
     this.packageId,
+    this.packageName,
     this.status,
     this.startTime,
     this.endTime,
-    this.autoRenew,
+    this.notes,
     this.createdTime,
+    this.autoRenew,
   });
 }

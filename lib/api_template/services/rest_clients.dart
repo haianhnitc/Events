@@ -43,7 +43,6 @@ class NRDRestClient extends RestClient {
     _dio.interceptors.add(LogInterceptor(
       requestBody: true,
       responseBody: true,
-      logPrint: (o) => debugPrint('DIO_LOG: $o'),
     ));
     _dio.interceptors.add(
       InterceptorsWrapper(
@@ -66,8 +65,6 @@ class NRDRestClient extends RestClient {
             final isRetrying = error.requestOptions.extra['retryCount'] ?? 0;
 
             if (isRetrying < _maxRetries) {
-              _tokenService.clearTokens();
-
               final newToken = await _tokenService.getAccessToken();
               if (newToken != null && newToken.isNotEmpty) {
                 error.requestOptions.headers['Authorization'] =
@@ -137,7 +134,6 @@ class NRDRestClient extends RestClient {
               headers: headers,
               extra: {'requireAuth': requireAuth},
             ));
-        debugPrint('GET request sent');
       } else if (request.type == ApiRequestType.post) {
         response = await _dio.post(EventNetwork.baseUrl + request.path,
             data: requestBody,
@@ -146,7 +142,6 @@ class NRDRestClient extends RestClient {
               headers: headers,
               extra: {'requireAuth': requireAuth},
             ));
-        debugPrint('POST response: $response');
       } else if (request.type == ApiRequestType.put) {
         response = await _dio.put(EventNetwork.baseUrl + request.path,
             data: requestBody,
@@ -192,6 +187,12 @@ class NRDRestClient extends RestClient {
             errors: []));
       }
     } on DioException catch (error) {
+      if (error.type == DioExceptionType.connectionTimeout ||
+          error.type == DioExceptionType.sendTimeout ||
+          error.type == DioExceptionType.receiveTimeout ||
+          error.type == DioExceptionType.connectionError) {
+        return const ApiResponse.serviceUnavailable();
+      }
       response = error.response ??
           Response(
               data: null,
@@ -258,7 +259,11 @@ class StubRestClient extends RestClient {
     ResponseParser parser,
     bool requireAuth,
   ) async {
-    throw UnimplementedError('StubRestClient should not make real requests');
+    return const ApiResponse.unexpected(ApiResponseError(
+      code: 'STUB_CLIENT',
+      message: 'StubRestClient is not configured for real requests',
+      errors: null,
+    ));
   }
 
   @override

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:events_app/feature/attendance/domain/entity/attendance_entity.dart';
 import 'package:events_app/feature/organizer/presentation/controller/organizer_event_qr_controller.dart';
@@ -454,10 +455,14 @@ class _OrganizerEventQrFullscreenPageState
       right: 0,
       child: Center(
         child: GestureDetector(
-          onTap: () {
+          onTap: () async {
+            final qr = _ctrl.eventQr.value;
+            if (qr?.qrContent == null) return;
+            await Clipboard.setData(ClipboardData(text: qr!.qrContent!));
+            if (!context.mounted) return;
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('Tính năng đang phát triển'),
+                content: Text('Đã sao chép mã QR vào bộ nhớ tạm'),
                 behavior: SnackBarBehavior.floating,
               ),
             );

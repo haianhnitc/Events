@@ -1,4 +1,3 @@
-import 'package:events_app/data_mock/category_mock.dart';
 import 'package:events_app/feature/common/domain/entity/category_entity.dart';
 import 'package:events_app/feature/common/domain/enum/app_enum.dart';
 import 'package:events_app/feature/event_management/domain/entity/event_summary_entity.dart';
@@ -10,11 +9,15 @@ class CategoryFilterUtils {
 
   static bool matchesEvent(
     EventSummaryEntity event,
-    Map<int, List<String>> selectedFilters,
-  ) {
+    Map<int, List<String>> selectedFilters, {
+    List<CategoryEntity>? allCategories,
+  }) {
     if (selectedFilters.isEmpty) return true;
 
-    final selectedByType = _mapSelectedValuesByType(selectedFilters);
+    final selectedByType = _mapSelectedValuesByType(
+      selectedFilters,
+      allCategories: allCategories,
+    );
     for (final entry in selectedByType.entries) {
       if (!_matchesByType(
         type: entry.key,
@@ -34,11 +37,15 @@ class CategoryFilterUtils {
   static bool matchesCtv(
     CtvRecruitmentSummaryEntity recruitment,
     Map<int, List<String>> selectedFilters,
-    EventSummaryEntity? relatedEvent,
-  ) {
+    EventSummaryEntity? relatedEvent, {
+    List<CategoryEntity>? allCategories,
+  }) {
     if (selectedFilters.isEmpty) return true;
 
-    final selectedByType = _mapSelectedValuesByType(selectedFilters);
+    final selectedByType = _mapSelectedValuesByType(
+      selectedFilters,
+      allCategories: allCategories,
+    );
     for (final entry in selectedByType.entries) {
       if (!_matchesByType(
         type: entry.key,
@@ -58,11 +65,15 @@ class CategoryFilterUtils {
   static bool matchesCtvByEntity(
     CtvRecruitmentEntity recruitment,
     Map<int, List<String>> selectedFilters,
-    EventSummaryEntity? relatedEvent,
-  ) {
+    EventSummaryEntity? relatedEvent, {
+    List<CategoryEntity>? allCategories,
+  }) {
     if (selectedFilters.isEmpty) return true;
 
-    final selectedByType = _mapSelectedValuesByType(selectedFilters);
+    final selectedByType = _mapSelectedValuesByType(
+      selectedFilters,
+      allCategories: allCategories,
+    );
     for (final entry in selectedByType.entries) {
       if (!_matchesByType(
         type: entry.key,
@@ -80,12 +91,13 @@ class CategoryFilterUtils {
   }
 
   static Map<CategoryType, Set<String>> _mapSelectedValuesByType(
-    Map<int, List<String>> selectedFilters,
-  ) {
+    Map<int, List<String>> selectedFilters, {
+    List<CategoryEntity>? allCategories,
+  }) {
     final selectedByType = <CategoryType, Set<String>>{};
     for (final entry in selectedFilters.entries) {
       if (entry.value.isEmpty) continue;
-      final category = _findCategoryById(entry.key);
+      final category = _findCategoryById(entry.key, allCategories: allCategories);
 
       final categoryType = category.type;
       if (categoryType == null) continue;
@@ -97,11 +109,13 @@ class CategoryFilterUtils {
     return selectedByType;
   }
 
-  static CategoryEntity _findCategoryById(int categoryId) {
-    for (final category in categoriesMock) {
+  static CategoryEntity _findCategoryById(
+    int categoryId, {
+    List<CategoryEntity>? allCategories,
+  }) {
+    for (final category in allCategories ?? const <CategoryEntity>[]) {
       if (category.categoryId == categoryId) return category;
     }
-
     return CategoryEntity();
   }
 

@@ -289,8 +289,9 @@ class _CtvApplyBottomSheetState extends State<CtvApplyBottomSheet> {
               questionId: questionId,
               options: question.options,
             ),
-          if (question.questionType != RequirementQuestionType.text &&
-              question.questionType != RequirementQuestionType.singleChoice)
+          if (question.questionType == RequirementQuestionType.rating)
+            _buildRatingInput(questionId),
+          if (question.questionType == RequirementQuestionType.multipleChoice)
             ..._buildMultiChoiceOptions(
               questionId: questionId,
               options: question.options,
@@ -409,5 +410,52 @@ class _CtvApplyBottomSheetState extends State<CtvApplyBottomSheet> {
     }
 
     return items;
+  }
+
+  Widget _buildRatingInput(int questionId) {
+    const maxRating = 5;
+    final currentRating = _controller.ratingValueFor(questionId);
+
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(maxRating, (index) {
+            final rating = index + 1;
+            final isSelected = rating <= currentRating;
+
+            return GestureDetector(
+              onTap: () {
+                _controller.updateRating(
+                  questionId: questionId,
+                  value: rating,
+                );
+              },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 6),
+                child: Icon(
+                  isSelected ? Icons.star : Icons.star_border,
+                  size: 40,
+                  color: isSelected
+                      ? const Color(0xffF59E0B)
+                      : const Color(0xffD1D5DB),
+                ),
+              ),
+            );
+          }),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          currentRating > 0 ? '$currentRating / $maxRating' : 'Nhấn để đánh giá',
+          style: TextStyle(
+            fontSize: 13,
+            color: currentRating > 0
+                ? const Color(0xffF59E0B)
+                : const Color(0xffB0B4C0),
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
+    );
   }
 }

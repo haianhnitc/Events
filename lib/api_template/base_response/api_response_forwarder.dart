@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:dartz/dartz.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart' show PlatformException;
 import 'package:events_app/api_template/base_response/api_envelope.dart';
 import 'package:events_app/api_template/base_response/api_response.dart';
 import 'package:events_app/api_template/services/failure.dart';
@@ -32,11 +34,11 @@ ApiResponse<T> forwardEnvelopeResponse<T>(
     forbidden: ApiResponse.forbidden,
     notFound: ApiResponse.notFound,
     conflict: ApiResponse.conflict,
-    internalServerError: ApiResponse.internalServerError,
-    badGateway: ApiResponse.badGateway,
-    serviceUnavailable: ApiResponse.serviceUnavailable,
-    gatewayTimeout: ApiResponse.gatewayTimeout,
-    canceled: ApiResponse.canceled,
+    internalServerError: () => const ApiResponse.internalServerError(),
+    badGateway: () => const ApiResponse.badGateway(),
+    serviceUnavailable: () => const ApiResponse.serviceUnavailable(),
+    gatewayTimeout: () => const ApiResponse.gatewayTimeout(),
+    canceled: () => const ApiResponse.canceled(),
     responseParsing: ApiResponse.responseParsing,
     unexpected: ApiResponse.unexpected,
   );
@@ -53,11 +55,11 @@ ApiResponse<T> forwardTransportResponse<T>(
     forbidden: ApiResponse.forbidden,
     notFound: ApiResponse.notFound,
     conflict: ApiResponse.conflict,
-    internalServerError: ApiResponse.internalServerError,
-    badGateway: ApiResponse.badGateway,
-    serviceUnavailable: ApiResponse.serviceUnavailable,
-    gatewayTimeout: ApiResponse.gatewayTimeout,
-    canceled: ApiResponse.canceled,
+    internalServerError: () => const ApiResponse.internalServerError(),
+    badGateway: () => const ApiResponse.badGateway(),
+    serviceUnavailable: () => const ApiResponse.serviceUnavailable(),
+    gatewayTimeout: () => const ApiResponse.gatewayTimeout(),
+    canceled: () => const ApiResponse.canceled(),
     responseParsing: ApiResponse.responseParsing,
     unexpected: ApiResponse.unexpected,
   );
@@ -86,9 +88,71 @@ Future<ApiResponse<TOut>> forwardOnSuccess<TIn, TOut>(
 
 ApiResponse<T> mapExceptionToApiResponse<T>(Object error) {
   if (error is FirebaseAuthException) {
+    final code = error.code;
+    if (code == 'wrong-password' || code == 'user-not-found') {
+      return ApiResponse.unauthorized(ApiResponseError(
+        code: code,
+        message: 'Email không tồn tại hoặc mật khẩu không chính xác.',
+        errors: null,
+      ));
+    }
+    if (code == 'invalid-credential') {
+      return ApiResponse.unauthorized(ApiResponseError(
+        code: code,
+        message: 'Email hoặc mật khẩu không chính xác.',
+        errors: null,
+      ));
+    }
+    if (code == 'user-disabled') {
+      return ApiResponse.unauthorized(ApiResponseError(
+        code: code,
+        message: 'Tài khoản đã bị vô hiệu hóa.',
+        errors: null,
+      ));
+    }
+    if (code == 'too-many-requests') {
+      return ApiResponse.unauthorized(ApiResponseError(
+        code: code,
+        message: 'Đã thử quá nhiều lần. Vui lòng thử lại sau.',
+        errors: null,
+      ));
+    }
+    return ApiResponse.unauthorized(ApiResponseError(
+      code: code,
+      message: 'Có lỗi xảy ra khi đăng nhập. Vui lòng thử lại.',
+      errors: null,
+    ));
+  }
+
+  if (error is TypeError) {
+    final msg = error.toString();
+    if (msg.contains('PigeonUserDetails') || msg.contains('PigeonUserCredential')) {
+      return ApiResponse.unexpected(ApiResponseError(
+        code: 'PLUGIN_MISMATCH',
+        message: 'Lỗi đồng bộ Firebase. Vui lòng khởi động lại ứng dụng.',
+        errors: null,
+      ));
+    }
     return ApiResponse.unexpected(ApiResponseError(
-      code: error.code,
-      message: error.message ?? '',
+      code: 'TYPE_ERROR',
+      message: 'Đã xảy ra lỗi không xác định. Vui lòng thử lại.',
+      errors: null,
+    ));
+  }
+
+  if (error is PlatformException) {
+    final code = error.code;
+    final msg = error.message ?? '';
+    if (msg.contains('PigeonUserDetails') || msg.contains('PigeonUserCredential')) {
+      return ApiResponse.unexpected(ApiResponseError(
+        code: 'PLUGIN_MISMATCH',
+        message: 'Lỗi đồng bộ Firebase. Vui lòng khởi động lại ứng dụng.',
+        errors: null,
+      ));
+    }
+    return ApiResponse.unexpected(ApiResponseError(
+      code: code,
+      message: msg.isNotEmpty ? msg : 'Đã xảy ra lỗi. Vui lòng thử lại.',
       errors: null,
     ));
   }
@@ -111,22 +175,22 @@ extension ApiResponseExtension<T> on ApiResponse<T> {
       forbidden: (error) => _leftFromError(error),
       conflict: (error) => _leftFromError(error),
       internalServerError: () => const Left(
-        FailureEntity.serverFailure('500', 'Internal server error'),
+        FailureEntity.serverFailure('500', 'Máy chủ đang bận. Vui lòng thử lại sau.'),
       ),
       badGateway: () => const Left(
-        FailureEntity.serverFailure('502', 'Bad gateway'),
+        FailureEntity.serverFailure('502', 'Kết nối đến máy chủ thất bại. Vui lòng thử lại.'),
       ),
       serviceUnavailable: () => const Left(
-        FailureEntity.serverFailure('503', 'Service unavailable'),
+        FailureEntity.serverFailure('503', 'Mất kết nối mạng hoặc máy chủ không phản hồi. Vui lòng kiểm tra mạng và thử lại.'),
       ),
       gatewayTimeout: () => const Left(
-        FailureEntity.serverFailure('504', 'Gateway timeout'),
+        FailureEntity.serverFailure('504', 'Yêu cầu hết thời gian chờ. Vui lòng thử lại.'),
       ),
       responseParsing: () => const Left(
         FailureEntity.dataParsingFailure(),
       ),
       canceled: () => const Left(
-        FailureEntity.serverFailure('CANCEL', 'Operation canceled'),
+        FailureEntity.serverFailure('CANCEL', 'Thao tác đã bị hủy.'),
       ),
     );
   }
@@ -141,22 +205,22 @@ extension ApiResponseExtension<T> on ApiResponse<T> {
       forbidden: (error) => _leftFromErrorUnit(error),
       conflict: (error) => _leftFromErrorUnit(error),
       internalServerError: () => const Left(
-        FailureEntity.serverFailure('500', 'Internal server error'),
+        FailureEntity.serverFailure('500', 'Máy chủ đang bận. Vui lòng thử lại sau.'),
       ),
       badGateway: () => const Left(
-        FailureEntity.serverFailure('502', 'Bad gateway'),
+        FailureEntity.serverFailure('502', 'Kết nối đến máy chủ thất bại. Vui lòng thử lại.'),
       ),
       serviceUnavailable: () => const Left(
-        FailureEntity.serverFailure('503', 'Service unavailable'),
+        FailureEntity.serverFailure('503', 'Mất kết nối mạng hoặc máy chủ không phản hồi. Vui lòng kiểm tra mạng và thử lại.'),
       ),
       gatewayTimeout: () => const Left(
-        FailureEntity.serverFailure('504', 'Gateway timeout'),
+        FailureEntity.serverFailure('504', 'Yêu cầu hết thời gian chờ. Vui lòng thử lại.'),
       ),
       responseParsing: () => const Left(
         FailureEntity.dataParsingFailure(),
       ),
       canceled: () => const Left(
-        FailureEntity.serverFailure('CANCEL', 'Operation canceled'),
+        FailureEntity.serverFailure('CANCEL', 'Thao tác đã bị hủy.'),
       ),
     );
   }

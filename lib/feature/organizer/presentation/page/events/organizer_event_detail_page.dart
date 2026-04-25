@@ -13,6 +13,7 @@ import 'package:events_app/feature/organizer/presentation/page/ticket/organizer_
 import 'package:events_app/feature/organizer/presentation/widget/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class OrganizerEventDetailPage extends StatefulWidget {
   final int eventId;
@@ -571,8 +572,29 @@ class _OrganizerEventDetailPageState extends State<OrganizerEventDetailPage> {
                 icon: Icons.share_outlined,
                 label: 'Chia sẻ',
                 color: const Color(0xFF8B5CF6),
-                onTap: () {
-                  AppSnackbarUtils.showInfo('Chia sẻ', 'Tính năng đang phát triển');
+                onTap: () async {
+                  final event = _detailCtrl.event.value;
+                  final eventTitle = event?.title ?? 'Sự kiện';
+                  final eventId = event?.eventId;
+                  final shareUrl = eventId != null
+                      ? 'https://events.app/event/$eventId'
+                      : null;
+
+                  final encodedTitle = Uri.encodeComponent(eventTitle ?? '');
+                  final encodedBody = Uri.encodeComponent(
+                    'Hãy cùng tham gia sự kiện "$eventTitle" nhé!'
+                    '${shareUrl != null ? '\n\nLink: $shareUrl' : ''}',
+                  );
+
+                  final mailtoUrl = Uri.parse(
+                    'mailto:?subject=$encodedTitle&body=$encodedBody',
+                  );
+
+                  if (await canLaunchUrl(mailtoUrl)) {
+                    await launchUrl(mailtoUrl, mode: LaunchMode.externalApplication);
+                  } else {
+                    AppSnackbarUtils.showError('Lỗi', 'Không thể mở ứng dụng chia sẻ');
+                  }
                 },
               ),
             ),

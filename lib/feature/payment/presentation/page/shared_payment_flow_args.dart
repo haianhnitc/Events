@@ -59,9 +59,11 @@ class PaymentItemInfo {
           ? PackageEntity(
               packageId: json['package']['packageId'],
               name: json['package']['name'],
+              packageName: json['package']['name'],
               description: json['package']['description'],
               price: json['package']['price'],
               durationDays: json['package']['durationDays'],
+              duration: json['package']['durationDays'],
             )
           : null,
       portfolio: json['portfolio'] != null
@@ -94,10 +96,10 @@ class PaymentItemInfo {
       if (package != null)
         'package': {
           'packageId': package!.packageId,
-          'name': package!.name,
+          'name': package!.name ?? package!.packageName,
           'description': package!.description,
           'price': package!.price,
-          'durationDays': package!.durationDays,
+          'durationDays': package!.durationDays ?? package!.duration,
         },
       if (portfolio != null)
         'portfolio': {
@@ -113,7 +115,7 @@ class PaymentItemInfo {
 
   String get itemTitle {
     if (event != null) return event!.title ?? 'Sự kiện';
-    if (package != null) return package!.name ?? 'Gói dịch vụ';
+    if (package != null) return package!.name ?? package!.packageName ?? 'Gói dịch vụ';
     if (portfolio != null) return portfolio!.title ?? 'Portfolio';
     return '';
   }
@@ -245,10 +247,10 @@ class SharedPaymentFlowArgs {
     if (package != null) {
       payload['package'] = {
         'packageId': package.packageId,
-        'name': package.name,
+        'name': package.name ?? package.packageName,
         'description': package.description,
         'price': package.price,
-        'durationDays': package.durationDays,
+        'durationDays': package.durationDays ?? package.duration,
       };
     }
     return SharedPaymentFlowArgs(

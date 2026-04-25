@@ -16,6 +16,7 @@ class TransactionEntity {
   final TransactionStatus? status;
   final DateTime? paidAt;
   final DateTime? createdTime;
+  final String? paymentUrl;
 
   TransactionEntity({
     this.transactionId,
@@ -32,6 +33,7 @@ class TransactionEntity {
     this.status,
     this.paidAt,
     this.createdTime,
+    this.paymentUrl,
   });
 
   TransactionEntity copyWith({
@@ -49,6 +51,7 @@ class TransactionEntity {
     TransactionStatus? status,
     DateTime? paidAt,
     DateTime? createdTime,
+    String? paymentUrl,
   }) {
     return TransactionEntity(
       transactionId: transactionId ?? this.transactionId,
@@ -65,6 +68,7 @@ class TransactionEntity {
       status: status ?? this.status,
       paidAt: paidAt ?? this.paidAt,
       createdTime: createdTime ?? this.createdTime,
+      paymentUrl: paymentUrl ?? this.paymentUrl,
     );
   }
 }

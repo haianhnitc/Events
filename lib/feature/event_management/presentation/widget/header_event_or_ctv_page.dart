@@ -15,136 +15,126 @@ class HeaderEventOrCtvPage extends StatelessWidget {
   final ValueChanged<String> onSearchChanged;
   final bool hasActiveFilter;
   final TextEditingController? searchController;
+
+  Color get _primaryColor =>
+      isEvent ? const Color(0xFF06B6D4) : const Color(0xFFDB0025);
+
+  String get _title => isEvent ? 'Sự kiện' : 'Việc làm CTV';
+  String get _subtitle => isEvent
+      ? 'Khám phá và tham gia sự kiện'
+      : 'Tìm cơ hội làm CTV, tích lũy kinh nghiệm';
+  String get _hintText => isEvent ? 'Tìm kiếm sự kiện...' : 'Tìm kiếm việc làm...';
+
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: [
-        Text(
-          isEvent ? 'Sự kiện' : 'Việc làm',
-          style: TextStyle(
-            fontSize: 20,
-            height: 28 / 20,
-            fontWeight: FontWeight.w700,
-            color: isEvent ? const Color(0xff06B6D4) : const Color(0xffDB0025),
-          ),
-        ),
-        Text(
-          isEvent
-              ? 'Khám phá và tham gia sự kiện'
-              : 'Tìm cơ hội làm CTV, tích lũy kinh nghiệm',
-          style: const TextStyle(
-            fontSize: 12,
-            height: 20 / 12,
-            fontWeight: FontWeight.w400,
-            color: Color(0xff67688C),
-          ),
-        ),
-        const SizedBox(height: 16),
-        _buildSearchBar(isEvent),
-        const SizedBox(height: 16),
-        _buildFilterButton(isEvent),
-        const SizedBox(height: 16),
-      ],
-    );
-  }
-
-  _buildSearchBar(bool isEvent) {
     return Container(
-      height: 40,
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+      width: double.infinity,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        color: const Color(0xffF9FAFB),
+        color: _primaryColor,
+        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(20)),
       ),
-      child: Row(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(
-            Icons.search_outlined,
-            color: Color(0xff67688C),
-            size: 20,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: TextField(
-              controller: searchController,
-              onChanged: onSearchChanged,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w400,
-                color: Colors.black,
-              ),
-              maxLines: 1,
-              decoration: InputDecoration(
-                border: InputBorder.none,
-                isDense: true,
-                contentPadding: EdgeInsets.zero,
-                hintText:
-                    isEvent ? 'Tìm kiếm sự kiện...' : 'Tìm kiếm việc làm...',
-                hintStyle: const TextStyle(
-                    color: Color(0xff67688C),
-                    fontSize: 16,
-                    fontWeight: FontWeight.w400),
-              ),
+          Text(
+            _title,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 22,
+              fontWeight: FontWeight.w700,
             ),
-          )
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(child: _buildSearchBar()),
+              const SizedBox(width: 10),
+              _buildFilterButton(),
+            ],
+          ),
         ],
       ),
     );
   }
 
-  _buildFilterButton(bool isEvent) {
-    final activeColor =
-        isEvent ? const Color(0xff06B6D4) : const Color(0xffDB0025);
+  Widget _buildSearchBar() {
+    return Container(
+      height: 42,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.search, color: Colors.grey.shade500, size: 20),
+          const SizedBox(width: 10),
+          Expanded(
+            child: TextField(
+              controller: searchController,
+              onChanged: onSearchChanged,
+              style: const TextStyle(fontSize: 14, color: Colors.black87),
+              maxLines: 1,
+              decoration: InputDecoration(
+                border: InputBorder.none,
+                isDense: true,
+                contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                hintText: _hintText,
+                hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: 14),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
+  Widget _buildFilterButton() {
     return GestureDetector(
       onTap: onFilterTap,
-      child: Container(
-        height: 32,
-        width: hasActiveFilter ? 118 : 89,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        height: 42,
+        padding: const EdgeInsets.symmetric(horizontal: 14),
         decoration: BoxDecoration(
           color: hasActiveFilter
-              ? activeColor.withOpacity(0.12)
-              : const Color(0xffF8F8FC),
-          borderRadius: BorderRadius.circular(16),
+              ? Colors.white.withValues(alpha: 0.2)
+              : Colors.white.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            width: 1.71,
-            color: hasActiveFilter
-                ? activeColor
-                : const Color(0xff273143).withOpacity(0.1),
+            color: Colors.white.withValues(alpha: 0.4),
+            width: 1,
           ),
         ),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
               Icons.tune_outlined,
-              size: 20,
-              color: hasActiveFilter ? activeColor : const Color(0xff273143),
+              size: 18,
+              color: Colors.white,
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 6),
             Text(
-              hasActiveFilter ? 'Đang lọc' : 'Bộ lọc',
-              style: TextStyle(
-                fontSize: 14,
-                height: 20 / 14,
-                fontWeight: FontWeight.w500,
-                color: hasActiveFilter ? activeColor : const Color(0xff273143),
+              hasActiveFilter ? 'Lọc' : 'Bộ lọc',
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
               ),
             ),
             if (hasActiveFilter) ...[
               const SizedBox(width: 6),
               Container(
-                width: 7,
-                height: 7,
-                decoration: BoxDecoration(
-                  color: activeColor,
+                width: 8,
+                height: 8,
+                decoration: const BoxDecoration(
+                  color: Colors.white,
                   shape: BoxShape.circle,
                 ),
               ),
-            ]
+            ],
           ],
         ),
       ),

@@ -5,28 +5,88 @@ part 'portfolio_event_model.freezed.dart';
 part 'portfolio_event_model.g.dart';
 
 @freezed
-class PortfolioEventModel with _$PortfolioEventModel {
-  const factory PortfolioEventModel({
-    int? portfolioId,
+class PortfolioItemModel with _$PortfolioItemModel {
+  const factory PortfolioItemModel({
+    int? portfolioItemId,
     int? eventId,
-  }) = _PortfolioEventModel;
+    String? eventTitle,
+    String? eventBanner,
+    DateTime? eventStartTime,
+    DateTime? eventEndTime,
+    String? eventStatus,
+    String? participantType,
+    String? participantStatus,
+    bool? hasCheckIn,
+    DateTime? checkInTime,
+    bool? hasFeedback,
+    DateTime? feedbackSubmittedTime,
+    String? certificateName,
+    int? youthUnionPoints,
+    int? coinReward,
+    int? applicationId,
+    String? displayTitle,
+    String? displayRole,
+    String? displayNote,
+    int? displayOrder,
+    DateTime? createdTime,
+  }) = _PortfolioItemModel;
 
-  factory PortfolioEventModel.fromJson(Map<String, dynamic> json) =>
-      _$PortfolioEventModelFromJson(json);
+  factory PortfolioItemModel.fromJson(Map<String, dynamic> json) =>
+      _$PortfolioItemModelFromJson(json);
 
-  factory PortfolioEventModel.fromEntity(PortfolioEventEntity entity) {
-    return PortfolioEventModel(
-      portfolioId: entity.portfolioId,
+  factory PortfolioItemModel.fromEntity(PortfolioEventEntity entity) {
+    return PortfolioItemModel(
+      portfolioItemId: entity.portfolioItemId,
       eventId: entity.eventId,
+      eventTitle: entity.eventTitle,
+      eventBanner: entity.eventBanner,
+      eventStartTime: entity.eventStartTime,
+      eventEndTime: entity.eventEndTime,
+      eventStatus: entity.eventStatus,
+      participantType: entity.participantType,
+      participantStatus: entity.participantStatus,
+      hasCheckIn: entity.hasCheckIn,
+      checkInTime: entity.checkInTime,
+      hasFeedback: entity.hasFeedback,
+      feedbackSubmittedTime: entity.feedbackSubmittedTime,
+      certificateName: entity.certificateName,
+      youthUnionPoints: entity.youthUnionPoints,
+      coinReward: entity.coinReward,
+      applicationId: entity.applicationId,
+      displayTitle: entity.displayTitle,
+      displayRole: entity.displayRole,
+      displayNote: entity.displayNote,
+      displayOrder: entity.displayOrder,
+      createdTime: entity.createdTime,
     );
   }
 }
 
-extension PortfolioEventModelExtension on PortfolioEventModel {
+extension PortfolioItemModelExtension on PortfolioItemModel {
   PortfolioEventEntity toEntity() {
     return PortfolioEventEntity(
-      portfolioId: portfolioId,
+      portfolioItemId: portfolioItemId,
       eventId: eventId,
+      eventTitle: eventTitle,
+      eventBanner: eventBanner,
+      eventStartTime: eventStartTime,
+      eventEndTime: eventEndTime,
+      eventStatus: eventStatus,
+      participantType: participantType,
+      participantStatus: participantStatus,
+      hasCheckIn: hasCheckIn,
+      checkInTime: checkInTime,
+      hasFeedback: hasFeedback,
+      feedbackSubmittedTime: feedbackSubmittedTime,
+      certificateName: certificateName,
+      youthUnionPoints: youthUnionPoints,
+      coinReward: coinReward,
+      applicationId: applicationId,
+      displayTitle: displayTitle,
+      displayRole: displayRole,
+      displayNote: displayNote,
+      displayOrder: displayOrder,
+      createdTime: createdTime,
     );
   }
 }

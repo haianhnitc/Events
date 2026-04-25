@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:events_app/api_template/services/failure.dart';
 import 'package:events_app/dependency_injection/injection.dart';
 import 'package:events_app/feature/common/domain/enum/app_enum.dart';
+import 'package:events_app/feature/common/presentation/controller/category_controller.dart';
 import 'package:events_app/feature/common/presentation/controller/filter_selection_controller.dart';
 import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
 import 'package:events_app/feature/event_management/domain/entity/event_summary_entity.dart';
@@ -32,6 +33,8 @@ class CtvController extends GetxController
   late final CreateStaffApplicationUsecase _createStaffApplicationUsecase;
   late final GetEventsUsecase _getEventsUsecase;
 
+  CategoryController get _categoryController => Get.find<CategoryController>();
+
   final List<CtvRecruitmentEntity> _allRecruitments = [];
   final List<CtvRecruitmentEntity> _filteredRecruitments = <CtvRecruitmentEntity>[];
   final int _pageSize = 20;
@@ -57,6 +60,16 @@ class CtvController extends GetxController
   void onInit() {
     super.onInit();
     loadRecruitments();
+    _watchCategories();
+  }
+
+  void _watchCategories() {
+    ever(_categoryController.categories, (_) => _reapplyFiltersIfReady());
+  }
+
+  void _reapplyFiltersIfReady() {
+    if (!_categoryController.hasLoaded.value) return;
+    _applyFiltersAndSync();
   }
 
   Future<void> loadRecruitments({bool refresh = false}) async {
@@ -204,6 +217,7 @@ class CtvController extends GetxController
             item,
             selectedFilters,
             relatedEvent,
+            allCategories: _categoryController.categories.toList(),
           );
           final matchesKeyword = query.isEmpty ||
               (item.title ?? '').toLowerCase().contains(query) ||
@@ -256,6 +270,7 @@ class CtvController extends GetxController
     required Map<int, String> textAnswers,
     required Map<int, int?> singleChoiceAnswers,
     required Map<int, Set<int>> multiChoiceAnswers,
+    Map<int, String> ratingAnswers = const {},
   }) async {
     final recruitmentItem =
         _allRecruitments.where((r) => r.ctvRecruitmentId == ctvRecruitmentId).firstOrNull;
@@ -303,6 +318,15 @@ class CtvController extends GetxController
             answers.add(AnswerItem(
               questionId: qId,
               selectedOptionIds: selectedIds.toList(),
+            ));
+          }
+          break;
+        case RequirementQuestionType.rating:
+          final rating = ratingAnswers[qId];
+          if (rating != null && rating > 0) {
+            answers.add(AnswerItem(
+              questionId: qId,
+              answerText: rating,
             ));
           }
           break;

@@ -4,13 +4,13 @@ import 'package:events_app/feature/event_management/presentation/controller/even
 import 'package:events_app/feature/event_management/presentation/page/ctv_detail_page.dart';
 import 'package:events_app/feature/event_management/presentation/page/event_detail_page.dart';
 import 'package:events_app/feature/common/presentation/controller/filter_selection_controller.dart';
+import 'package:events_app/feature/common/presentation/controller/category_controller.dart';
 import 'package:events_app/feature/common/presentation/widget/event_filter_bottom_sheet.dart';
 import 'package:events_app/feature/event_management/presentation/widget/event_or_ctv_list.dart';
 import 'package:events_app/feature/event_management/presentation/widget/header_event_or_ctv_page.dart';
 import 'package:events_app/feature/recruitment/presentation/controller/ctv_controller.dart';
 import 'package:events_app/feature/recruitment/domain/entity/ctv_recruitment_entity.dart';
 import 'package:events_app/feature/recruitment/presentation/widget/ctv_apply_bottom_sheet.dart';
-import 'package:events_app/data_mock/category_mock.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -24,8 +24,9 @@ class EventOrCtvPage extends StatefulWidget {
 }
 
 class _EventOrCtvPageState extends State<EventOrCtvPage> {
-  final eventController = Get.put(EventController());
-  final ctvController = Get.put(CtvController());
+  EventController get eventController => Get.find<EventController>();
+  CtvController get ctvController => Get.find<CtvController>();
+  CategoryController get categoryController => Get.find<CategoryController>();
   TextEditingController? _searchController;
   late final ScrollController _scrollController;
   Timer? _searchDebounceTimer;
@@ -40,6 +41,10 @@ class _EventOrCtvPageState extends State<EventOrCtvPage> {
   @override
   void initState() {
     super.initState();
+    Get.lazyPut(() => CategoryController());
+    Get.lazyPut(() => EventController());
+    Get.lazyPut(() => CtvController());
+    categoryController.loadCategories();
     _scrollController = ScrollController()..addListener(_handleScroll);
   }
 
@@ -95,48 +100,18 @@ class _EventOrCtvPageState extends State<EventOrCtvPage> {
     final selectedCtvRecruitment = ctvController.selectedRecruitment.value;
 
     if (widget.isEvent && selectedEvent != null) {
-      return Container(
-        color: Colors.white,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            TextButton.icon(
-              onPressed: eventController.closeEventDetail,
-              icon: const Icon(Icons.arrow_back),
-              label: const Text('Quay lại'),
-            ),
-            Expanded(
-              child: EventDetailPage(
-                key: ValueKey('event_detail_${selectedEvent.eventId}'),
-                eventId: selectedEvent.eventId,
-              ),
-            ),
-          ],
-        ),
+      return EventDetailPage(
+        key: ValueKey('event_detail_${selectedEvent.eventId}'),
+        eventId: selectedEvent.eventId,
       );
     }
 
     if (!widget.isEvent && selectedCtvRecruitment != null) {
-      return Container(
-        color: Colors.white,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            TextButton.icon(
-              onPressed: ctvController.closeCtvDetail,
-              icon: const Icon(Icons.arrow_back),
-              label: const Text('Quay lại'),
-            ),
-            Expanded(
-              child: CtvDetailPage(
-                key: ValueKey(
-                  'ctv_detail_${selectedCtvRecruitment.ctvRecruitmentId}',
-                ),
-                ctvRecruitmentId: selectedCtvRecruitment.ctvRecruitmentId,
-              ),
-            ),
-          ],
+      return CtvDetailPage(
+        key: ValueKey(
+          'ctv_detail_${selectedCtvRecruitment.ctvRecruitmentId}',
         ),
+        ctvRecruitmentId: selectedCtvRecruitment.ctvRecruitmentId,
       );
     }
 
@@ -144,15 +119,13 @@ class _EventOrCtvPageState extends State<EventOrCtvPage> {
   }
 
   Widget _buildListContent(BuildContext context) {
-    final viewportHeight = MediaQuery.sizeOf(context).height;
     final hasActiveFilter = widget.isEvent
         ? _hasActiveFilters(eventController.selectedFilters)
         : _hasActiveFilters(ctvController.selectedFilters);
 
-    return SingleChildScrollView(
-      child: Container(
-        color: Colors.white,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+    return Scaffold(
+      backgroundColor: const Color(0xFFF4F6F8),
+      body: SafeArea(
         child: Column(
           children: [
             HeaderEventOrCtvPage(
@@ -162,8 +135,7 @@ class _EventOrCtvPageState extends State<EventOrCtvPage> {
               onSearchChanged: _handleSearchChanged,
               searchController: _effectiveSearchController,
             ),
-            SizedBox(
-              height: viewportHeight * 0.6,
+            Expanded(
               child: Obx(
                 () {
                   final eventItems = eventController.events.toList();
@@ -197,7 +169,6 @@ class _EventOrCtvPageState extends State<EventOrCtvPage> {
                 },
               ),
             ),
-            const SizedBox(height: 24)
           ],
         ),
       ),
@@ -237,7 +208,7 @@ class _EventOrCtvPageState extends State<EventOrCtvPage> {
       backgroundColor: Colors.transparent,
       builder: (context) => EventFilterBottomSheet(
         controller: filterController,
-        categories: categoriesMock,
+        categories: categoryController.categories.toList(),
         isEvent: widget.isEvent,
       ),
     );

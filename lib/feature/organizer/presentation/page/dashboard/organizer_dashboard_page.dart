@@ -129,33 +129,39 @@ class _OrganizerDashboardPageState extends State<OrganizerDashboardPage> {
                   ),
                 ),
                 IconButton(
-                  onPressed: () {
-                    _dashboardCtrl.refreshDashboard();
-                    _eventCtrl.refreshEvents();
-                  },
+                  onPressed: () => Get.toNamed('/organizer-profile'),
                   icon: const Icon(Icons.notifications_outlined, color: Colors.white),
                 ),
               ],
             ),
             const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Row(
-                children: [
-                  Icon(Icons.analytics_outlined, color: Colors.white, size: 20),
-                  SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      'Tổng quan tháng này',
-                      style: TextStyle(color: Colors.white, fontSize: 13),
+            GestureDetector(
+              onTap: () {
+                if (_eventCtrl.events.isNotEmpty && _eventCtrl.events.first.eventId != null) {
+                  Get.to(() => OrganizerEventStatisticsPage(
+                    eventId: _eventCtrl.events.first.eventId!,
+                  ));
+                }
+              },
+              child: Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.analytics_outlined, color: Colors.white, size: 20),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'Tổng quan tháng này',
+                        style: TextStyle(color: Colors.white, fontSize: 13),
+                      ),
                     ),
-                  ),
-                  Icon(Icons.arrow_forward_ios, color: Colors.white70, size: 14),
-                ],
+                    Icon(Icons.arrow_forward_ios, color: Colors.white70, size: 14),
+                  ],
+                ),
               ),
             ),
           ],
@@ -355,6 +361,7 @@ class _OrganizerDashboardPageState extends State<OrganizerDashboardPage> {
               return OrganizerEmptyState(
                 message: 'Chưa có sự kiện nào',
                 icon: Icons.event_busy,
+                compact: true,
               );
             }
             return Column(

@@ -15,7 +15,8 @@ class AvatarUploadWidget extends StatefulWidget {
   final OnAvatarUploadSuccess? onSuccess;
   final FileType fileType;
   final double radius;
-  final bool enabled;
+  final bool showCameraIcon;
+  final VoidCallback? onTap;
 
   const AvatarUploadWidget({
     super.key,
@@ -23,7 +24,8 @@ class AvatarUploadWidget extends StatefulWidget {
     this.onSuccess,
     this.fileType = FileType.avatar,
     this.radius = 44,
-    this.enabled = true,
+    this.showCameraIcon = true,
+    this.onTap,
   });
 
   @override
@@ -35,7 +37,12 @@ class _AvatarUploadWidgetState extends State<AvatarUploadWidget> {
   bool _isUploading = false;
 
   Future<void> _pickAndUpload() async {
-    if (!widget.enabled || _isUploading) return;
+    if (_isUploading) return;
+
+    if (widget.onTap != null) {
+      widget.onTap?.call();
+      return;
+    }
 
     final result = await _picker.pickSingleImage();
     if (result == null) return;
@@ -79,48 +86,52 @@ class _AvatarUploadWidgetState extends State<AvatarUploadWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: _pickAndUpload,
-      child: Stack(
-        children: [
-          _buildAvatar(),
-          if (_isUploading)
-            Positioned.fill(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.black26,
-                  shape: BoxShape.circle,
-                ),
-                child: const Center(
-                  child: SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
-                    ),
+    return Stack(
+      children: [
+        GestureDetector(
+          onTap: _pickAndUpload,
+          child: _buildAvatar(),
+        ),
+        if (_isUploading)
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.black26,
+                shape: BoxShape.circle,
+              ),
+              child: const Center(
+                child: SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
                   ),
                 ),
               ),
             ),
+          ),
+        if (widget.showCameraIcon)
           Positioned(
             bottom: 0,
             right: 0,
-            child: Container(
-              padding: const EdgeInsets.all(4),
-              decoration: const BoxDecoration(
-                color: Color(0xff06B6D4),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.camera_alt,
-                size: 14,
-                color: Colors.white,
+            child: GestureDetector(
+              onTap: _pickAndUpload,
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: const BoxDecoration(
+                  color: Color(0xff06B6D4),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.camera_alt,
+                  size: 14,
+                  color: Colors.white,
+                ),
               ),
             ),
           ),
-        ],
-      ),
+      ],
     );
   }
 

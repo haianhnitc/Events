@@ -8,6 +8,9 @@ part 'event_category_option_model.g.dart';
 class EventCategoryOptionModel with _$EventCategoryOptionModel {
   const factory EventCategoryOptionModel({
     int? categoryOptionId,
+    int? categoryId,
+    String? categoryName,
+    String? value,
     int? eventId,
   }) = _EventCategoryOptionModel;
 
@@ -18,6 +21,9 @@ class EventCategoryOptionModel with _$EventCategoryOptionModel {
       EventCategoryOptionEntity entity) {
     return EventCategoryOptionModel(
       categoryOptionId: entity.categoryOptionId,
+      categoryId: entity.categoryId,
+      categoryName: entity.categoryName,
+      value: entity.value,
       eventId: entity.eventId,
     );
   }
@@ -27,6 +33,9 @@ extension EventCategoryOptionModelExtension on EventCategoryOptionModel {
   EventCategoryOptionEntity toEntity() {
     return EventCategoryOptionEntity(
       categoryOptionId: categoryOptionId,
+      categoryId: categoryId,
+      categoryName: categoryName,
+      value: value,
       eventId: eventId,
     );
   }

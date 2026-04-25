@@ -2,6 +2,8 @@ import 'package:events_app/authentication/presentation/controller/auth_controlle
 import 'package:events_app/common/presentation/widget/avatar_upload_widget.dart';
 import 'package:events_app/common/presentation/widget/custom_text_field.dart';
 import 'package:events_app/feature/common/domain/enum/app_enum.dart';
+import 'package:events_app/feature/user_management/domain/entity/user_entity.dart';
+import 'package:events_app/feature/user_management/domain/entity/organization_profile_entity.dart';
 import 'package:events_app/feature/user_management/presentation/controller/my_profile_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -44,7 +46,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
           'Chỉnh sửa hồ sơ',
           style: TextStyle(
             color: Color(0xff273143),
-            fontSize: 17,
+            fontSize: 20,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -54,33 +56,23 @@ class _EditProfilePageState extends State<EditProfilePage> {
         if (_controller.isLoading.value) {
           return const Center(child: CircularProgressIndicator());
         }
-
         final user = AuthController.to.currentUser.value;
         if (user == null) {
-          return const Center(child: Text('Không tìm thấy thông tin người dùng.'));
+          return const Center(
+              child: Text('Không tìm thấy thông tin người dùng.'));
         }
-
-        final isOrganization = user.role == UserRole.organization;
-
         return SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Form(
             key: _controller.formKey,
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildAvatarSection(),
-                const SizedBox(height: 20),
-                if (isOrganization) ...[
-                  _buildSectionTitle('Thông tin tổ chức'),
-                  const SizedBox(height: 12),
-                  ..._buildOrganizationFields(),
-                ] else ...[
-                  _buildSectionTitle('Thông tin cá nhân'),
-                  const SizedBox(height: 12),
-                  ..._buildUserFields(),
-                ],
-                const SizedBox(height: 24),
+                _buildAvatarSection(user),
+                const SizedBox(height: 16),
+                _buildInfoSection(user),
+                const SizedBox(height: 16),
+                _buildEditableFieldsSection(user),
+                const SizedBox(height: 16),
                 _buildSubmitButton(),
                 const SizedBox(height: 24),
               ],
@@ -91,41 +83,157 @@ class _EditProfilePageState extends State<EditProfilePage> {
     );
   }
 
-  Widget _buildSectionTitle(String title) {
-    return Text(
-      title,
-      style: const TextStyle(
-        fontSize: 14,
-        fontWeight: FontWeight.w700,
-        color: Color(0xff273143),
+  Widget _buildAvatarSection(UserEntity user) {
+    final isOrg = user.role == UserRole.organization;
+    final previewUrl =
+        isOrg ? user.organizationProfile?.logoUrl : user.userProfile?.avatarUrl;
+
+    return Align(
+      alignment: Alignment.center,
+      child: Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: const [
+            BoxShadow(
+                color: Color(0x0F000000), offset: Offset(0, 2), blurRadius: 8),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AvatarUploadWidget(
+              previewUrl: previewUrl,
+              fileType: isOrg ? FileType.organizationLogo : FileType.avatar,
+              radius: 52,
+              onSuccess: (fileId, url) {
+                if (isOrg) {
+                  _controller.logoFileId.value = fileId;
+                  _controller.logoPreviewUrl.value = url;
+                } else {
+                  _controller.onAvatarUploaded(fileId, url);
+                }
+              },
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Nhấn vào biểu tượng máy ảnh để đổi ${isOrg ? 'logo' : 'ảnh đại diện'}',
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 12, color: Color(0xff67688C)),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildAvatarSection() {
+  Widget _buildInfoSection(UserEntity user) {
+    final isOrg = user.role == UserRole.organization;
+
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: const [
-          BoxShadow(color: Color(0x0F000000), offset: Offset(0, 2), blurRadius: 8),
+          BoxShadow(
+              color: Color(0x0F000000), offset: Offset(0, 2), blurRadius: 8),
         ],
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Obx(() => AvatarUploadWidget(
-                previewUrl: _controller.avatarPreviewUrl.value,
-                fileType: FileType.avatar,
-                radius: 44,
-                onSuccess: (fileId, url) => _controller.onAvatarUploaded(fileId, url),
-              )),
-          const SizedBox(height: 10),
-          const Text(
-            'Nhấn vào biểu tượng máy ảnh để đổi ảnh',
-            style: TextStyle(
-              fontSize: 12,
-              color: Color(0xff67688C),
+          _buildSectionHeader(
+            isOrg ? 'Thông tin tổ chức' : 'Thông tin cá nhân',
+            Icons.person_outlined,
+          ),
+          const SizedBox(height: 12),
+          Container(height: 1, color: const Color(0x0F273143)),
+          const SizedBox(height: 12),
+          if (isOrg)
+            _buildOrgInfoList(user.organizationProfile)
+          else
+            _buildUserInfoList(user),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildUserInfoList(UserEntity user) {
+    final profile = user.userProfile;
+    return Column(
+      children: [
+        _infoRow('Họ tên', profile?.fullName ?? '—', isEditable: true),
+        _infoRow('Giới tính', profile?.gender ?? '—', isEditable: true),
+        _infoRow('Ngày sinh', _formatBirthDate(profile?.dateOfBirth),
+            isEditable: true),
+        const SizedBox(height: 12),
+        Container(height: 1, color: const Color(0x0F273143)),
+        const SizedBox(height: 12),
+        _infoRow('Email', user.email),
+        _infoRow('Mã sinh viên', profile?.studentCode ?? '—'),
+        _infoRow('Trường đại học', profile?.university ?? '—'),
+        _infoRow('Khoa', profile?.faculty ?? '—'),
+        _infoRow('Ngành học', profile?.major ?? '—'),
+      ],
+    );
+  }
+
+  Widget _buildOrgInfoList(OrganizationProfileEntity? org) {
+    return Column(
+      children: [
+        _infoRow('Địa chỉ trụ sở', org?.address ?? '—', isEditable: true),
+        _infoRow('Mô tả', org?.description ?? '—',
+            isEditable: true, maxLines: 3),
+        const SizedBox(height: 12),
+        Container(height: 1, color: const Color(0x0F273143)),
+        const SizedBox(height: 12),
+        _infoRow('Tên tổ chức', org?.organizationName ?? '—'),
+        _infoRow('Loại hình', _orgTypeLabel(org?.organizationType)),
+        _infoRow(
+            'Trạng thái xác minh', _verificationLabel(org?.verificationStatus)),
+      ],
+    );
+  }
+
+  Widget _infoRow(String label, String value,
+      {bool isEditable = false, int maxLines = 1}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 130,
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    label,
+                    style:
+                        const TextStyle(fontSize: 13, color: Color(0xff67688C)),
+                  ),
+                ),
+                if (isEditable)
+                  const Icon(Icons.edit, size: 12, color: Color(0xff06B6D4)),
+                if (isEditable) const SizedBox(width: 4),
+              ],
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value == '—' ? 'Chưa cập nhật' : value,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: value == '—'
+                    ? const Color(0xff67688C)
+                    : const Color(0xff273143),
+              ),
+              maxLines: maxLines,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],
@@ -133,91 +241,95 @@ class _EditProfilePageState extends State<EditProfilePage> {
     );
   }
 
-  List<Widget> _buildUserFields() {
-    return [
-      _buildCard([
-        CustomTextField(
-          controller: _controller.fullNameController,
-          labelText: 'Họ tên',
-          hintText: 'Nhập họ tên của bạn',
-          prefixIcon: const Icon(Icons.person_outline,
-              color: Color(0xff64748B), size: 20),
-          validator: _controller.validateFullName,
-          textInputAction: TextInputAction.next,
-        ),
-        const SizedBox(height: 14),
-        _buildGenderDropdown(),
-        const SizedBox(height: 14),
-        _buildDatePicker(),
-      ]),
-    ];
-  }
-
-  List<Widget> _buildOrganizationFields() {
-    return [
-      _buildCard([
-        CustomTextField(
-          controller: _controller.addressController,
-          labelText: 'Địa chỉ trụ sở (tùy chọn)',
-          hintText: 'Nhập địa chỉ trụ sở',
-          prefixIcon: const Icon(Icons.location_on_outlined,
-              color: Color(0xff64748B), size: 20),
-          validator: _controller.validateAddress,
-          textInputAction: TextInputAction.next,
-          maxLines: 2,
-        ),
-        const SizedBox(height: 14),
-        _buildLogoUploadSection(),
-        const SizedBox(height: 14),
-        CustomTextField(
-          controller: _controller.descriptionController,
-          labelText: 'Mô tả (tùy chọn)',
-          hintText: 'Nhập mô tả về tổ chức',
-          prefixIcon: const Icon(Icons.description_outlined,
-              color: Color(0xff64748B), size: 20),
-          validator: _controller.validateDescription,
-          textInputAction: TextInputAction.done,
-          maxLines: 4,
-        ),
-      ]),
-    ];
-  }
-
-  Widget _buildLogoUploadSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildSectionHeader(String title, IconData icon) {
+    return Row(
       children: [
-        const Text(
-          'Logo tổ chức',
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: Color(0xff64748B),
+        Icon(icon, size: 18, color: const Color(0xff06B6D4)),
+        const SizedBox(width: 8),
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+            color: Color(0xff273143),
           ),
         ),
-        const SizedBox(height: 8),
-        Obx(() => AvatarUploadWidget(
-              previewUrl: _controller.logoPreviewUrl.value,
-              fileType: FileType.organizationLogo,
-              radius: 40,
-              onSuccess: (fileId, url) => _controller.onLogoUploaded(fileId, url),
-            )),
       ],
     );
   }
 
-  Widget _buildCard(List<Widget> children) {
+  Widget _buildEditableFieldsSection(UserEntity user) {
+    final isOrg = user.role == UserRole.organization;
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: const [
-          BoxShadow(color: Color(0x0F000000), offset: Offset(0, 2), blurRadius: 8),
+          BoxShadow(
+              color: Color(0x0F000000), offset: Offset(0, 2), blurRadius: 8),
         ],
       ),
-      child: Column(children: children),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildSectionHeader(
+              'Thông tin có thể chỉnh sửa', Icons.edit_outlined),
+          const SizedBox(height: 12),
+          Container(height: 1, color: const Color(0x0F273143)),
+          const SizedBox(height: 12),
+          if (isOrg)
+            ..._buildOrgEditableFields()
+          else
+            ..._buildUserEditableFields(),
+        ],
+      ),
     );
+  }
+
+  List<Widget> _buildUserEditableFields() {
+    return [
+      CustomTextField(
+        controller: _controller.fullNameController,
+        labelText: 'Họ tên',
+        hintText: 'Nhập họ tên của bạn',
+        prefixIcon: const Icon(Icons.person_outline,
+            color: Color(0xff64748B), size: 20),
+        validator: _controller.validateFullName,
+        textInputAction: TextInputAction.next,
+      ),
+      const SizedBox(height: 14),
+      _buildGenderDropdown(),
+      const SizedBox(height: 14),
+      _buildDatePicker(),
+    ];
+  }
+
+  List<Widget> _buildOrgEditableFields() {
+    return [
+      CustomTextField(
+        controller: _controller.addressController,
+        labelText: 'Địa chỉ trụ sở',
+        hintText: 'Nhập địa chỉ trụ sở',
+        prefixIcon: const Icon(Icons.location_on_outlined,
+            color: Color(0xff64748B), size: 20),
+        validator: _controller.validateAddress,
+        textInputAction: TextInputAction.next,
+        maxLines: 2,
+      ),
+      const SizedBox(height: 14),
+      CustomTextField(
+        controller: _controller.descriptionController,
+        labelText: 'Mô tả',
+        hintText: 'Nhập mô tả về tổ chức',
+        prefixIcon: const Icon(Icons.description_outlined,
+            color: Color(0xff64748B), size: 20),
+        validator: _controller.validateDescription,
+        textInputAction: TextInputAction.done,
+        maxLines: 4,
+      ),
+    ];
   }
 
   Widget _buildGenderDropdown() {
@@ -249,10 +361,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 color: Color(0xff64748B), size: 18),
             filled: true,
             fillColor: Colors.grey.shade50,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 16,
-            ),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
               borderSide: BorderSide(color: Colors.grey.shade300),
@@ -282,7 +392,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
     final now = DateTime.now();
     final picked = await showDatePicker(
       context: context,
-      initialDate: _controller.selectedBirthDate.value ?? DateTime(now.year - 20),
+      initialDate:
+          _controller.selectedBirthDate.value ?? DateTime(now.year - 20),
       firstDate: DateTime(1950),
       lastDate: now,
       builder: (context, child) {
@@ -316,9 +427,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
             backgroundColor: const Color(0xff06B6D4),
             disabledBackgroundColor: Colors.grey.shade300,
             foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             elevation: 0,
           ),
           child: isLoading
@@ -332,13 +442,41 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 )
               : const Text(
                   'Lưu thay đổi',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
                 ),
         ),
       );
     });
+  }
+
+  String _formatBirthDate(DateTime? date) {
+    if (date == null) return '—';
+    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+  }
+
+  String _orgTypeLabel(OrganizationType? type) {
+    switch (type) {
+      case OrganizationType.university:
+        return 'Trường đại học';
+      case OrganizationType.club:
+        return 'Câu lạc bộ';
+      case OrganizationType.company:
+        return 'Công ty';
+      default:
+        return '—';
+    }
+  }
+
+  String _verificationLabel(VerificationStatus? status) {
+    switch (status) {
+      case VerificationStatus.verified:
+        return 'Đã xác minh';
+      case VerificationStatus.pending:
+        return 'Đang chờ';
+      case VerificationStatus.rejected:
+        return 'Bị từ chối';
+      default:
+        return '—';
+    }
   }
 }

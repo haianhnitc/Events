@@ -168,9 +168,6 @@ class _OrganizerAttendanceOverviewPageState
     );
   }
 
-  // ============================================================
-  // TAB 0: SUMMARY
-  // ============================================================
   Widget _buildSummaryTab() {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -596,9 +593,6 @@ class _OrganizerAttendanceOverviewPageState
     );
   }
 
-  // ============================================================
-  // TAB 1: TRACKER (real-time)
-  // ============================================================
   Widget _buildTrackerTab() {
     return Obx(() {
       if (_attendanceCtrl.isLoading.value && _attendanceCtrl.attendanceLogs.isEmpty) {

@@ -1,26 +1,22 @@
+import 'package:dartz/dartz.dart';
 import 'package:events_app/api_template/services/failure.dart';
+import 'package:events_app/dependency_injection/injection.dart';
 import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
 import 'package:events_app/feature/news/domain/entity/news_entity.dart';
 import 'package:events_app/feature/news/domain/usecase/news_usecase.dart';
 import 'package:get/get.dart';
-import 'package:mocktail/mocktail.dart';
-
-class MockGetNewsListUsecase extends Mock implements GetNewsListUsecase {}
-
-class FakeGetNewsListParams extends Fake implements GetNewsListParams {}
 
 class NewsPageController extends GetxController {
-  NewsPageController({GetNewsListUsecase? getNewsListUsecase}) {
-    _getNewsListUsecase = getNewsListUsecase ?? MockGetNewsListUsecase();
-  }
+  NewsPageController({GetNewsListUsecase? getNewsListUsecase})
+      : _getNewsListUsecase = getNewsListUsecase ?? networkGetIt<GetNewsListUsecase>();
 
-  late final GetNewsListUsecase _getNewsListUsecase;
+  final GetNewsListUsecase _getNewsListUsecase;
 
   final RxList<NewsEntity> all = <NewsEntity>[].obs;
   final RxString query = ''.obs;
   final RxInt selectedTab = 0.obs;
   final RxSet<int> saved = <int>{}.obs;
-  final RxBool isLoading = true.obs;
+  final RxBool isLoading = false.obs;
 
   final int _pageSize = 20;
   int currentPage = 0;
@@ -129,14 +125,12 @@ class NewsPageController extends GetxController {
 
   void _handleFailure(FailureEntity failure) {
     failure.when(
-      serverFailure: (_, message) =>
-          AppSnackbarUtils.showError('Lỗi', message),
+      serverFailure: (_, message) => AppSnackbarUtils.showError('Lỗi', message),
       dataParsingFailure: () =>
           AppSnackbarUtils.showError('Lỗi', 'Không đọc được dữ liệu'),
       noConnectionFailure: () =>
           AppSnackbarUtils.showError('Lỗi', 'Không có kết nối mạng'),
-      systemFailure: (_, message) =>
-          AppSnackbarUtils.showError('Lỗi', message),
+      systemFailure: (_, message) => AppSnackbarUtils.showError('Lỗi', message),
     );
   }
 }

@@ -56,6 +56,7 @@ class CtvApplySheetController extends GetxController {
   final Map<int, TextEditingController> _textControllers = {};
   final Map<int, int?> _singleChoiceAnswers = {};
   final Map<int, Set<int>> _multiChoiceAnswers = {};
+  final Map<int, int> _ratingAnswers = {};
 
   @override
   void onInit() {
@@ -92,6 +93,8 @@ class CtvApplySheetController extends GetxController {
         _textControllers.putIfAbsent(questionId, () => TextEditingController());
       } else if (question.questionType == RequirementQuestionType.singleChoice) {
         _singleChoiceAnswers.putIfAbsent(questionId, () => null);
+      } else if (question.questionType == RequirementQuestionType.rating) {
+        _ratingAnswers.putIfAbsent(questionId, () => 0);
       } else {
         _multiChoiceAnswers.putIfAbsent(questionId, () => <int>{});
       }
@@ -104,6 +107,18 @@ class CtvApplySheetController extends GetxController {
 
   int? singleChoiceValueFor(int questionId) {
     return _singleChoiceAnswers[questionId];
+  }
+
+  int ratingValueFor(int questionId) {
+    return _ratingAnswers[questionId] ?? 0;
+  }
+
+  void updateRating({
+    required int questionId,
+    required int value,
+  }) {
+    _ratingAnswers[questionId] = value;
+    questions.refresh();
   }
 
   bool isMultiChoiceSelected(int questionId, int optionId) {
@@ -139,6 +154,11 @@ class CtvApplySheetController extends GetxController {
       for (final entry in _textControllers.entries)
         entry.key: entry.value.text.trim(),
     };
+    final ratingAnswers = Map<int, String>.fromEntries(
+      _ratingAnswers.entries
+          .where((e) => e.value > 0)
+          .map((e) => MapEntry(e.key, e.value.toString())),
+    );
 
     try {
       isSubmitting.value = true;
@@ -147,6 +167,7 @@ class CtvApplySheetController extends GetxController {
         textAnswers: textAnswers,
         singleChoiceAnswers: _singleChoiceAnswers,
         multiChoiceAnswers: _multiChoiceAnswers,
+        ratingAnswers: ratingAnswers,
       );
     } finally {
       isSubmitting.value = false;

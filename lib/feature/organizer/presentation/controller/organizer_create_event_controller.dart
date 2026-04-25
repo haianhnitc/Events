@@ -1,6 +1,8 @@
 import 'package:events_app/api_template/services/failure.dart';
 import 'package:events_app/dependency_injection/injection.dart';
+import 'package:events_app/feature/common/domain/entity/category_entity.dart';
 import 'package:events_app/feature/common/domain/enum/app_enum.dart';
+import 'package:events_app/feature/common/domain/usecase/category_usecase.dart';
 import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
 import 'package:events_app/feature/event_management/domain/entity/event_entity.dart';
 import 'package:events_app/feature/organizer/event/domain/usecase/event_params.dart';
@@ -19,6 +21,8 @@ class OrganizerCreateEventController extends GetxController {
       networkGetIt<UpdateOrganizerEventUsecase>();
   GetOrganizerEventByIdUsecase get _getEventByIdUsecase =>
       networkGetIt<GetOrganizerEventByIdUsecase>();
+  GetCategoriesUsecase get _getCategoriesUsecase =>
+      networkGetIt<GetCategoriesUsecase>();
 
   final formKey = GlobalKey<FormState>();
 
@@ -49,6 +53,8 @@ class OrganizerCreateEventController extends GetxController {
   final RxList<int> selectedCategoryOptionIds = <int>[].obs;
   final RxList<FeedbackQuestionCreateParams> feedbackQuestions =
       <FeedbackQuestionCreateParams>[].obs;
+  final RxList<CategoryEntity> categories = <CategoryEntity>[].obs;
+  final RxBool isLoadingCategories = false.obs;
 
   bool get isEditMode => editingEvent.value != null;
 
@@ -123,6 +129,7 @@ class OrganizerCreateEventController extends GetxController {
 
   Future<void> loadEventForEdit(int eventId) async {
     isLoading.value = true;
+    await Future.wait([loadCategories(), loadVenues()]);
     final result = await _getEventByIdUsecase(eventId);
     final eventOrFailure = result.fold(
       (failure) => failure,
@@ -161,6 +168,25 @@ class OrganizerCreateEventController extends GetxController {
       AppSnackbarUtils.showError('Lỗi', 'Không thể tải danh sách địa điểm');
     } finally {
       isLoadingVenues.value = false;
+    }
+  }
+
+  Future<void> loadCategories() async {
+    isLoadingCategories.value = true;
+    try {
+      final result = await _getCategoriesUsecase.call(null);
+      result.fold(
+        (failure) {
+          _handleFailure(failure);
+        },
+        (data) {
+          categories.assignAll(data);
+        },
+      );
+    } catch (e) {
+      AppSnackbarUtils.showError('Lỗi', 'Không thể tải danh mục');
+    } finally {
+      isLoadingCategories.value = false;
     }
   }
 
@@ -375,13 +401,13 @@ class OrganizerCreateEventController extends GetxController {
   void _handleFailure(FailureEntity failure) {
     failure.when(
       serverFailure: (_, message) =>
-          AppSnackbarUtils.showError('Lỗi', message ?? 'Thao tác thất bại'),
+          AppSnackbarUtils.showError('Lỗi', message),
       dataParsingFailure: () =>
           AppSnackbarUtils.showError('Lỗi', 'Không đọc được dữ liệu'),
       noConnectionFailure: () =>
           AppSnackbarUtils.showError('Lỗi', 'Không có kết nối mạng'),
       systemFailure: (_, message) =>
-          AppSnackbarUtils.showError('Lỗi', message ?? 'Lỗi hệ thống'),
+          AppSnackbarUtils.showError('Lỗi', message),
     );
   }
 }

@@ -548,14 +548,6 @@ class ScanQrController extends GetxController with GetTickerProviderStateMixin {
 
   Future<LocationCoords?> _getCurrentLocation() async {
     final result = await _locationService.getCurrentLocation();
-
-    if (result.coords != null) {
-      debugPrint(
-          'ScanQr: Location acquired — lat=${result.coords!.latitude}, lng=${result.coords!.longitude}');
-    } else if (result.error != null) {
-      debugPrint('ScanQr: Location error — ${result.error!.message}');
-    }
-
     return result.coords;
   }
 
@@ -717,6 +709,10 @@ class ScanQrController extends GetxController with GetTickerProviderStateMixin {
       return 'Mã QR không khớp với tài khoản của bạn.';
     }
     if (lower.contains('event qr does not belong')) {
+      // New BE format: "EVENT QR does not belong to this event. QR event: 123, your registration event: 456"
+      if (lower.contains('qr event:') || lower.contains('your registration event:')) {
+        return 'Mã QR không thuộc sự kiện bạn đã đăng ký. Vui lòng quét đúng mã QR của sự kiện.';
+      }
       return 'Mã QR không thuộc sự kiện bạn đã đăng ký.';
     }
     if (lower.contains('latitude') && lower.contains('required') ||

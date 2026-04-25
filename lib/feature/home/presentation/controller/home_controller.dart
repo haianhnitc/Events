@@ -3,22 +3,29 @@ import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
 import 'package:events_app/dependency_injection/injection.dart';
 import 'package:events_app/feature/event_management/domain/entity/event_summary_entity.dart';
 import 'package:events_app/feature/event_management/domain/usecase/get_featured_events_usecase.dart';
+import 'package:events_app/feature/user_management/domain/entity/rank_entity.dart';
+import 'package:events_app/feature/user_management/domain/repository/user_repository.dart';
 import 'package:get/get.dart';
 
 class HomeController extends GetxController {
   HomeController() {
     _getFeaturedEventsUsecase = getIt<GetFeaturedEventsUsecase>();
+    _userRepo = getIt<UserRepository>();
   }
 
   late final GetFeaturedEventsUsecase _getFeaturedEventsUsecase;
+  late final UserRepository _userRepo;
 
   final RxList<EventSummaryEntity> featuredEvents = <EventSummaryEntity>[].obs;
+  final Rx<RankEntity?> userRank = Rx<RankEntity?>(null);
   final RxBool isLoading = true.obs;
+  final RxBool isLoadingRank = true.obs;
 
   @override
   void onInit() {
     super.onInit();
     loadFeaturedEvents();
+    _loadUserRank();
   }
 
   Future<void> loadFeaturedEvents() async {
@@ -36,6 +43,33 @@ class HomeController extends GetxController {
         isLoading.value = false;
       },
     );
+  }
+
+  Future<void> _loadUserRank() async {
+    isLoadingRank.value = true;
+    final userId = _getCurrentUserId();
+    if (userId == null) {
+      isLoadingRank.value = false;
+      return;
+    }
+
+    final result = await _userRepo.getUserRank(userId);
+    result.fold(
+      (failure) => isLoadingRank.value = false,
+      (rank) {
+        userRank.value = rank;
+        isLoadingRank.value = false;
+      },
+    );
+  }
+
+  int? _getCurrentUserId() {
+    try {
+      final authController = Get.find<dynamic>(tag: 'AuthController');
+      return authController.currentUser.value?.userId;
+    } catch (_) {
+      return null;
+    }
   }
 
   void _handleFailure(FailureEntity failure) {

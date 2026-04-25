@@ -2,7 +2,10 @@ import 'package:events_app/authentication/presentation/controller/auth_controlle
 import 'package:events_app/authentication/presentation/widget/terms_privacy_dialog.dart';
 import 'package:events_app/common/presentation/widget/avatar_upload_widget.dart';
 import 'package:events_app/common/presentation/widget/custom_text_field.dart';
+import 'package:events_app/common/utils/upload_helper.dart';
 import 'package:events_app/feature/common/domain/enum/app_enum.dart';
+import 'package:events_app/feature/common/usecase/upload_file_params.dart';
+import 'package:events_app/feature/common/usecase/upload_file_usecase.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -26,26 +29,22 @@ class _RegisterFormState extends State<RegisterForm> {
 
   @override
   Widget build(BuildContext context) {
-    final authController = AuthController.to;
-
-    return Obx(
-      () => Form(
-        key: widget.isStudent
-            ? authController.registerStudentFormKey
-            : authController.registerOrganizerFormKey,
-        child: widget.isStudent
-            ? _buildStudentForm(context, authController)
-            : _buildOrganizerForm(context, authController),
-      ),
+    return Form(
+      key: widget.isStudent
+          ? AuthController.to.registerStudentFormKey
+          : AuthController.to.registerOrganizerFormKey,
+      child: widget.isStudent
+          ? _buildStudentForm(context)
+          : _buildOrganizerForm(context),
     );
   }
 
-  Widget _buildStudentForm(
-      BuildContext context, AuthController authController) {
+  Widget _buildStudentForm(BuildContext context) {
+    final authController = AuthController.to;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _buildAvatarUploadSection(authController),
+        _buildAvatarUploadSection(),
         const SizedBox(height: 14),
         _buildSectionTitle('Thông tin cá nhân'),
         const SizedBox(height: 14),
@@ -59,10 +58,10 @@ class _RegisterFormState extends State<RegisterForm> {
           validator: authController.validateFullName,
         ),
         const SizedBox(height: 14),
-        Row(
+          Row(
           children: [
             Expanded(
-              child: CustomDropdownField<String>(
+              child: Obx(() => CustomDropdownField<String>(
                 value: authController.selectedGender.value,
                 labelText: 'Giới tính',
                 prefixIcon: const Icon(Icons.wc_outlined,
@@ -73,13 +72,23 @@ class _RegisterFormState extends State<RegisterForm> {
                   DropdownMenuItem(value: 'KHAC', child: Text('Khác')),
                 ],
                 onChanged: authController.setSelectedGender,
-              ),
+              )),
             ),
             const SizedBox(width: 10),
             Expanded(
-              child: _buildDateField(context, authController),
+              child: _buildDateField(context),
             ),
           ],
+        ),
+        const SizedBox(height: 14),
+        CustomTextField(
+          controller: authController.registerPhoneController,
+          labelText: 'Số điện thoại',
+          hintText: 'Nhập số điện thoại',
+          keyboardType: TextInputType.phone,
+          textInputAction: TextInputAction.next,
+          prefixIcon: const Icon(Icons.phone_outlined,
+              size: 20, color: Color(0xff94A3B8)),
         ),
         const SizedBox(height: 24),
         _buildSectionTitle('Thông tin học tập'),
@@ -101,6 +110,24 @@ class _RegisterFormState extends State<RegisterForm> {
           prefixIcon: const Icon(Icons.badge_outlined,
               size: 20, color: Color(0xff94A3B8)),
         ),
+        const SizedBox(height: 14),
+        CustomTextField(
+          controller: authController.registerFacultyController,
+          labelText: 'Khoa',
+          hintText: 'VD: Khoa học Máy tính',
+          textInputAction: TextInputAction.next,
+          prefixIcon: const Icon(Icons.account_tree_outlined,
+              size: 20, color: Color(0xff94A3B8)),
+        ),
+        const SizedBox(height: 14),
+        CustomTextField(
+          controller: authController.registerMajorController,
+          labelText: 'Chuyên ngành',
+          hintText: 'VD: Công nghệ Thông tin',
+          textInputAction: TextInputAction.next,
+          prefixIcon: const Icon(Icons.menu_book_outlined,
+              size: 20, color: Color(0xff94A3B8)),
+        ),
         if (!widget.isGoogleRegister) ...[
           const SizedBox(height: 24),
           _buildSectionTitle('Tài khoản'),
@@ -116,7 +143,7 @@ class _RegisterFormState extends State<RegisterForm> {
             validator: authController.validateEmail,
           ),
           const SizedBox(height: 14),
-          CustomTextField(
+          Obx(() => CustomTextField(
             controller: authController.registerPasswordController,
             labelText: 'Mật khẩu',
             hintText: 'Nhập mật khẩu',
@@ -135,9 +162,9 @@ class _RegisterFormState extends State<RegisterForm> {
               ),
             ),
             validator: authController.validateRegisterPassword,
-          ),
+          )),
           const SizedBox(height: 14),
-          CustomTextField(
+          Obx(() => CustomTextField(
             controller: authController.registerConfirmPasswordController,
             labelText: 'Xác nhận mật khẩu',
             hintText: 'Nhập lại mật khẩu',
@@ -156,18 +183,18 @@ class _RegisterFormState extends State<RegisterForm> {
               ),
             ),
             validator: authController.validateRegisterConfirmPassword,
-          ),
+          )),
         ],
         const SizedBox(height: 20),
         _buildTermsSection(),
         const SizedBox(height: 20),
-        _buildSubmitButton(authController),
+        _buildSubmitButton(),
       ],
     );
   }
 
-  Widget _buildOrganizerForm(
-      BuildContext context, AuthController authController) {
+  Widget _buildOrganizerForm(BuildContext context) {
+    final authController = AuthController.to;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -183,7 +210,7 @@ class _RegisterFormState extends State<RegisterForm> {
           validator: authController.validateOrganizationName,
         ),
         const SizedBox(height: 14),
-        CustomDropdownField<String>(
+        Obx(() => CustomDropdownField<String>(
           value: authController.organizationType.value.name,
           labelText: 'Loại tổ chức',
           prefixIcon: const Icon(Icons.category_outlined,
@@ -203,9 +230,9 @@ class _RegisterFormState extends State<RegisterForm> {
               authController.setOrganizationType(type);
             }
           },
-        ),
+        )),
         const SizedBox(height: 14),
-        _buildLogoUploadSection(authController),
+        _buildLogoUploadSection(),
         const SizedBox(height: 14),
         CustomTextField(
           controller: authController.organizationAddressController,
@@ -225,71 +252,73 @@ class _RegisterFormState extends State<RegisterForm> {
           prefixIcon: const Icon(Icons.description_outlined,
               size: 20, color: Color(0xff94A3B8)),
         ),
-        const SizedBox(height: 24),
-        _buildSectionTitle('Tài khoản'),
-        const SizedBox(height: 14),
-        CustomTextField(
-          controller: authController.registerEmailController,
-          labelText: 'Email',
-          hintText: 'Email đăng nhập',
-          keyboardType: TextInputType.emailAddress,
-          textInputAction: TextInputAction.next,
-          prefixIcon: const Icon(Icons.mail_outline,
-              size: 20, color: Color(0xff94A3B8)),
-          validator: authController.validateEmail,
-        ),
         const SizedBox(height: 14),
         CustomTextField(
           controller: authController.registerPhoneController,
-          labelText: 'Số điện thoại',
+          labelText: 'Số điện thoại liên hệ',
           hintText: 'Số điện thoại liên hệ',
           keyboardType: TextInputType.phone,
           textInputAction: TextInputAction.next,
           prefixIcon: const Icon(Icons.phone_outlined,
               size: 20, color: Color(0xff94A3B8)),
         ),
-        const SizedBox(height: 14),
-        CustomTextField(
-          controller: authController.registerPasswordController,
-          labelText: 'Mật khẩu',
-          hintText: 'Nhập mật khẩu',
-          obscureText: authController.registerObscurePassword.value,
-          textInputAction: TextInputAction.next,
-          prefixIcon: const Icon(Icons.lock_outline,
-              size: 20, color: Color(0xff94A3B8)),
-          suffixIcon: IconButton(
-            onPressed: authController.toggleRegisterPasswordVisibility,
-            icon: Icon(
-              authController.registerObscurePassword.value
-                  ? Icons.visibility_off_outlined
-                  : Icons.visibility_outlined,
-              size: 20,
-              color: const Color(0xff94A3B8),
-            ),
+        if (!widget.isGoogleRegister) ...[
+          const SizedBox(height: 24),
+          _buildSectionTitle('Tài khoản'),
+          const SizedBox(height: 14),
+          CustomTextField(
+            controller: authController.registerEmailController,
+            labelText: 'Email',
+            hintText: 'Email đăng nhập',
+            keyboardType: TextInputType.emailAddress,
+            textInputAction: TextInputAction.next,
+            prefixIcon: const Icon(Icons.mail_outline,
+                size: 20, color: Color(0xff94A3B8)),
+            validator: authController.validateEmail,
           ),
-          validator: authController.validateRegisterPassword,
-        ),
-        const SizedBox(height: 14),
-        CustomTextField(
-          controller: authController.registerConfirmPasswordController,
-          labelText: 'Xác nhận mật khẩu',
-          hintText: 'Nhập lại mật khẩu',
-          obscureText: authController.registerObscureConfirmPassword.value,
-          textInputAction: TextInputAction.done,
-          prefixIcon: const Icon(Icons.lock_outline,
-              size: 20, color: Color(0xff94A3B8)),
-          suffixIcon: IconButton(
-            onPressed: authController.toggleRegisterConfirmPasswordVisibility,
-            icon: Icon(
-              authController.registerObscureConfirmPassword.value
-                  ? Icons.visibility_off_outlined
-                  : Icons.visibility_outlined,
-              size: 20,
-              color: const Color(0xff94A3B8),
+          const SizedBox(height: 14),
+          Obx(() => CustomTextField(
+            controller: authController.registerPasswordController,
+            labelText: 'Mật khẩu',
+            hintText: 'Nhập mật khẩu',
+            obscureText: authController.registerObscurePassword.value,
+            textInputAction: TextInputAction.next,
+            prefixIcon: const Icon(Icons.lock_outline,
+                size: 20, color: Color(0xff94A3B8)),
+            suffixIcon: IconButton(
+              onPressed: authController.toggleRegisterPasswordVisibility,
+              icon: Icon(
+                authController.registerObscurePassword.value
+                    ? Icons.visibility_off_outlined
+                    : Icons.visibility_outlined,
+                size: 20,
+                color: const Color(0xff94A3B8),
+              ),
             ),
-          ),
-          validator: authController.validateRegisterConfirmPassword,
-        ),
+            validator: authController.validateRegisterPassword,
+          )),
+          const SizedBox(height: 14),
+          Obx(() => CustomTextField(
+            controller: authController.registerConfirmPasswordController,
+            labelText: 'Xác nhận mật khẩu',
+            hintText: 'Nhập lại mật khẩu',
+            obscureText: authController.registerObscureConfirmPassword.value,
+            textInputAction: TextInputAction.done,
+            prefixIcon: const Icon(Icons.lock_outline,
+                size: 20, color: Color(0xff94A3B8)),
+            suffixIcon: IconButton(
+              onPressed: authController.toggleRegisterConfirmPasswordVisibility,
+              icon: Icon(
+                authController.registerObscureConfirmPassword.value
+                    ? Icons.visibility_off_outlined
+                    : Icons.visibility_outlined,
+                size: 20,
+                color: const Color(0xff94A3B8),
+              ),
+            ),
+            validator: authController.validateRegisterConfirmPassword,
+          )),
+        ],
         const SizedBox(height: 24),
         _buildSectionTitle('Xác minh tổ chức'),
         const SizedBox(height: 14),
@@ -298,16 +327,17 @@ class _RegisterFormState extends State<RegisterForm> {
           style: TextStyle(fontSize: 13, color: Color(0xff64748B)),
         ),
         const SizedBox(height: 14),
-        _buildDocumentUploadSection(authController, context),
+        _buildDocumentUploadSection(context),
         const SizedBox(height: 20),
         _buildTermsSection(),
         const SizedBox(height: 20),
-        _buildSubmitButton(authController),
+        _buildSubmitButton(),
       ],
     );
   }
 
-  Widget _buildAvatarUploadSection(AuthController authController) {
+  Widget _buildAvatarUploadSection() {
+    final authController = AuthController.to;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -319,10 +349,8 @@ class _RegisterFormState extends State<RegisterForm> {
         children: [
           Obx(() => AvatarUploadWidget(
                 previewUrl: authController.registerAvatarPreviewUrl.value,
-                fileType: FileType.avatar,
                 radius: 36,
-                onSuccess: (fileId, url) =>
-                    authController.onAvatarUploadedInRegister(fileId, url),
+                onTap: _triggerAvatarUpload,
               )),
           const SizedBox(width: 16),
           Expanded(
@@ -354,7 +382,44 @@ class _RegisterFormState extends State<RegisterForm> {
     );
   }
 
-  Widget _buildLogoUploadSection(AuthController authController) {
+  Future<void> _triggerAvatarUpload() async {
+    final picker = ImagePickerService();
+    final result = await picker.pickSingleImage();
+    if (result == null) return;
+
+    final authController = AuthController.to;
+    authController.isUploadingAvatarInRegister.value = true;
+
+    try {
+      final uploadResult = await _uploadAvatarFile(result.filePath);
+      if (uploadResult != null) {
+        authController.onAvatarUploadedInRegister(
+            uploadResult.fileId, uploadResult.url);
+      }
+    } finally {
+      if (mounted) {
+        authController.isUploadingAvatarInRegister.value = false;
+      }
+    }
+  }
+
+  Future<FileUploadResult?> _uploadAvatarFile(String filePath) async {
+    final usecase = Get.find<UploadFileUsecase>();
+    final result = await usecase(UploadFileParams(
+      filePath: filePath,
+      fileType: FileType.avatar,
+    ));
+
+    return result.fold(
+      (failure) {
+        return null;
+      },
+      (file) => FileUploadResult(fileId: file.fileId!, url: file.url!),
+    );
+  }
+
+  Widget _buildLogoUploadSection() {
+    final authController = AuthController.to;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -366,10 +431,8 @@ class _RegisterFormState extends State<RegisterForm> {
         children: [
           Obx(() => AvatarUploadWidget(
                 previewUrl: authController.registerLogoPreviewUrl.value,
-                fileType: FileType.organizationLogo,
                 radius: 36,
-                onSuccess: (fileId, url) =>
-                    authController.onLogoUploadedInRegister(fileId, url),
+                onTap: _triggerLogoUpload,
               )),
           const SizedBox(width: 16),
           Expanded(
@@ -401,6 +464,37 @@ class _RegisterFormState extends State<RegisterForm> {
     );
   }
 
+  Future<void> _triggerLogoUpload() async {
+    final picker = ImagePickerService();
+    final result = await picker.pickSingleImage();
+    if (result == null) return;
+
+    final authController = AuthController.to;
+
+    try {
+      final uploadResult = await _uploadLogoFile(result.filePath);
+      if (uploadResult != null) {
+        authController.onLogoUploadedInRegister(
+            uploadResult.fileId, uploadResult.url);
+      }
+    } catch (_) {}
+  }
+
+  Future<FileUploadResult?> _uploadLogoFile(String filePath) async {
+    final usecase = Get.find<UploadFileUsecase>();
+    final result = await usecase(UploadFileParams(
+      filePath: filePath,
+      fileType: FileType.organizationLogo,
+    ));
+
+    return result.fold(
+      (failure) {
+        return null;
+      },
+      (file) => FileUploadResult(fileId: file.fileId!, url: file.url!),
+    );
+  }
+
   Widget _buildSectionTitle(String title) {
     return Text(
       title,
@@ -412,99 +506,103 @@ class _RegisterFormState extends State<RegisterForm> {
     );
   }
 
-  Widget _buildDateField(BuildContext context, AuthController authController) {
-    final birthDate = authController.selectedBirthDate.value;
-    final hasValue = birthDate != null;
+  Widget _buildDateField(BuildContext context) {
+    final authController = AuthController.to;
 
-    return GestureDetector(
-      onTap: () async {
-        final date = await showDatePicker(
-          context: context,
-          initialDate: birthDate ??
-              DateTime.now().subtract(const Duration(days: 365 * 18)),
-          firstDate: DateTime(1950),
-          lastDate: DateTime.now(),
-          builder: (context, child) {
-            return Theme(
-              data: Theme.of(context).copyWith(
-                colorScheme: const ColorScheme.light(
-                  primary: Color(0xff06B6D4),
-                  onPrimary: Colors.white,
-                  surface: Colors.white,
-                  onSurface: Color(0xff273143),
-                ),
-                dialogTheme: DialogThemeData(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+    return Obx(() {
+      final birthDate = authController.selectedBirthDate.value;
+      final hasValue = birthDate != null;
+
+      return GestureDetector(
+        onTap: () async {
+          final date = await showDatePicker(
+            context: context,
+            initialDate: birthDate ??
+                DateTime.now().subtract(const Duration(days: 365 * 18)),
+            firstDate: DateTime(1950),
+            lastDate: DateTime.now(),
+            builder: (context, child) {
+              return Theme(
+                data: Theme.of(context).copyWith(
+                  colorScheme: const ColorScheme.light(
+                    primary: Color(0xff06B6D4),
+                    onPrimary: Colors.white,
+                    surface: Colors.white,
+                    onSurface: Color(0xff273143),
+                  ),
+                  dialogTheme: DialogThemeData(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                   ),
                 ),
+                child: child!,
+              );
+            },
+          );
+          if (date != null) {
+            authController.setSelectedBirthDate(date);
+          }
+        },
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade50,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: Colors.grey.shade300),
               ),
-              child: child!,
-            );
-          },
-        );
-        if (date != null) {
-          authController.setSelectedBirthDate(date);
-        }
-      },
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade50,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: Colors.grey.shade300),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.calendar_today_outlined,
-                    size: 20, color: Color(0xff94A3B8)),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 200),
-                    child: Text(
-                      hasValue
-                          ? '${birthDate.day.toString().padLeft(2, '0')}/${birthDate.month.toString().padLeft(2, '0')}/${birthDate.year}'
-                          : 'Ngày sinh',
-                      key: ValueKey(hasValue),
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight:
-                            hasValue ? FontWeight.w400 : FontWeight.normal,
-                        color: hasValue
-                            ? const Color(0xff273143)
-                            : Colors.grey.shade400,
-                        letterSpacing: hasValue ? 0.5 : 0,
+              child: Row(
+                children: [
+                  const Icon(Icons.calendar_today_outlined,
+                      size: 20, color: Color(0xff94A3B8)),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 200),
+                      child: Text(
+                        hasValue
+                            ? '${birthDate.day.toString().padLeft(2, '0')}/${birthDate.month.toString().padLeft(2, '0')}/${birthDate.year}'
+                            : 'Ngày sinh',
+                        key: ValueKey(hasValue),
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight:
+                              hasValue ? FontWeight.w400 : FontWeight.normal,
+                          color: hasValue
+                              ? const Color(0xff273143)
+                              : Colors.grey.shade400,
+                          letterSpacing: hasValue ? 0.5 : 0,
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          hasValue
-              ? Positioned(
-                  left: 12,
-                  top: -9,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
-                    color: Colors.white,
-                    child: const Text(
-                      'Ngày sinh',
-                      style: TextStyle(
-                        color: Color(0xff64748B),
-                        fontSize: 10,
+            hasValue
+                ? Positioned(
+                    left: 12,
+                    top: -9,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      color: Colors.white,
+                      child: const Text(
+                        'Ngày sinh',
+                        style: TextStyle(
+                          color: Color(0xff64748B),
+                          fontSize: 10,
+                        ),
                       ),
                     ),
-                  ),
-                )
-              : const SizedBox(height: 0)
-        ],
-      ),
-    );
+                  )
+                : const SizedBox(height: 0)
+          ],
+        ),
+      );
+    });
   }
 
   Widget _buildTermsSection() {
@@ -583,8 +681,8 @@ class _RegisterFormState extends State<RegisterForm> {
     PrivacyPolicyDialog.show(context);
   }
 
-  Widget _buildDocumentUploadSection(
-      AuthController authController, BuildContext context) {
+  Widget _buildDocumentUploadSection(BuildContext context) {
+    final authController = AuthController.to;
     return Obx(() {
       final uploadedDocs = authController.uploadedVerificationDocs;
 
@@ -801,8 +899,9 @@ class _RegisterFormState extends State<RegisterForm> {
     );
   }
 
-  Widget _buildSubmitButton(AuthController authController) {
-    return SizedBox(
+  Widget _buildSubmitButton() {
+    final authController = AuthController.to;
+    return Obx(() => SizedBox(
       height: 48,
       child: ElevatedButton(
         onPressed: _isTermsAccepted && !authController.isLoading.value
@@ -846,6 +945,6 @@ class _RegisterFormState extends State<RegisterForm> {
                 ],
               ),
       ),
-    );
+    ));
   }
 }

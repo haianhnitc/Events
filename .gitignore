@@ -57,3 +57,9 @@ app.*.map.json
 *.config.dart
 *.md
 *.MD
+*.cursorrules
+.agents/
+skills-lock.json
+
+#   firebase_core: ^2.22.0
+#   firebase_auth: ^4.7.0

@@ -8,14 +8,16 @@ part 'user_package_model.g.dart';
 @freezed
 class UserPackageModel with _$UserPackageModel {
   const factory UserPackageModel({
-    int? userPackageId,
+    int? id,
     int? userId,
     int? packageId,
+    String? packageName,
     UserPackageStatus? status,
-    DateTime? startTime,
-    DateTime? endTime,
-    bool? autoRenew,
-    DateTime? createdTime,
+    DateTime? startDate,
+    DateTime? expiryDate,
+    String? notes,
+    DateTime? createdAt,
+    @Default(false) bool? autoRenew,
   }) = _UserPackageModel;
 
   factory UserPackageModel.fromJson(Map<String, dynamic> json) =>
@@ -23,14 +25,16 @@ class UserPackageModel with _$UserPackageModel {
 
   factory UserPackageModel.fromEntity(UserPackageEntity entity) {
     return UserPackageModel(
-      userPackageId: entity.userPackageId,
+      id: entity.userPackageId,
       userId: entity.userId,
       packageId: entity.packageId,
+      packageName: entity.packageName,
       status: entity.status,
-      startTime: entity.startTime,
-      endTime: entity.endTime,
+      startDate: entity.startTime,
+      expiryDate: entity.endTime,
+      notes: entity.notes,
+      createdAt: entity.createdTime,
       autoRenew: entity.autoRenew,
-      createdTime: entity.createdTime,
     );
   }
 }
@@ -38,14 +42,16 @@ class UserPackageModel with _$UserPackageModel {
 extension UserPackageModelExtension on UserPackageModel {
   UserPackageEntity toEntity() {
     return UserPackageEntity(
-      userPackageId: userPackageId,
+      userPackageId: id,
       userId: userId,
       packageId: packageId,
+      packageName: packageName,
       status: status,
-      startTime: startTime,
-      endTime: endTime,
+      startTime: startDate,
+      endTime: expiryDate,
+      notes: notes,
+      createdTime: createdAt,
       autoRenew: autoRenew,
-      createdTime: createdTime,
     );
   }
 }

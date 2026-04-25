@@ -34,31 +34,34 @@ class EventOrCtvList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        isEvent
-            ? Text(
-                "${listEvent.length} sự kiện",
-                style: const TextStyle(
-                    fontSize: 14,
-                    height: 20 / 14,
-                    fontWeight: FontWeight.w400,
-                    color: Color(0xff67688C)),
-              )
-            : Text(
-                "${listCtv.length} công việc",
-                style: const TextStyle(
-                    fontSize: 14,
-                    height: 20 / 14,
-                    fontWeight: FontWeight.w400,
-                    color: Color(0xff67688C)),
-              ),
-        const SizedBox(height: 16),
-        Expanded(
-          child: isEvent ? _buildEventList(listEvent) : _buildCtvList(listCtv),
-        ),
-      ],
+    return Padding(
+      padding: const EdgeInsets.only(left: 16, right: 16, top: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          isEvent
+              ? Text(
+                  "${listEvent.length} sự kiện",
+                  style: const TextStyle(
+                      fontSize: 14,
+                      height: 20 / 14,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xff273143)),
+                )
+              : Text(
+                  "${listCtv.length} công việc",
+                  style: const TextStyle(
+                      fontSize: 14,
+                      height: 20 / 14,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xff273143)),
+                ),
+          const SizedBox(height: 16),
+          Expanded(
+            child: isEvent ? _buildEventList(listEvent) : _buildCtvList(listCtv),
+          ),
+        ],
+      ),
     );
   }
 

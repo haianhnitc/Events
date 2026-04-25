@@ -69,6 +69,8 @@ enum CoinReferenceType {
   newsRead,
   @JsonValue('FEEDBACK')
   feedback,
+
+
 }
 
 extension CoinReferenceTypeApiValue on CoinReferenceType {
@@ -513,6 +515,8 @@ enum RequirementQuestionType {
   singleChoice,
   @JsonValue('MULTIPLECHOICE')
   multipleChoice,
+  @JsonValue('RATING')
+  rating,
 }
 
 extension RequirementQuestionTypeApiValue on RequirementQuestionType {
@@ -524,6 +528,8 @@ extension RequirementQuestionTypeApiValue on RequirementQuestionType {
         return 'SINGLECHOICE';
       case RequirementQuestionType.multipleChoice:
         return 'MULTIPLECHOICE';
+      case RequirementQuestionType.rating:
+        return 'RATING';
     }
   }
 
@@ -536,6 +542,8 @@ extension RequirementQuestionTypeApiValue on RequirementQuestionType {
         return RequirementQuestionType.singleChoice;
       case 'MULTIPLECHOICE':
         return RequirementQuestionType.multipleChoice;
+      case 'RATING':
+        return RequirementQuestionType.rating;
       default:
         return null;
     }
@@ -716,8 +724,8 @@ enum TransactionStatus {
 enum UserPackageStatus {
   @JsonValue('ACTIVE')
   active,
-  @JsonValue('EXPIRE')
-  expire,
+  @JsonValue('EXPIRED')
+  expired,
 }
 
 @JsonEnum()

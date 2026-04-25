@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:events_app/api_template/services/failure.dart';
 import 'package:events_app/dependency_injection/injection.dart';
+import 'package:events_app/feature/common/presentation/controller/category_controller.dart';
 import 'package:events_app/feature/event_management/domain/entity/event_summary_entity.dart';
 import 'package:events_app/feature/event_management/domain/usecase/get_events_usecase.dart';
 import 'package:events_app/feature/event_management/presentation/utils/category_filter_utils.dart';
@@ -15,6 +16,8 @@ class EventController extends GetxController implements FilterSelectionControlle
   }
 
   late final GetEventsUsecase _getEventsUsecase;
+
+  CategoryController get _categoryController => Get.find<CategoryController>();
 
   final List<EventSummaryEntity> _allEvents = [];
   final List<EventSummaryEntity> _filteredEvents = <EventSummaryEntity>[];
@@ -38,6 +41,16 @@ class EventController extends GetxController implements FilterSelectionControlle
   void onInit() {
     super.onInit();
     loadEvents();
+    _watchCategories();
+  }
+
+  void _watchCategories() {
+    ever(_categoryController.categories, (_) => _reapplyFiltersIfReady());
+  }
+
+  void _reapplyFiltersIfReady() {
+    if (!_categoryController.hasLoaded.value) return;
+    _applyFiltersAndSync();
   }
 
   Future<void> loadEvents({bool refresh = false}) async {
@@ -150,8 +163,11 @@ class EventController extends GetxController implements FilterSelectionControlle
       ..clear()
       ..addAll(
         _allEvents.where((event) {
-          final matchesCategory =
-              CategoryFilterUtils.matchesEvent(event, selectedFilters);
+          final matchesCategory = CategoryFilterUtils.matchesEvent(
+            event,
+            selectedFilters,
+            allCategories: _categoryController.categories.toList(),
+          );
           final matchesKeyword = keyword.value.isEmpty ||
               (event.title ?? '').toLowerCase().contains(keyword.value);
           return matchesCategory && matchesKeyword;

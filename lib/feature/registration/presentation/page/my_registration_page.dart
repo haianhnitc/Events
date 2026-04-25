@@ -370,73 +370,97 @@ class _MyRegistrationPageState extends State<MyRegistrationPage> {
     bool hasTicket,
     bool hasFeedback,
   ) {
+    final canCancel = participant.status == ParticipantStatus.registered;
+
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-      child: Row(
+      child: Column(
         children: [
-          if (hasTicket && !isAttended)
-            Expanded(
-              child: OutlinedButton.icon(
-                onPressed: () => _navigateToMyTicket(),
-                icon: const Icon(Icons.confirmation_number, size: 18),
-                label: const Text('Xem vé'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xff06B6D4),
-                  side: const BorderSide(color: Color(0xff06B6D4)),
-                  padding: const EdgeInsets.symmetric(vertical: 10),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-              ),
-            ),
-          if (hasTicket && !isAttended) const SizedBox(width: 10),
-          if (isAttended && !hasFeedback)
-            Expanded(
-              child: ElevatedButton.icon(
-                onPressed: () => _navigateToFeedback(participant.eventId!),
-                icon: const Icon(Icons.rate_review, size: 18),
-                label: const Text('Đánh giá'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xff06B6D4),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 10),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  elevation: 0,
-                ),
-              ),
-            ),
-          if (isAttended && hasFeedback)
-            Expanded(
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                decoration: BoxDecoration(
-                  color: const Color(0xffDCFCE7),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.check_circle,
-                      size: 18,
-                      color: Color(0xff22C55E),
-                    ),
-                    SizedBox(width: 6),
-                    Text(
-                      'Đã đánh giá',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xff22C55E),
+          Row(
+            children: [
+              if (hasTicket && !isAttended)
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () => _navigateToMyTicket(),
+                    icon: const Icon(Icons.confirmation_number, size: 18),
+                    label: const Text('Xem vé'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xff06B6D4),
+                      side: const BorderSide(color: Color(0xff06B6D4)),
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                  ],
+                  ),
+                ),
+              if (hasTicket && !isAttended) const SizedBox(width: 10),
+              if (isAttended && !hasFeedback)
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () => _navigateToFeedback(participant.eventId!),
+                    icon: const Icon(Icons.rate_review, size: 18),
+                    label: const Text('Đánh giá'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xff06B6D4),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      elevation: 0,
+                    ),
+                  ),
+                ),
+              if (isAttended && hasFeedback)
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xffDCFCE7),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.check_circle,
+                          size: 18,
+                          color: Color(0xff22C55E),
+                        ),
+                        SizedBox(width: 6),
+                        Text(
+                          'Đã đánh giá',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xff22C55E),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          if (canCancel) ...[
+            const SizedBox(height: 10),
+            SizedBox(
+              width: double.infinity,
+              child: TextButton.icon(
+                onPressed: () => _showCancelDialog(participant),
+                icon: const Icon(Icons.cancel_outlined, size: 18),
+                label: const Text('Hủy đăng ký'),
+                style: TextButton.styleFrom(
+                  foregroundColor: const Color(0xffEF4444),
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
               ),
             ),
+          ],
         ],
       ),
     );
@@ -448,5 +472,76 @@ class _MyRegistrationPageState extends State<MyRegistrationPage> {
 
   void _navigateToFeedback(int eventId) {
     Get.toNamed('/feedback', arguments: {'eventId': eventId});
+  }
+
+  void _showCancelDialog(ParticipantEntity participant) {
+    final eventTitle = participant.event?.title ?? participant.eventTitle ?? 'sự kiện này';
+    final hasTicket = participant.ticketId != null;
+    final isCtv = participant.participantType == ParticipantType.ctv;
+
+    Get.dialog(
+      AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: Color(0xffEF4444), size: 28),
+            SizedBox(width: 8),
+            Text('Hủy đăng ký'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Bạn có chắc muốn hủy đăng ký "$eventTitle"?',
+              style: const TextStyle(fontSize: 14, color: Color(0xff273143)),
+            ),
+            if (hasTicket) ...[
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xffFEF3C7),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.info_outline, color: Color(0xffF59E0B), size: 20),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Bạn sẽ được hoàn coin đã sử dụng cho vé này.',
+                        style: TextStyle(fontSize: 13, color: Color(0xff92400E)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: const Text('Không', style: TextStyle(color: Color(0xff64748B))),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Get.back();
+              if (participant.eventParticipantId != null) {
+                _controller.cancelRegistration(participant.eventParticipantId!);
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xffEF4444),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: const Text('Hủy đăng ký'),
+          ),
+        ],
+      ),
+    );
   }
 }

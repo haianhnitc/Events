@@ -8,6 +8,7 @@ class OrganizerEmptyState extends StatelessWidget {
     this.icon,
     this.actionLabel,
     this.onAction,
+    this.compact = false,
   });
 
   final String message;
@@ -15,9 +16,35 @@ class OrganizerEmptyState extends StatelessWidget {
   final IconData? icon;
   final String? actionLabel;
   final VoidCallback? onAction;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
+    if (compact) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon ?? Icons.event_busy,
+              size: 18,
+              color: Colors.grey.shade400,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              message,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: Colors.grey.shade500,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),

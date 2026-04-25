@@ -73,7 +73,6 @@ class PermissionHelper {
 
       return PermissionResult.unknown('Photo library');
     } catch (e) {
-      debugPrint('Error requesting photos permission: $e');
       return PermissionResult.denied('Failed to request photo library permission');
     }
   }
@@ -105,7 +104,6 @@ class PermissionHelper {
 
       return PermissionResult.unknown('Camera');
     } catch (e) {
-      debugPrint('Error requesting camera permission: $e');
       return PermissionResult.denied('Failed to request camera permission');
     }
   }
@@ -137,7 +135,6 @@ class PermissionHelper {
 
       return PermissionResult.unknown('Location');
     } catch (e) {
-      debugPrint('Error requesting location permission: $e');
       return PermissionResult.denied('Failed to request location permission');
     }
   }
@@ -146,7 +143,6 @@ class PermissionHelper {
     try {
       return await openAppSettings();
     } catch (e) {
-      debugPrint('Error opening app settings: $e');
       return false;
     }
   }
@@ -159,7 +155,6 @@ class PermissionHelper {
     try {
       return await permission.shouldShowRequestRationale;
     } catch (e) {
-      debugPrint('Error checking rationale: $e');
       return false;
     }
   }

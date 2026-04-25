@@ -27,6 +27,8 @@ class ParticipantModel with _$ParticipantModel {
     bool? hasFeedback,
     DateTime? feedbackSubmittedTime,
     int? applicationId,
+    int? recruitmentId,
+    String? eventTitle,
   }) = _ParticipantModel;
 
   factory ParticipantModel.fromJson(Map<String, dynamic> json) =>
@@ -55,6 +57,8 @@ class ParticipantModel with _$ParticipantModel {
       hasFeedback: entity.hasFeedback,
       feedbackSubmittedTime: entity.feedbackSubmittedTime,
       applicationId: entity.applicationId,
+      recruitmentId: entity.recruitmentId,
+      eventTitle: entity.eventTitle,
     );
   }
 }
@@ -79,6 +83,8 @@ extension ParticipantModelExtension on ParticipantModel {
       hasFeedback: hasFeedback,
       feedbackSubmittedTime: feedbackSubmittedTime,
       applicationId: applicationId,
+      recruitmentId: recruitmentId,
+      eventTitle: eventTitle,
     );
   }
 }

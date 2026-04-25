@@ -3,6 +3,7 @@ import 'package:events_app/feature/home/presentation/widget/footer_home_page.dar
 import 'package:events_app/feature/home/presentation/widget/header_home_page.dart';
 import 'package:events_app/feature/home/presentation/widget/item_featured_event.dart';
 import 'package:events_app/feature/home/presentation/widget/ranking_card.dart';
+import 'package:events_app/feature/user_management/presentation/page/rank_list_page.dart';
 import 'package:events_app/routes/navbar/bottom_nav_bar_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -38,7 +39,16 @@ class HomePage extends StatelessWidget {
                       const SizedBox(height: 24),
                       _buildTwoItemSubHeader(),
                       const SizedBox(height: 24),
-                      const RankingCard(),
+                      Obx(() => RankingCard(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) => const RankListPage()),
+                              );
+                            },
+                            rank: controller.userRank.value,
+                          )),
                       const SizedBox(height: 24),
                       _buildFeaturedEventHeader(),
                       const SizedBox(height: 16),
@@ -50,16 +60,26 @@ class HomePage extends StatelessWidget {
             Obx(() {
               if (controller.isLoading.value) {
                 return const SliverFillRemaining(
-                  child: Center(child: CircularProgressIndicator()),
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  ),
                 );
               }
               final events = controller.featuredEvents;
               if (events.isEmpty) {
-                return const SliverFillRemaining(
+                return const SliverToBoxAdapter(
                   child: Center(
                     child: Text(
-                      'Không có sự kiện nổi bật',
-                      style: TextStyle(color: Colors.grey),
+                      'Chưa có sự kiện nổi bật',
+                      style: TextStyle(
+                        color: Colors.grey,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w400,
+                        height: 24 / 17,
+                      ),
                     ),
                   ),
                 );
@@ -100,7 +120,8 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildEventActionCard(bool isEvent, BottomNavBarController controller) =>
+  Widget _buildEventActionCard(
+          bool isEvent, BottomNavBarController controller) =>
       Expanded(
         child: GestureDetector(
           onTap: () {

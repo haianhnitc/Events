@@ -5,9 +5,7 @@ import 'package:events_app/feature/common/utils/app_date_utils.dart';
 import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
 import 'package:events_app/feature/event_management/domain/entity/event_entity.dart';
 import 'package:events_app/feature/organizer/presentation/controller/organizer_create_event_controller.dart';
-import 'package:events_app/feature/organizer/presentation/controller/organizer_event_detail_controller.dart';
 import 'package:events_app/feature/organizer/presentation/widget/event/venue_picker_dialog.dart';
-import 'package:events_app/feature/venue/domain/entity/venue_entity.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -39,6 +37,7 @@ class _OrganizerCreateEventPageState extends State<OrganizerCreateEventPage> {
       _ctrl.initForCreate();
     }
     _ctrl.loadVenues();
+    _ctrl.loadCategories();
   }
 
   Future<void> _loadEventAndInitEdit() async {
@@ -415,38 +414,45 @@ class _OrganizerCreateEventPageState extends State<OrganizerCreateEventPage> {
               style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
             ),
             const SizedBox(height: 16),
-            _buildCategoryGroup(
-              'Trường đại học',
-              [1, 2, 3, 4, 5, 6, 7, 8],
-              [
-                'ĐH Bách Khoa TP.HCM', 'ĐH Thể dục Thể thao Hà Nội',
-                'ĐH Ngoại thương', 'ĐH Ngoại ngữ - ĐHQGHN',
-                'ĐH Công nghệ - ĐHQGHN', 'ĐH Y Hà Nội',
-                'ĐH FPT Hà Nội', 'ĐH Quốc gia TP.HCM',
-              ],
-            ),
-            const SizedBox(height: 16),
-            _buildCategoryGroup(
-              'Lĩnh vực',
-              [9, 10, 11, 12, 13, 14, 15, 16],
-              [
-                'Công nghệ', 'Văn hóa - Nghệ thuật', 'Kỹ năng mềm',
-                'Khởi nghiệp', 'Thể thao', 'Định hướng nghề nghiệp',
-                'Học thuật', 'Tình nguyện',
-              ],
-            ),
-            const SizedBox(height: 16),
-            _buildCategoryGroup(
-              'Giá / Lương',
-              [17, 18, 19],
-              ['Miễn phí', '0 - 150,000đ', '150,000đ - 300,000đ'],
-            ),
-            const SizedBox(height: 16),
-            _buildCategoryGroup(
-              'Tiêu chí',
-              [20, 21],
-              ['Chứng chỉ 5 tốt', 'Cộng điểm đoàn'],
-            ),
+            Obx(() {
+              if (_ctrl.isLoadingCategories.value) {
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(24),
+                    child: CircularProgressIndicator(),
+                  ),
+                );
+              }
+              if (_ctrl.categories.isEmpty) {
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Text(
+                      'Không có danh mục nào',
+                      style: TextStyle(color: Colors.grey.shade600),
+                    ),
+                  ),
+                );
+              }
+              return Column(
+                children: _ctrl.categories.map((category) {
+                  final options = category.options ?? [];
+                  if (options.isEmpty) return const SizedBox.shrink();
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: _buildCategoryGroup(
+                      category.name ?? 'Danh mục',
+                      options
+                          .map((o) => _CategoryOptionData(
+                                o.categoryOptionId ?? 0,
+                                o.value ?? '',
+                              ))
+                          .toList(),
+                    ),
+                  );
+                }).toList(),
+              );
+            }),
           ]),
         ],
       ),
@@ -454,7 +460,7 @@ class _OrganizerCreateEventPageState extends State<OrganizerCreateEventPage> {
   }
 
   Widget _buildCategoryGroup(
-      String groupName, List<int> ids, List<String> labels) {
+      String groupName, List<_CategoryOptionData> options) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -470,13 +476,12 @@ class _OrganizerCreateEventPageState extends State<OrganizerCreateEventPage> {
         Obx(() => Wrap(
               spacing: 8,
               runSpacing: 8,
-              children: List.generate(ids.length, (i) {
-                final id = ids[i];
-                final label = labels[i];
+              children: List.generate(options.length, (i) {
+                final opt = options[i];
                 final isSelected =
-                    _ctrl.selectedCategoryOptionIds.contains(id);
+                    _ctrl.selectedCategoryOptionIds.contains(opt.id);
                 return GestureDetector(
-                  onTap: () => _ctrl.toggleCategoryOption(id),
+                  onTap: () => _ctrl.toggleCategoryOption(opt.id),
                   child: Container(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 12, vertical: 6),
@@ -492,7 +497,7 @@ class _OrganizerCreateEventPageState extends State<OrganizerCreateEventPage> {
                       ),
                     ),
                     child: Text(
-                      label,
+                      opt.label,
                       style: TextStyle(
                         fontSize: 12,
                         color: isSelected
@@ -1259,4 +1264,11 @@ class _OrganizerCreateEventPageState extends State<OrganizerCreateEventPage> {
       _ctrl.submit();
     }
   }
+}
+
+class _CategoryOptionData {
+  final int id;
+  final String label;
+
+  const _CategoryOptionData(this.id, this.label);
 }

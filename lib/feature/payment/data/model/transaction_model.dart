@@ -16,6 +16,7 @@ class TransactionModel {
   final TransactionStatus? status;
   final DateTime? paidAt;
   final DateTime? createdTime;
+  final String? paymentUrl;
 
   const TransactionModel({
     this.transactionId,
@@ -32,6 +33,7 @@ class TransactionModel {
     this.status,
     this.paidAt,
     this.createdTime,
+    this.paymentUrl,
   });
 
   factory TransactionModel.fromJson(Map<String, dynamic> json) {
@@ -65,6 +67,7 @@ class TransactionModel {
       createdTime: json['createdTime'] == null
           ? null
           : DateTime.tryParse(json['createdTime'].toString()),
+      paymentUrl: json['paymentUrl'] as String?,
     );
   }
 
@@ -84,6 +87,7 @@ class TransactionModel {
       'status': status?.name.toUpperCase(),
       'paidAt': paidAt?.toIso8601String(),
       'createdTime': createdTime?.toIso8601String(),
+      'paymentUrl': paymentUrl,
     };
   }
 
@@ -103,6 +107,7 @@ class TransactionModel {
       status: entity.status,
       paidAt: entity.paidAt,
       createdTime: entity.createdTime,
+      paymentUrl: entity.paymentUrl,
     );
   }
 }
@@ -124,6 +129,7 @@ extension TransactionModelExtension on TransactionModel {
       status: status,
       paidAt: paidAt,
       createdTime: createdTime,
+      paymentUrl: paymentUrl,
     );
   }
 }

@@ -9,29 +9,38 @@ import 'package:events_app/feature/common/usecase/upload_file_usecase.dart';
 import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
 import 'package:events_app/common/utils/upload_helper.dart';
 import 'package:events_app/feature/user_management/domain/entity/user_entity.dart';
+import 'package:events_app/feature/user_management/domain/entity/rank_entity.dart';
+import 'package:events_app/feature/common/domain/entity/package_entity.dart';
+import 'package:events_app/feature/user_management/domain/entity/user_package_entity.dart';
+import 'package:events_app/feature/user_management/domain/repository/user_repository.dart';
 import 'package:events_app/feature/user_management/domain/usecase/update_current_user_usecase.dart';
 
 class MyProfileController extends GetxController {
   UpdateCurrentUserUsecase get _updateUsecase =>
       networkGetIt<UpdateCurrentUserUsecase>();
+  UserRepository get _userRepo => networkGetIt<UserRepository>();
 
   final formKey = GlobalKey<FormState>();
 
   final fullNameController = TextEditingController();
   final Rx<String?> selectedGender = Rx<String?>(null);
   final Rx<DateTime?> selectedBirthDate = Rx<DateTime?>(null);
-
   final Rx<int?> avatarFileId = Rx<int?>(null);
   final Rx<String?> avatarPreviewUrl = Rx<String?>(null);
 
   final Rx<int?> logoFileId = Rx<int?>(null);
   final Rx<String?> logoPreviewUrl = Rx<String?>(null);
-
   final addressController = TextEditingController();
   final descriptionController = TextEditingController();
 
   final RxBool isSubmitting = false.obs;
   final RxBool isLoading = true.obs;
+
+  // Rank, package, portfolio data
+  final Rx<RankEntity?> userRank = Rx<RankEntity?>(null);
+  final RxList<UserPackageEntity> userPackages = <UserPackageEntity>[].obs;
+  final RxBool isLoadingRank = false.obs;
+  final RxBool isLoadingPackages = false.obs;
 
   @override
   void onClose() {
@@ -55,6 +64,40 @@ class MyProfileController extends GetxController {
     }
 
     isLoading.value = false;
+  }
+
+  Future<void> loadRankAndPackages() async {
+    final user = AuthController.to.currentUser.value;
+    if (user == null) return;
+
+    if (user.userId != null) {
+      _fetchUserRank(user.userId!);
+    }
+    _fetchUserPackages();
+  }
+
+  Future<void> _fetchUserRank(int userId) async {
+    isLoadingRank.value = true;
+    final result = await _userRepo.getUserRank(userId);
+    result.fold(
+      (failure) => isLoadingRank.value = false,
+      (rank) {
+        userRank.value = rank;
+        isLoadingRank.value = false;
+      },
+    );
+  }
+
+  Future<void> _fetchUserPackages() async {
+    isLoadingPackages.value = true;
+    final result = await _userRepo.getUserPackages();
+    result.fold(
+      (failure) => isLoadingPackages.value = false,
+      (packages) {
+        userPackages.value = packages;
+        isLoadingPackages.value = false;
+      },
+    );
   }
 
   void _loadUser(UserEntity user) {
@@ -86,46 +129,6 @@ class MyProfileController extends GetxController {
   void onLogoUploaded(int fileId, String url) {
     logoFileId.value = fileId;
     logoPreviewUrl.value = url;
-  }
-
-  Future<void> updateAvatar() async {
-    if (avatarFileId.value == null) return;
-
-    final updateResult = await _updateUsecase(
-      UpdateCurrentUserParams(avatarFileId: avatarFileId.value),
-    );
-
-    updateResult.fold(
-      (failure) {
-        _handleFailure(failure);
-      },
-      (updated) {
-        if (updated != null) {
-          AuthController.to.currentUser.value = updated;
-          AppSnackbarUtils.showSuccess('Thành công', 'Cập nhật ảnh đại diện thành công.');
-        }
-      },
-    );
-  }
-
-  Future<void> updateLogo() async {
-    if (logoFileId.value == null) return;
-
-    final updateResult = await _updateUsecase(
-      UpdateCurrentUserParams(logoFileId: logoFileId.value),
-    );
-
-    updateResult.fold(
-      (failure) {
-        _handleFailure(failure);
-      },
-      (updated) {
-        if (updated != null) {
-          AuthController.to.currentUser.value = updated;
-          AppSnackbarUtils.showSuccess('Thành công', 'Cập nhật logo thành công.');
-        }
-      },
-    );
   }
 
   String? validateFullName(String? value) {
@@ -177,7 +180,7 @@ class MyProfileController extends GetxController {
         if (updated != null) {
           AuthController.to.currentUser.value = updated;
           AppSnackbarUtils.showSuccess('Thành công', 'Cập nhật thông tin thành công.');
-          Get.back();
+          Future.delayed(const Duration(milliseconds: 800), () => Get.back());
         }
       },
     );

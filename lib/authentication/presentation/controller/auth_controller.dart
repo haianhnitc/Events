@@ -598,7 +598,7 @@ class AuthController extends GetxController {
       return AuthSignInResult.failure;
     }
 
-    final idToken = await firebaseUser.getIdToken();
+    final idToken = await firebaseUser.getIdToken(true);
 
     googleAuthResult.value = GoogleAuthSession(
       firebaseUid: firebaseUid,
@@ -799,7 +799,7 @@ class AuthController extends GetxController {
       return;
     }
 
-    final idToken = await firebaseUser.getIdToken();
+    final idToken = await firebaseUser.getIdToken(true);
     googleAuthResult.value = GoogleAuthSession(
       firebaseUid: firebaseUser.uid,
       idToken: idToken ?? '',

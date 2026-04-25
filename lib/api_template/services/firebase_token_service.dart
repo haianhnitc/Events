@@ -11,9 +11,8 @@ class FirebaseTokenService {
       final user = _firebaseAuth.currentUser;
       if (user == null) return null;
 
-      return await user.getIdToken();
+      return await user.getIdToken(true);
     } catch (e) {
-      debugPrint('Error getting access token: $e');
       return null;
     }
   }
@@ -21,8 +20,6 @@ class FirebaseTokenService {
   Future<void> clearTokens() async {
     try {
       await _firebaseAuth.signOut();
-    } catch (e) {
-      debugPrint('Error clearing tokens: $e');
-    }
+    } catch (_) {}
   }
 }

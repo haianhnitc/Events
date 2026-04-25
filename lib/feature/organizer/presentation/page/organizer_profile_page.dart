@@ -207,7 +207,12 @@ class _OrganizerProfilePageState extends State<OrganizerProfilePage> {
           _buildMenuItem(
             icon: Icons.info_outline,
             label: 'Về ứng dụng',
-            onTap: () {},
+            onTap: () => showAboutDialog(
+              context: context,
+              applicationName: 'Events App',
+              applicationVersion: '1.0.0',
+              applicationLegalese: '© 2026 Events App. All rights reserved.',
+            ),
           ),
           const Divider(height: 1),
           _buildMenuItem(

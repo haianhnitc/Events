@@ -134,20 +134,14 @@ class AuthDatasourceImpl extends ApiProvider implements AuthDatasource {
   ApiResponse<UserModel?> _parseUserResponse(
     ApiResponse<Map<String, dynamic>> response,
   ) {
-    debugPrint('=== _parseUserResponse called ===');
-    debugPrint('Response: $response');
-
     final parsed = forwardEnvelopeResponse<UserModel?>(
       response,
       (object) {
-        debugPrint('Parsing object: $object (type: ${object.runtimeType})');
         if (object == null) return null;
         if (object is List) {
-          debugPrint('WARNING: Got List instead of Map in user response');
           throw FormatException('Unexpected List in user response: $object');
         }
         if (object is! Map<String, dynamic>) {
-          debugPrint('WARNING: Invalid object type: ${object.runtimeType}');
           throw FormatException(
               'Invalid object payload type: ${object.runtimeType}');
         }
@@ -213,19 +207,18 @@ class AuthDatasourceImpl extends ApiProvider implements AuthDatasource {
           ? const ApiResponse.success(null)
           : _missingIdTokenResponse();
     }
-    final idToken = await firebaseUser.getIdToken();
+    final idToken = await firebaseUser.getIdToken(true);
     if (idToken == null || idToken.isEmpty) {
       return returnNullWhenMissingUser
           ? const ApiResponse.success(null)
           : _missingIdTokenResponse();
     }
-    final response = await post<Map<String, dynamic>>(
-      ApiPath.authVerify,
-      (data) => Map<String, dynamic>.from(data as Map),
-      body: ApiRequestBody.text(idToken),
-      requireAuth: false,
-    );
-    return _parseUserResponse(response);
+      final response = await post<Map<String, dynamic>>(
+        ApiPath.authVerify,
+        (data) => Map<String, dynamic>.from(data as Map),
+        requireAuth: true,
+      );
+      return _parseUserResponse(response);
   }
 
   Future<ApiResponse<UserModel?>> _verifyFirebaseUserByUid(
@@ -235,7 +228,7 @@ class AuthDatasourceImpl extends ApiProvider implements AuthDatasource {
       if (firebaseUser == null) {
         return _missingIdTokenResponse();
       }
-      final idToken = await firebaseUser.getIdToken();
+      final idToken = await firebaseUser.getIdToken(true);
       if (idToken == null || idToken.isEmpty) {
         return _missingIdTokenResponse();
       }
@@ -243,8 +236,7 @@ class AuthDatasourceImpl extends ApiProvider implements AuthDatasource {
       final response = await post<Map<String, dynamic>>(
         ApiPath.authVerify,
         (data) => Map<String, dynamic>.from(data as Map),
-        body: ApiRequestBody.text(idToken),
-        requireAuth: false,
+        requireAuth: true,
       );
       return _parseUserResponse(response);
     } catch (e) {
@@ -257,8 +249,6 @@ class AuthDatasourceImpl extends ApiProvider implements AuthDatasource {
     bool isRecovery = false,
   }) async {
     final jsonBody = signupParams.toJson();
-    debugPrint('=== _signupWithBackend (recovery=$isRecovery) ===');
-    debugPrint('Payload: $jsonBody');
 
     final response = await post<Map<String, dynamic>>(
       ApiPath.authSignup,
@@ -266,7 +256,6 @@ class AuthDatasourceImpl extends ApiProvider implements AuthDatasource {
       body: ApiRequestBody.json(jsonBody),
       requireAuth: false,
     );
-    debugPrint('Signup API Response: $response');
     return _parseUserResponse(response);
   }
 
@@ -301,7 +290,7 @@ class AuthDatasourceImpl extends ApiProvider implements AuthDatasource {
         return _missingIdTokenResponse();
       }
 
-      final idToken = await firebaseUser.getIdToken();
+      final idToken = await firebaseUser.getIdToken(true);
       if (idToken == null || idToken.isEmpty) {
         return _missingIdTokenResponse();
       }
@@ -309,14 +298,11 @@ class AuthDatasourceImpl extends ApiProvider implements AuthDatasource {
       return _signupWithBackend(
           SignupParams.withIdToken(idToken, signupParams));
     } catch (e, stackTrace) {
-      debugPrint('ERROR in signUpWithEmailAndPassword: $e');
-      debugPrint('Stack trace: $stackTrace');
       final errorMessage = e.toString();
       if (errorMessage.contains('PigeonUserDetails') ||
           errorMessage.contains('PigeonUserCredential') ||
           errorMessage
               .contains("is not a subtype of type 'PigeonUserDetails")) {
-        debugPrint('Detected Pigeon decode error, attempting recovery...');
         return _handleFirebasePigeonDecodeError(signupParams);
       }
       return mapExceptionToApiResponse(e);
@@ -341,14 +327,9 @@ class AuthDatasourceImpl extends ApiProvider implements AuthDatasource {
         return _missingIdTokenResponse();
       }
 
-      debugPrint(
-          'Recovered firebase user via currentUser: ${firebaseUser.uid}');
-      debugPrint('idToken subject: ${_parseJwtSubject(idToken)}');
-
       return _signupWithBackend(
           SignupParams.withIdToken(idToken, signupParams));
     } catch (e) {
-      debugPrint('Failed to recover from Pigeon decode error: $e');
       return mapExceptionToApiResponse(e);
     }
   }
@@ -376,7 +357,7 @@ class AuthDatasourceImpl extends ApiProvider implements AuthDatasource {
         );
       }
 
-      final idToken = await firebaseUser.getIdToken();
+      final idToken = await firebaseUser.getIdToken(true);
       if (idToken == null || idToken.isEmpty) {
         return GoogleSignInResult.error(
           code: 'MISSING_TOKEN',
@@ -394,7 +375,6 @@ class AuthDatasourceImpl extends ApiProvider implements AuthDatasource {
         email: firebaseUser.email ?? '',
       );
     } catch (e) {
-      debugPrint('signInWithGoogleOnly error: $e');
       return GoogleSignInResult.error(
         code: 'EXCEPTION',
         message: e.toString(),

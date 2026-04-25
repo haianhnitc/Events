@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:events_app/data_mock/notification_mock.dart';
 
 class NotificationItem {
   final String id;
@@ -18,13 +19,37 @@ class NotificationItem {
     this.category = 'other',
     this.read = false,
   });
+
+  NotificationItem copyWith({
+    String? id,
+    String? title,
+    String? body,
+    DateTime? timestamp,
+    String? imageUrl,
+    String? category,
+    bool? read,
+  }) {
+    return NotificationItem(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      body: body ?? this.body,
+      timestamp: timestamp ?? this.timestamp,
+      imageUrl: imageUrl ?? this.imageUrl,
+      category: category ?? this.category,
+      read: read ?? this.read,
+    );
+  }
 }
 
 class NotificationsController extends GetxController {
   final RxBool isLoading = false.obs;
   final RxBool isRefreshing = false.obs;
+  final RxBool hasMore = true.obs;
+  final RxString errorMessage = ''.obs;
 
   final items = <NotificationItem>[].obs;
+  int _currentPage = 0;
+  static const int _pageSize = 20;
 
   @override
   void onInit() {
@@ -34,13 +59,40 @@ class NotificationsController extends GetxController {
 
   int get unreadCount => items.where((i) => !i.read).length;
 
-  Future<void> loadNotifications() async {
+  Future<void> loadNotifications({bool refresh = false}) async {
     if (isLoading.value) return;
+
+    if (refresh) {
+      _currentPage = 0;
+      hasMore.value = true;
+      items.clear();
+      errorMessage.value = '';
+    }
+
+    if (!hasMore.value && !refresh) return;
+
     isLoading.value = true;
 
-    await Future.delayed(const Duration(milliseconds: 600));
+    await Future.delayed(const Duration(milliseconds: 500));
 
-    items.assignAll(_buildMockData());
+    final start = _currentPage * _pageSize;
+    final end = start + _pageSize;
+    final pageData = notificationMock.sublist(
+      start,
+      end > notificationMock.length ? notificationMock.length : end,
+    );
+
+    if (pageData.isEmpty) {
+      hasMore.value = false;
+    } else {
+      if (refresh) {
+        items.assignAll(pageData);
+      } else {
+        items.addAll(pageData);
+      }
+      _currentPage++;
+      hasMore.value = end < notificationMock.length;
+    }
 
     isLoading.value = false;
   }
@@ -48,58 +100,13 @@ class NotificationsController extends GetxController {
   Future<void> refreshNotifications() async {
     if (isRefreshing.value) return;
     isRefreshing.value = true;
-
-    await Future.delayed(const Duration(milliseconds: 800));
-
-    items.assignAll(_buildMockData());
-
+    await loadNotifications(refresh: true);
     isRefreshing.value = false;
   }
 
-  List<NotificationItem> _buildMockData() {
-    final now = DateTime.now();
-    return [
-      NotificationItem(
-        id: 'n1',
-        title: 'Nhắc: Workshop Flutter',
-        body: 'Workshop Flutter bắt đầu sau 30 phút nữa. Hãy chuẩn bị sẵn sàng!',
-        timestamp: now.subtract(const Duration(minutes: 10)),
-        category: 'event',
-        read: false,
-      ),
-      NotificationItem(
-        id: 'n2',
-        title: 'Xác nhận đăng ký sự kiện',
-        body: 'Bạn đã đăng ký thành công sự kiện "Tech Summit 2026" diễn ra ngày 25/11.',
-        timestamp: now.subtract(const Duration(hours: 3)),
-        category: 'event',
-        read: false,
-      ),
-      NotificationItem(
-        id: 'n3',
-        title: 'Nhận thưởng coin',
-        body: 'Bạn đã nhận được 10 coin từ việc đọc tin tức. Cảm ơn bạn đã tham gia!',
-        timestamp: now.subtract(const Duration(hours: 8)),
-        category: 'system',
-        read: true,
-      ),
-      NotificationItem(
-        id: 'n4',
-        title: 'Thông báo hệ thống',
-        body: 'Hệ thống sẽ bảo trì vào lúc 00:00 - 02:00 ngày mai. Vui lòng lưu công việc trước đó.',
-        timestamp: now.subtract(const Duration(days: 1)),
-        category: 'system',
-        read: true,
-      ),
-      NotificationItem(
-        id: 'n5',
-        title: 'Đơn ứng tuyển CTV được duyệt',
-        body: 'Chúc mừng! Đơn ứng tuyển CTV của bạn đã được chấp nhận.',
-        timestamp: now.subtract(const Duration(days: 2)),
-        category: 'system',
-        read: true,
-      ),
-    ];
+  Future<void> loadMore() async {
+    if (isLoading.value || !hasMore.value) return;
+    await loadNotifications();
   }
 
   void markAllRead() {

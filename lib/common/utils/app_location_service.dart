@@ -111,7 +111,6 @@ class AppLocationService {
         error: LocationError.timeout(),
       );
     } catch (e) {
-      debugPrint('AppLocationService: getCurrentLocation error: $e');
       return (
         coords: null,
         error: LocationError.unknown('Lỗi: $e'),

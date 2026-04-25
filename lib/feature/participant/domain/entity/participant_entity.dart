@@ -20,6 +20,8 @@ class ParticipantEntity {
   final bool? hasFeedback;
   final DateTime? feedbackSubmittedTime;
   final int? applicationId;
+  final int? recruitmentId; 
+  final String? eventTitle; 
 
   ParticipantEntity({
     this.eventParticipantId,
@@ -39,6 +41,8 @@ class ParticipantEntity {
     this.hasFeedback,
     this.feedbackSubmittedTime,
     this.applicationId,
+    this.recruitmentId,
+    this.eventTitle,
   });
 
   ParticipantEntity copyWith({
@@ -59,6 +63,8 @@ class ParticipantEntity {
     bool? hasFeedback,
     DateTime? feedbackSubmittedTime,
     int? applicationId,
+    int? recruitmentId,
+    String? eventTitle,
   }) {
     return ParticipantEntity(
       eventParticipantId: eventParticipantId ?? this.eventParticipantId,
@@ -78,6 +84,8 @@ class ParticipantEntity {
       hasFeedback: hasFeedback ?? this.hasFeedback,
       feedbackSubmittedTime: feedbackSubmittedTime ?? this.feedbackSubmittedTime,
       applicationId: applicationId ?? this.applicationId,
+      recruitmentId: recruitmentId ?? this.recruitmentId,
+      eventTitle: eventTitle ?? this.eventTitle,
     );
   }
 
