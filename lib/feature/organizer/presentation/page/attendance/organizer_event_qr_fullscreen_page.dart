@@ -1,10 +1,10 @@
 import 'dart:async';
-import 'dart:convert';
+
+import 'package:qr_flutter/qr_flutter.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:events_app/feature/attendance/domain/entity/attendance_entity.dart';
 import 'package:events_app/feature/organizer/presentation/controller/organizer_event_qr_controller.dart';
 
 class OrganizerEventQrFullscreenPage extends StatefulWidget {
@@ -12,11 +12,13 @@ class OrganizerEventQrFullscreenPage extends StatefulWidget {
   final String eventName;
   final String? eventDate;
   final String? eventVenue;
+  final String action;
 
   const OrganizerEventQrFullscreenPage({
     super.key,
     required this.eventId,
     required this.eventName,
+    required this.action,
     this.eventDate,
     this.eventVenue,
   });
@@ -37,7 +39,7 @@ class _OrganizerEventQrFullscreenPageState
   void initState() {
     super.initState();
     _ctrl = Get.put(OrganizerEventQrController());
-    _ctrl.loadEventQr(widget.eventId);
+    _ctrl.loadEventQr(widget.eventId, widget.action);
 
     _pulseController = AnimationController(
       duration: const Duration(milliseconds: 1500),
@@ -85,42 +87,92 @@ class _OrganizerEventQrFullscreenPageState
   }
 
   Widget _buildContent() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+    return SafeArea(
+        child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            child: Center(
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      widget.action == 'CHECKIN'
+                          ? 'QUÉT ĐỂ CHECK-IN'
+                          : 'QUÉT ĐỂ CHECK-OUT',
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF06B6D4),
+                        letterSpacing: 2,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      widget.eventName,
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 32),
+                    _buildQrBox(),
+                    const SizedBox(height: 12),
+                    _buildCountdown(),
+                    const SizedBox(height: 24),
+                    _buildInstructions(),
+                    const SizedBox(height: 20),
+                    if (widget.eventDate != null || widget.eventVenue != null)
+                      _buildEventInfo(),
+                  ],
+                ),
+              ),
+            )));
+  }
+
+  Widget _buildToggleBtn({
+    required String label,
+    required IconData icon,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? const Color(0xFF06B6D4).withOpacity(0.2)
+              : Colors.white.withOpacity(0.06),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected
+                ? const Color(0xFF06B6D4)
+                : Colors.white.withOpacity(0.15),
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
-              'QUÉT ĐỂ CHECK-IN',
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF06B6D4),
-                letterSpacing: 2,
-              ),
+            Icon(
+              icon,
+              size: 14,
+              color: isSelected ? const Color(0xFF06B6D4) : Colors.white54,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(width: 4),
             Text(
-              widget.eventName,
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w800,
-                color: Colors.white,
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: isSelected ? const Color(0xFF06B6D4) : Colors.white54,
               ),
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(height: 32),
-            _buildQrBox(),
-            const SizedBox(height: 24),
-            _buildCountdown(),
-            const SizedBox(height: 24),
-            _buildInstructions(),
-            const SizedBox(height: 20),
-            if (widget.eventDate != null || widget.eventVenue != null)
-              _buildEventInfo(),
           ],
         ),
       ),
@@ -168,7 +220,7 @@ class _OrganizerEventQrFullscreenPageState
           iconColor: const Color(0xFFEF4444),
           title: 'Không tải được QR',
           subtitle: 'Nhấn để thử lại',
-          onTap: () => _ctrl.loadEventQr(widget.eventId),
+          onTap: () => _ctrl.loadEventQr(widget.eventId, widget.action),
         );
       }
 
@@ -207,19 +259,17 @@ class _OrganizerEventQrFullscreenPageState
                 borderRadius: BorderRadius.circular(12),
                 color: Colors.white,
               ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.memory(
-                  base64Decode(qr.qrContent!),
-                  width: 220,
-                  height: 220,
-                  fit: BoxFit.contain,
-                  errorBuilder: (_, __, ___) => Center(
-                    child: Icon(
-                      Icons.qr_code_2,
-                      size: 120,
-                      color: Colors.grey.shade300,
-                    ),
+              child: QrImageView(
+                data: qr.qrContent!,
+                version: QrVersions.auto,
+                size: 220,
+                backgroundColor: Colors.white,
+                errorCorrectionLevel: QrErrorCorrectLevel.M,
+                errorStateBuilder: (cxt, err) => Center(
+                  child: Icon(
+                    Icons.qr_code_2,
+                    size: 120,
+                    color: Colors.grey.shade300,
                   ),
                 ),
               ),
@@ -299,7 +349,7 @@ class _OrganizerEventQrFullscreenPageState
 
       if (isExpired) {
         return GestureDetector(
-          onTap: () => _ctrl.loadEventQr(widget.eventId),
+          onTap: () => _ctrl.loadEventQr(widget.eventId, widget.action),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             decoration: BoxDecoration(
@@ -373,10 +423,11 @@ class _OrganizerEventQrFullscreenPageState
   }
 
   double _getCountdownProgress(Duration remaining) {
-    const totalMinutes = 60;
-    final totalSeconds = totalMinutes * 60;
-    final remainingSeconds = remaining.inSeconds;
-    return (remainingSeconds / totalSeconds).clamp(0.0, 1.0);
+    final qr = _ctrl.eventQr.value;
+    if (qr?.expiryTime == null || qr?.issuedTime == null) return 1.0;
+    final total = qr!.expiryTime!.difference(qr.issuedTime!);
+    if (total.inSeconds <= 0) return 0.0;
+    return (remaining.inSeconds / total.inSeconds).clamp(0.0, 1.0);
   }
 
   Widget _buildInstructions() {
@@ -389,8 +440,7 @@ class _OrganizerEventQrFullscreenPageState
       ),
       child: Column(
         children: [
-          _buildInstructionRow(
-              Icons.phone_android, 'Mở ứng dụng Sự kiện'),
+          _buildInstructionRow(Icons.phone_android, 'Mở ứng dụng Sự kiện'),
           const SizedBox(height: 8),
           _buildInstructionRow(Icons.qr_code_scanner, 'Quét mã QR này'),
           const SizedBox(height: 8),

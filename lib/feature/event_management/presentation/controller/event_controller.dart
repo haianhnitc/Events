@@ -31,8 +31,8 @@ class EventController extends GetxController implements FilterSelectionControlle
       <int, List<String>>{}.obs;
   final RxString keyword = ''.obs;
   final RxBool hasMore = false.obs;
+  final RxBool isLoading = false.obs;
   final RxBool isLoadingMore = false.obs;
-  final RxBool isLoading = true.obs;
 
   int _currentPage = 0;
   int _visibleCount = 0;
@@ -50,12 +50,14 @@ class EventController extends GetxController implements FilterSelectionControlle
 
   void _reapplyFiltersIfReady() {
     if (!_categoryController.hasLoaded.value) return;
+    if (_allEvents.isEmpty) {
+      loadEvents(refresh: true);
+      return;
+    }
     _applyFiltersAndSync();
   }
 
   Future<void> loadEvents({bool refresh = false}) async {
-    if (isLoadingMore.value || isLoading.value) return;
-
     if (refresh) {
       _currentPage = 0;
       _allEvents.clear();
@@ -66,11 +68,8 @@ class EventController extends GetxController implements FilterSelectionControlle
 
     if (!hasMore.value && !refresh) return;
 
-    if (refresh || _currentPage == 0) {
-      isLoading.value = true;
-    } else {
-      isLoadingMore.value = true;
-    }
+    isLoading.value = _currentPage == 0;
+    isLoadingMore.value = _currentPage > 0;
 
     final result = await _getEventsUsecase(
       GetEventsParams(

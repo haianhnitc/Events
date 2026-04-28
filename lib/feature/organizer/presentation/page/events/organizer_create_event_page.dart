@@ -23,7 +23,7 @@ class OrganizerCreateEventPage extends StatefulWidget {
 class _OrganizerCreateEventPageState extends State<OrganizerCreateEventPage> {
   late OrganizerCreateEventController _ctrl;
   final _pageController = PageController();
-  int _currentStep = 0;
+  final _currentStepRx = 0.obs;
 
   @override
   void initState() {
@@ -52,7 +52,7 @@ class _OrganizerCreateEventPageState extends State<OrganizerCreateEventPage> {
   }
 
   void _goToStep(int step) {
-    setState(() => _currentStep = step);
+    _currentStepRx.value = step;
     _pageController.animateToPage(
       step,
       duration: const Duration(milliseconds: 300),
@@ -124,11 +124,11 @@ class _OrganizerCreateEventPageState extends State<OrganizerCreateEventPage> {
       padding: const EdgeInsets.symmetric(vertical: 16),
       child: Row(
         children: List.generate(steps.length, (i) {
-          final isActive = i <= _currentStep;
-          final isCurrent = i == _currentStep;
+          final isActive = i <= _currentStepRx.value;
+          final isCurrent = i == _currentStepRx.value;
           return Expanded(
             child: GestureDetector(
-              onTap: i < _currentStep ? () => _goToStep(i) : null,
+              onTap: i < _currentStepRx.value ? () => _goToStep(i) : null,
               child: Column(
                 children: [
                   Container(
@@ -141,8 +141,9 @@ class _OrganizerCreateEventPageState extends State<OrganizerCreateEventPage> {
                       shape: BoxShape.circle,
                     ),
                     child: Center(
-                      child: isActive && i < _currentStep
-                          ? const Icon(Icons.check, size: 14, color: Colors.white)
+                      child: isActive && i < _currentStepRx.value
+                          ? const Icon(Icons.check,
+                              size: 14, color: Colors.white)
                           : Text(
                               '${i + 1}',
                               style: TextStyle(
@@ -155,12 +156,15 @@ class _OrganizerCreateEventPageState extends State<OrganizerCreateEventPage> {
                   const SizedBox(height: 4),
                   Text(
                     steps[i],
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                         fontSize: 10,
                         color: isCurrent
                             ? const Color(0xFF06B6D4)
                             : Colors.grey.shade600,
-                        fontWeight: isCurrent ? FontWeight.w600 : FontWeight.w400),
+                        fontWeight:
+                            isCurrent ? FontWeight.w600 : FontWeight.w400),
                   ),
                 ],
               ),
@@ -392,6 +396,7 @@ class _OrganizerCreateEventPageState extends State<OrganizerCreateEventPage> {
               controller: _ctrl.certificateNameController,
               label: 'Tên chứng chỉ',
               hint: 'VD: Certificate of Attendance',
+              maxLines: 1,
               validator: _ctrl.validateCertificateName,
             ),
           ]),
@@ -483,8 +488,8 @@ class _OrganizerCreateEventPageState extends State<OrganizerCreateEventPage> {
                 return GestureDetector(
                   onTap: () => _ctrl.toggleCategoryOption(opt.id),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 6),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
                       color: isSelected
                           ? const Color(0xFF06B6D4).withOpacity(0.1)
@@ -586,8 +591,8 @@ class _OrganizerCreateEventPageState extends State<OrganizerCreateEventPage> {
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 8, vertical: 2),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF06B6D4)
-                                      .withOpacity(0.1),
+                                  color:
+                                      const Color(0xFF06B6D4).withOpacity(0.1),
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: Text(
@@ -692,8 +697,10 @@ class _OrganizerCreateEventPageState extends State<OrganizerCreateEventPage> {
     }
   }
 
-  void _showAddFeedbackQuestionDialog({int? index, FeedbackQuestionCreateParams? existing}) {
-    final contentCtrl = TextEditingController(text: existing?.questionContent ?? '');
+  void _showAddFeedbackQuestionDialog(
+      {int? index, FeedbackQuestionCreateParams? existing}) {
+    final contentCtrl =
+        TextEditingController(text: existing?.questionContent ?? '');
     final isRequired = existing?.isRequired ?? false;
     final selectedType = existing?.questionType ?? FeedbackQuestionType.text;
     final optionCtrls = <TextEditingController>[];
@@ -706,157 +713,169 @@ class _OrganizerCreateEventPageState extends State<OrganizerCreateEventPage> {
     final requiredRx = isRequired.obs;
 
     Get.dialog(
-      AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text(index == null ? 'Thêm câu hỏi' : 'Sửa câu hỏi'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              TextField(
-                controller: contentCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Nội dung câu hỏi',
-                  hintText: 'VD: Bạn hài lòng với sự kiện này không?',
-                  border: OutlineInputBorder(),
+      GetBuilder(
+        id: 'feedback_question_dialog',
+        init: _ctrl,
+        builder: (_) => AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Text(index == null ? 'Thêm câu hỏi' : 'Sửa câu hỏi'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextField(
+                  controller: contentCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'Nội dung câu hỏi',
+                    hintText: 'VD: Bạn hài lòng với sự kiện này không?',
+                    border: OutlineInputBorder(),
+                  ),
+                  maxLines: 2,
                 ),
-                maxLines: 2,
-              ),
-              const SizedBox(height: 16),
-              const Text('Loại câu hỏi',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
-              const SizedBox(height: 8),
-              Obx(() => Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      _buildTypeChip(typeRx, FeedbackQuestionType.text, 'Text'),
-                      _buildTypeChip(typeRx, FeedbackQuestionType.rating, 'Rating'),
-                      _buildTypeChip(typeRx, FeedbackQuestionType.singleChoice, '1 chọn'),
-                      _buildTypeChip(typeRx, FeedbackQuestionType.multipleChoice, 'Nhiều chọn'),
-                    ],
-                  )),
-              const SizedBox(height: 16),
-              Obx(() {
-                final type = typeRx.value;
-                if (type == FeedbackQuestionType.text ||
-                    type == FeedbackQuestionType.rating) {
-                  return const SizedBox.shrink();
-                }
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                const SizedBox(height: 16),
+                const Text('Loại câu hỏi',
+                    style:
+                        TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                const SizedBox(height: 8),
+                Obx(() => Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
                       children: [
-                        const Text('Tùy chọn',
-                            style:
-                                TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
-                        TextButton.icon(
-                          onPressed: () {
-                            optionCtrls.add(TextEditingController());
-                          },
-                          icon: const Icon(Icons.add, size: 14),
-                          label: const Text('Thêm'),
-                          style: TextButton.styleFrom(
-                              foregroundColor: const Color(0xFF06B6D4)),
-                        ),
+                        _buildTypeChip(
+                            typeRx, FeedbackQuestionType.text, 'Text'),
+                        _buildTypeChip(
+                            typeRx, FeedbackQuestionType.rating, 'Rating'),
+                        _buildTypeChip(typeRx,
+                            FeedbackQuestionType.singleChoice, '1 chọn'),
+                        _buildTypeChip(typeRx,
+                            FeedbackQuestionType.multipleChoice, 'Nhiều chọn'),
                       ],
-                    ),
-                    const SizedBox(height: 8),
-                    ...List.generate(optionCtrls.length, (i) {
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: TextField(
-                                controller: optionCtrls[i],
-                                decoration: InputDecoration(
-                                  hintText: 'Tùy chọn ${i + 1}',
-                                  border: const OutlineInputBorder(),
-                                  contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 10),
+                    )),
+                const SizedBox(height: 16),
+                Obx(() {
+                  final type = typeRx.value;
+                  if (type == FeedbackQuestionType.text ||
+                      type == FeedbackQuestionType.rating) {
+                    return const SizedBox.shrink();
+                  }
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text('Tùy chọn',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.w600, fontSize: 13)),
+                          TextButton.icon(
+                            onPressed: () {
+                              optionCtrls.add(TextEditingController());
+                            },
+                            icon: const Icon(Icons.add, size: 14),
+                            label: const Text('Thêm'),
+                            style: TextButton.styleFrom(
+                                foregroundColor: const Color(0xFF06B6D4)),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      ...List.generate(optionCtrls.length, (i) {
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: TextField(
+                                  controller: optionCtrls[i],
+                                  decoration: InputDecoration(
+                                    hintText: 'Tùy chọn ${i + 1}',
+                                    border: const OutlineInputBorder(),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 10),
+                                  ),
                                 ),
                               ),
-                            ),
-                            if (optionCtrls.length > 2)
-                              IconButton(
-                                icon: const Icon(Icons.close, size: 18),
-                                onPressed: () {
-                                  optionCtrls[i].dispose();
-                                  optionCtrls.removeAt(i);
-                                },
-                              ),
-                          ],
-                        ),
-                      );
-                    }),
-                  ],
-                );
-              }),
-              const SizedBox(height: 12),
-              Obx(() => CheckboxListTile(
-                    value: requiredRx.value,
-                    onChanged: (v) => requiredRx.value = v ?? false,
-                    title: const Text('Bắt buộc trả lời',
-                        style: TextStyle(fontSize: 13)),
-                    controlAffinity: ListTileControlAffinity.leading,
-                    contentPadding: EdgeInsets.zero,
-                    activeColor: const Color(0xFF06B6D4),
-                  )),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: const Text('Hủy'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              if (contentCtrl.text.trim().isEmpty) return;
-              final type = typeRx.value;
-              final needsOptions = type == FeedbackQuestionType.singleChoice ||
-                  type == FeedbackQuestionType.multipleChoice;
-              final options = needsOptions
-                  ? optionCtrls
-                      .where((c) => c.text.trim().isNotEmpty)
-                      .map((c) => FeedbackOptionCreateParams(
-                          optionValue: c.text.trim()))
-                      .toList()
-                  : null;
-
-              final question = FeedbackQuestionCreateParams(
-                questionContent: contentCtrl.text.trim(),
-                questionType: type,
-                isRequired: requiredRx.value,
-                options: options,
-              );
-
-              if (index != null) {
-                _ctrl.updateFeedbackQuestion(index, question);
-              } else {
-                _ctrl.addFeedbackQuestion(question);
-              }
-
-              for (final c in optionCtrls) {
-                c.dispose();
-              }
-              Get.back();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF06B6D4),
+                              if (optionCtrls.length > 2)
+                                IconButton(
+                                  icon: const Icon(Icons.close, size: 18),
+                                  onPressed: () {
+                                    optionCtrls[i].dispose();
+                                    optionCtrls.removeAt(i);
+                                  },
+                                ),
+                            ],
+                          ),
+                        );
+                      }),
+                    ],
+                  );
+                }),
+                const SizedBox(height: 12),
+                Obx(() => CheckboxListTile(
+                      value: requiredRx.value,
+                      onChanged: (v) => requiredRx.value = v ?? false,
+                      title: const Text('Bắt buộc trả lời',
+                          style: TextStyle(fontSize: 13)),
+                      controlAffinity: ListTileControlAffinity.leading,
+                      contentPadding: EdgeInsets.zero,
+                      activeColor: const Color(0xFF06B6D4),
+                    )),
+              ],
             ),
-            child: Text(index == null ? 'Thêm' : 'Lưu'),
           ),
-        ],
+          actions: [
+            TextButton(
+              onPressed: () => Get.back(),
+              child: const Text('Hủy'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (contentCtrl.text.trim().isEmpty) return;
+                final type = typeRx.value;
+                final needsOptions =
+                    type == FeedbackQuestionType.singleChoice ||
+                        type == FeedbackQuestionType.multipleChoice;
+                final options = needsOptions
+                    ? optionCtrls
+                        .where((c) => c.text.trim().isNotEmpty)
+                        .map((c) => FeedbackOptionCreateParams(
+                            optionValue: c.text.trim()))
+                        .toList()
+                    : null;
+
+                final question = FeedbackQuestionCreateParams(
+                  questionContent: contentCtrl.text.trim(),
+                  questionType: type,
+                  isRequired: requiredRx.value,
+                  options: options,
+                );
+
+                if (index != null) {
+                  _ctrl.updateFeedbackQuestion(index, question);
+                } else {
+                  _ctrl.addFeedbackQuestion(question);
+                }
+
+                for (final c in optionCtrls) {
+                  c.dispose();
+                }
+                Get.back();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF06B6D4),
+              ),
+              child: Text(index == null ? 'Thêm' : 'Lưu'),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildTypeChip(Rx<FeedbackQuestionType> rx, FeedbackQuestionType type, String label) {
+  Widget _buildTypeChip(
+      Rx<FeedbackQuestionType> rx, FeedbackQuestionType type, String label) {
     return GestureDetector(
       onTap: () => rx.value = type,
       child: Obx(() {
@@ -869,14 +888,16 @@ class _OrganizerCreateEventPageState extends State<OrganizerCreateEventPage> {
                 : Colors.grey.shade100,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: isSelected ? const Color(0xFF06B6D4) : Colors.grey.shade300,
+              color:
+                  isSelected ? const Color(0xFF06B6D4) : Colors.grey.shade300,
             ),
           ),
           child: Text(
             label,
             style: TextStyle(
               fontSize: 12,
-              color: isSelected ? const Color(0xFF06B6D4) : Colors.grey.shade600,
+              color:
+                  isSelected ? const Color(0xFF06B6D4) : Colors.grey.shade600,
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
             ),
           ),
@@ -906,7 +927,8 @@ class _OrganizerCreateEventPageState extends State<OrganizerCreateEventPage> {
                     errorBuilder: (_, __, ___) => Container(
                       height: 120,
                       color: Colors.grey.shade200,
-                      child: const Center(child: Icon(Icons.image, color: Colors.grey)),
+                      child: const Center(
+                          child: Icon(Icons.image, color: Colors.grey)),
                     ),
                   ),
                 ),
@@ -930,10 +952,9 @@ class _OrganizerCreateEventPageState extends State<OrganizerCreateEventPage> {
                   (int.tryParse(_ctrl.priceController.text) ?? 0) == 0
                       ? 'Miễn phí'
                       : '${_ctrl.priceController.text} VNĐ'),
-              _buildReviewRow('Hình thức tuyển',
-                  _ctrl.recruitmentType.value.name),
               _buildReviewRow(
-                  'Coin thưởng', _ctrl.rewardCoinController.text),
+                  'Hình thức tuyển', _ctrl.recruitmentType.value.displayName),
+              _buildReviewRow('Coin thưởng', _ctrl.rewardCoinController.text),
               _buildReviewRow(
                   'Điểm đoàn', _ctrl.youthUnionPointController.text),
               _buildReviewRow(
@@ -976,9 +997,7 @@ class _OrganizerCreateEventPageState extends State<OrganizerCreateEventPage> {
     return Text(
       title,
       style: const TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w700,
-          color: Color(0xff273143)),
+          fontSize: 14, fontWeight: FontWeight.w700, color: Color(0xff273143)),
     );
   }
 
@@ -1086,8 +1105,8 @@ class _OrganizerCreateEventPageState extends State<OrganizerCreateEventPage> {
     );
   }
 
-  Widget _buildRecruitmentTypeOption(
-      EventRecruitmentType type, String label, String description, IconData icon) {
+  Widget _buildRecruitmentTypeOption(EventRecruitmentType type, String label,
+      String description, IconData icon) {
     final isSelected = _ctrl.recruitmentType.value == type;
     return GestureDetector(
       onTap: () => _ctrl.setRecruitmentType(type),
@@ -1124,8 +1143,8 @@ class _OrganizerCreateEventPageState extends State<OrganizerCreateEventPage> {
                             : const Color(0xff273143),
                       )),
                   Text(description,
-                      style: TextStyle(
-                          fontSize: 11, color: Colors.grey.shade600)),
+                      style:
+                          TextStyle(fontSize: 11, color: Colors.grey.shade600)),
                 ],
               ),
             ),
@@ -1147,9 +1166,7 @@ class _OrganizerCreateEventPageState extends State<OrganizerCreateEventPage> {
           SizedBox(
             width: 120,
             child: Text(label,
-                style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey.shade600)),
+                style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
           ),
           Expanded(
             child: Text(value,
@@ -1176,30 +1193,29 @@ class _OrganizerCreateEventPageState extends State<OrganizerCreateEventPage> {
         ],
       ),
       child: SafeArea(
-        child: Row(
-          children: [
-            if (_currentStep > 0)
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: () => _goToStep(_currentStep - 1),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    side: const BorderSide(color: Color(0xFF06B6D4)),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10)),
+        child: Obx(() => Row(
+              children: [
+                if (_currentStepRx.value > 0)
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => _goToStep(_currentStepRx.value - 1),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        side: const BorderSide(color: Color(0xFF06B6D4)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
+                      ),
+                      child: const Text('Quay lại',
+                          style: TextStyle(
+                              color: Color(0xFF06B6D4),
+                              fontWeight: FontWeight.w600)),
+                    ),
                   ),
-                  child: const Text('Quay lại',
-                      style: TextStyle(
-                          color: Color(0xFF06B6D4),
-                          fontWeight: FontWeight.w600)),
-                ),
-              ),
-            if (_currentStep > 0) const SizedBox(width: 12),
-            Expanded(
-              child: Obx(() => ElevatedButton(
-                    onPressed: _ctrl.isSubmitting.value
-                        ? null
-                        : () => _handleNext(),
+                if (_currentStepRx.value > 0) const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed:
+                        _ctrl.isSubmitting.value ? null : () => _handleNext(),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF06B6D4),
                       padding: const EdgeInsets.symmetric(vertical: 14),
@@ -1213,23 +1229,26 @@ class _OrganizerCreateEventPageState extends State<OrganizerCreateEventPage> {
                             height: 20,
                             child: CircularProgressIndicator(
                                 strokeWidth: 2, color: Colors.white))
-                        : Obx(() => Text(
-                            _currentStep == 6
-                                ? (_ctrl.isEditMode ? 'Cập nhật sự kiện' : 'Tạo sự kiện')
+                        : Text(
+                            _currentStepRx.value == 6
+                                ? (_ctrl.isEditMode
+                                    ? 'Cập nhật sự kiện'
+                                    : 'Tạo sự kiện')
                                 : 'Tiếp tục',
                             style: const TextStyle(
                                 color: Colors.white,
-                                fontWeight: FontWeight.w600))),
-                  )),
-            ),
-          ],
-        ),
+                                fontWeight: FontWeight.w600)),
+                  ),
+                ),
+              ],
+            )),
       ),
     );
   }
 
   void _handleNext() {
-    if (_currentStep == 0) {
+    final step = _currentStepRx.value;
+    if (step == 0) {
       final title = _ctrl.validateTitle(_ctrl.titleController.text);
       final desc = _ctrl.validateDescription(_ctrl.descriptionController.text);
       final venue = _ctrl.validateVenue(null);
@@ -1246,7 +1265,7 @@ class _OrganizerCreateEventPageState extends State<OrganizerCreateEventPage> {
         return;
       }
     }
-    if (_currentStep == 1) {
+    if (step == 1) {
       final start = _ctrl.validateStartTime(_ctrl.startTime.value);
       final end = _ctrl.validateEndTime(_ctrl.endTime.value);
       if (start != null) {
@@ -1258,8 +1277,8 @@ class _OrganizerCreateEventPageState extends State<OrganizerCreateEventPage> {
         return;
       }
     }
-    if (_currentStep < 6) {
-      _goToStep(_currentStep + 1);
+    if (step < 6) {
+      _goToStep(step + 1);
     } else {
       _ctrl.submit();
     }

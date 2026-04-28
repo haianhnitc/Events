@@ -31,14 +31,15 @@ class OrganizerAppLayout extends StatelessWidget {
         toolbarHeight: 61,
         backgroundColor: Colors.white,
         elevation: 0,
-        title: const Text(
-          'Organizer',
-          style: TextStyle(
-            color: Color(0xff273143),
-            fontSize: 17,
-            fontWeight: FontWeight.w700,
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 16),
+          child: SvgPicture.asset(
+            AssetPath.logoText,
+            height: 32,
           ),
         ),
+        leadingWidth: 120,
+        title: const SizedBox.shrink(),
         centerTitle: true,
         actions: [
           Obx(() {
@@ -170,6 +171,7 @@ class OrganizerAppLayout extends StatelessWidget {
           ],
         ),
         child: FloatingActionButton(
+          heroTag: 'organizer_main_fab',
           onPressed: () async {
             final choice = await showModalBottomSheet<String>(
               context: context,
@@ -235,14 +237,22 @@ class OrganizerAppLayout extends StatelessWidget {
 
             if (choice == 'qr') {
               final eventId = layoutController.currentEventId.value;
-              final result = await Get.to(() => OrganizerQrScannerPage(eventId: eventId));
-              if (result == true) {
-                AppSnackbarUtils.showSuccess(
-                    'Thành công', 'Check-in đã được ghi nhận');
+              if (eventId == null) {
+                await Get.to(() => const OrganizerQrScannerPage());
+              } else {
+                final result = await Get.to(() => OrganizerQrScannerPage(eventId: eventId));
+                if (result == true) {
+                  AppSnackbarUtils.showSuccess(
+                      'Thành công', 'Check-in đã được ghi nhận');
+                }
               }
             } else if (choice == 'barcode') {
               final eventId = layoutController.currentEventId.value;
-              await Get.to(() => OrganizerBarcodeScannerPage(eventId: eventId));
+              if (eventId == null) {
+                await Get.to(() => const OrganizerBarcodeScannerPage());
+              } else {
+                await Get.to(() => OrganizerBarcodeScannerPage(eventId: eventId));
+              }
             }
           },
           elevation: 0,

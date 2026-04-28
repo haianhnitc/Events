@@ -1,7 +1,9 @@
 import 'package:events_app/common/path/asset_path.dart';
+import 'package:events_app/feature/home/presentation/controller/home_controller.dart';
 import 'package:events_app/feature/user_management/domain/entity/rank_entity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:get/get.dart';
 
 class RankingCard extends StatelessWidget {
   final RankEntity? rank;
@@ -15,10 +17,6 @@ class RankingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ranking = rank?.ranking;
-    final levelName = rank?.levelName ?? 'Chưa có';
-    final totalCoin = rank?.totalCoin ?? 0;
-
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -76,19 +74,32 @@ class RankingCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 5.27),
-                      Text(
-                        ranking != null
-                            ? 'Bạn đang ở vị trí #$ranking • $levelName • $totalCoin xu'
-                            : 'Bạn chưa có xếp hạng',
-                        style: TextStyle(
-                          color: const Color(0xff67688C).withValues(alpha: 0.9),
-                          fontSize: 12,
-                          height: 16 / 12,
-                          fontWeight: FontWeight.w400,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                      Obx(() {
+                        final homeController =
+                            Get.isRegistered<HomeController>()
+                                ? Get.find<HomeController>()
+                                : null;
+                        final effectiveRank =
+                            rank ?? homeController?.userRank.value;
+                        final ranking = effectiveRank?.ranking;
+                        final levelName =
+                            effectiveRank?.levelName ?? 'Chưa có';
+                        final totalCoin = effectiveRank?.totalCoin ?? 0;
+                        return Text(
+                          ranking != null
+                              ? 'Bạn đang ở vị trí #$ranking • $levelName • $totalCoin xu'
+                              : 'Bạn chưa có xếp hạng',
+                          style: TextStyle(
+                            color:
+                                const Color(0xff67688C).withValues(alpha: 0.9),
+                            fontSize: 12,
+                            height: 16 / 12,
+                            fontWeight: FontWeight.w400,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        );
+                      }),
                     ],
                   ),
                 ),

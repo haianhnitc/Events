@@ -2,7 +2,6 @@ import 'package:dartz/dartz.dart';
 import 'package:events_app/api_template/services/failure.dart';
 import 'package:events_app/common/helpers/use_case.dart';
 import 'package:events_app/feature/participant/domain/entity/participant_entity.dart';
-import 'package:events_app/feature/ticket/domain/entity/ticket_entity.dart';
 import 'package:events_app/feature/organizer/participant/domain/repository/organizer_participant_repository.dart';
 import 'package:events_app/feature/organizer/participant/domain/usecase/organizer_participant_params.dart';
 import 'package:injectable/injectable.dart';
@@ -53,18 +52,5 @@ class DeleteOrganizerParticipantUsecase implements UseCase<Unit, int> {
   @override
   Future<Either<FailureEntity, Unit>> call(int id) async {
     return await _repository.deleteParticipant(id);
-  }
-}
-
-@injectable
-class GetOrganizerTicketsUsecase
-    implements UseCase<List<TicketEntity>, GetOrganizerTicketsParams> {
-  final OrganizerParticipantRepository _repository;
-  GetOrganizerTicketsUsecase(this._repository);
-
-  @override
-  Future<Either<FailureEntity, List<TicketEntity>>> call(
-      GetOrganizerTicketsParams params) async {
-    return await _repository.getTickets(params);
   }
 }

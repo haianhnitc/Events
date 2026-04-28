@@ -90,7 +90,7 @@ class CtvRecruitmentDatasourceImpl extends ApiProvider
       final response = await get<Map<String, dynamic>>(
         ApiPath.recruitmentQuestions(recruitmentId),
         (data) => Map<String, dynamic>.from(data as Map),
-        requireAuth: false,
+        requireAuth: true,
       );
 
       return forwardEnvelopeResponse<List<RequirementQuestionModel>>(

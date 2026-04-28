@@ -1,14 +1,25 @@
+import 'package:events_app/feature/common/domain/enum/app_enum.dart';
 import 'package:events_app/feature/common/utils/app_date_utils.dart';
-import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
 import 'package:events_app/feature/organizer/presentation/controller/organizer_manual_checkin_controller.dart';
 import 'package:events_app/feature/organizer/presentation/controller/organizer_participant_detail_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+String _participantTypeName(ParticipantType? type) {
+  if (type == null) return 'ATTENDEE';
+  switch (type) {
+    case ParticipantType.attendee:
+      return 'ATTENDEE';
+    case ParticipantType.ctv:
+      return 'CTV';
+  }
+}
+
 class OrganizerParticipantDetailPage extends StatefulWidget {
   final int participantId;
 
-  const OrganizerParticipantDetailPage({super.key, required this.participantId});
+  const OrganizerParticipantDetailPage(
+      {super.key, required this.participantId});
 
   @override
   State<OrganizerParticipantDetailPage> createState() =>
@@ -81,8 +92,6 @@ class _OrganizerParticipantDetailPageState
               const SizedBox(height: 16),
               _buildAttendanceCard(p),
               const SizedBox(height: 16),
-              _buildHistorySection(),
-              const SizedBox(height: 16),
               _buildFeedbackSection(),
               const SizedBox(height: 16),
               _buildActionButtons(p),
@@ -99,25 +108,26 @@ class _OrganizerParticipantDetailPageState
     final name = user?.fullName ?? 'N/A';
     final email = user?.email ?? 'N/A';
     final avatar = user?.avatarUrl;
-    final typeName = p.participantType?.name ?? 'ATTENDEE';
+    final typeName = _participantTypeName(p.participantType);
     final statusName = p.status?.name ?? 'REGISTERED';
     final isCheckedIn = p.hasCheckedIn == true;
     final registeredTime = p.registeredTime != null
         ? AppDateUtils.formatDate(p.registeredTime!)
         : 'N/A';
 
-    String typeLabel = typeName == 'CTV' ? 'Cộng tác viên' : 'Người tham dự';
+    String typeLabel =
+        typeName == 'ctv' ? 'Cộng tác viên' : 'Người tham dự';
     Color typeColor = const Color(0xFF06B6D4);
-    if (typeName == 'CTV') typeColor = const Color(0xFF8B5CF6);
+    if (typeName == 'ctv') typeColor = const Color(0xFF8B5CF6);
 
     String statusLabel;
     Color statusColor;
     switch (statusName) {
-      case 'ATTENDED':
+      case 'attended':
         statusLabel = 'Đã tham dự';
         statusColor = const Color(0xFF10B981);
         break;
-      case 'NOSHOW':
+      case 'noShow':
         statusLabel = 'Vắng mặt';
         statusColor = const Color(0xFFEF4444);
         break;
@@ -162,10 +172,12 @@ class _OrganizerParticipantDetailPageState
                         color: Color(0xff273143))),
                 const SizedBox(height: 4),
                 Text(email,
-                    style: TextStyle(fontSize: 13, color: Colors.grey.shade600)),
+                    style:
+                        TextStyle(fontSize: 13, color: Colors.grey.shade600)),
                 const SizedBox(height: 4),
                 Text('Đăng ký: $registeredTime',
-                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+                    style:
+                        TextStyle(fontSize: 12, color: Colors.grey.shade600)),
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 6,
@@ -173,7 +185,8 @@ class _OrganizerParticipantDetailPageState
                   children: [
                     _buildChip(typeLabel, typeColor),
                     _buildChip(statusLabel, statusColor),
-                    if (isCheckedIn) _buildChip('Đã check-in', const Color(0xFF10B981)),
+                    if (isCheckedIn)
+                      _buildChip('Đã check-in', const Color(0xFF10B981)),
                   ],
                 ),
               ],
@@ -257,133 +270,6 @@ class _OrganizerParticipantDetailPageState
     );
   }
 
-  Widget _buildHistorySection() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: const [
-          BoxShadow(
-              color: Color(0x0F000000), offset: Offset(0, 2), blurRadius: 8)
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(Icons.event, size: 18, color: Color(0xFF06B6D4)),
-              const SizedBox(width: 8),
-              const Text('Lịch sử tham dự',
-                  style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xff273143))),
-              const Spacer(),
-              if (_detailCtrl.isLoadingHistory.value)
-                const SizedBox(
-                    width: 14,
-                    height: 14,
-                    child: CircularProgressIndicator(strokeWidth: 2)),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Obx(() {
-            if (_detailCtrl.isLoadingHistory.value &&
-                _detailCtrl.participatedEvents.isEmpty) {
-              return const Center(
-                  child: Padding(
-                padding: EdgeInsets.all(12),
-                child: Text('Đang tải...',
-                    style: TextStyle(color: Color(0xff94A3B8), fontSize: 13)),
-              ));
-            }
-            final events = _detailCtrl.participatedEvents;
-            if (events.isEmpty) {
-              return const Center(
-                  child: Padding(
-                padding: EdgeInsets.all(12),
-                child: Text('Chưa có lịch sử tham dự',
-                    style: TextStyle(color: Color(0xff94A3B8), fontSize: 13)),
-              ));
-            }
-            return Column(
-              children: events.take(5).map((e) {
-                final statusBadge = _buildEventStatusBadge(e.status?.name ?? '');
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                            color: const Color(0xFFE0F2FE),
-                            borderRadius: BorderRadius.circular(8)),
-                        child: const Icon(Icons.event,
-                            size: 18, color: Color(0xFF06B6D4)),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(e.title ?? 'N/A',
-                                style: const TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
-                                    color: Color(0xff273143)),
-                                overflow: TextOverflow.ellipsis),
-                            Text(
-                                e.startTime != null
-                                    ? AppDateUtils.formatDate(e.startTime!)
-                                    : 'N/A',
-                                style: TextStyle(
-                                    fontSize: 11,
-                                    color: Colors.grey.shade600)),
-                          ],
-                        ),
-                      ),
-                      statusBadge,
-                    ],
-                  ),
-                );
-              }).toList(),
-            );
-          }),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildEventStatusBadge(String statusName) {
-    Color color;
-    String label;
-    switch (statusName) {
-      case 'PUBLISHED':
-        color = const Color(0xFF10B981);
-        label = 'Đã tham dự';
-        break;
-      case 'CLOSED':
-        color = const Color(0xFF64748B);
-        label = 'Đã đóng';
-        break;
-      default:
-        color = const Color(0xff94A3B8);
-        label = statusName;
-    }
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Text(label,
-          style: TextStyle(fontSize: 10, color: color, fontWeight: FontWeight.w600)),
-    );
-  }
-
   Widget _buildFeedbackSection() {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -444,8 +330,7 @@ class _OrganizerParticipantDetailPageState
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     if (fb.createdTime != null)
-                      Text(
-                          'Gửi: ${AppDateUtils.formatDate(fb.createdTime!)}',
+                      Text('Gửi: ${AppDateUtils.formatDate(fb.createdTime!)}',
                           style: TextStyle(
                               fontSize: 11, color: Colors.grey.shade500)),
                     const SizedBox(height: 8),
@@ -490,10 +375,10 @@ class _OrganizerParticipantDetailPageState
   }
 
   Widget _buildFeedbackAnswer(a) {
-    final typeName = a.questionType?.name ?? 'TEXT';
+    final typeName = a.questionType?.name ?? 'text';
     String displayValue = a.answerValue ?? '';
 
-    if (typeName == 'RATING') {
+    if (typeName == 'rating') {
       final rating = int.tryParse(displayValue) ?? 0;
       return Row(
         children: [
@@ -527,7 +412,10 @@ class _OrganizerParticipantDetailPageState
                       fontWeight: FontWeight.w600,
                       color: Color(0xff273143))),
               const SizedBox(height: 2),
-              Text(displayValue.isEmpty ? '(Không có câu trả lời)' : displayValue,
+              Text(
+                  displayValue.isEmpty
+                      ? '(Không có câu trả lời)'
+                      : displayValue,
                   style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
             ],
           ),
@@ -566,7 +454,9 @@ class _OrganizerParticipantDetailPageState
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
-                            isCheckedIn ? Icons.check_circle : Icons.check_circle_outline,
+                            isCheckedIn
+                                ? Icons.check_circle
+                                : Icons.check_circle_outline,
                             size: 18,
                             color: (epId != null && !isCheckedIn)
                                 ? const Color(0xFF10B981)

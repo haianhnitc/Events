@@ -213,12 +213,12 @@ class AuthDatasourceImpl extends ApiProvider implements AuthDatasource {
           ? const ApiResponse.success(null)
           : _missingIdTokenResponse();
     }
-      final response = await post<Map<String, dynamic>>(
-        ApiPath.authVerify,
-        (data) => Map<String, dynamic>.from(data as Map),
-        requireAuth: true,
-      );
-      return _parseUserResponse(response);
+    final response = await post<Map<String, dynamic>>(
+      ApiPath.authVerify,
+      (data) => Map<String, dynamic>.from(data as Map),
+      requireAuth: true,
+    );
+    return _parseUserResponse(response);
   }
 
   Future<ApiResponse<UserModel?>> _verifyFirebaseUserByUid(

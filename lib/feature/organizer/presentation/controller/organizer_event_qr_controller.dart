@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:events_app/feature/organizer/attendance/domain/usecase/organizer_attendance_params.dart';
 import 'package:get/get.dart';
 import 'package:events_app/api_template/services/failure.dart';
 import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
@@ -43,12 +44,13 @@ class OrganizerEventQrController extends GetxController {
     );
   }
 
-  Future<void> loadEventQr(int eventId) async {
+  Future<void> loadEventQr(int eventId, String action) async {
     if (isLoading.value) return;
     isLoading.value = true;
     errorMessage.value = '';
 
-    final result = await _getEventQrUsecase(eventId);
+    final result = await _getEventQrUsecase(
+        GetOrganizerEventQrParams(eventId: eventId, action: action));
     result.fold(
       (failure) {
         _handleFailure(failure);
@@ -57,23 +59,20 @@ class OrganizerEventQrController extends GetxController {
       (qr) {
         eventQr.value = qr;
         isLoading.value = false;
-        _scheduleExpiryRefresh(eventId, qr);
+        _scheduleExpiryRefresh(eventId, action, qr);
       },
     );
   }
 
-  void _scheduleExpiryRefresh(int eventId, AttendanceQrEntity qr) {
+  void _scheduleExpiryRefresh(
+      int eventId, String action, AttendanceQrEntity qr) {
     _expiryTimer?.cancel();
-    if (qr.expiryTime == null) return;
-
-    final remaining = qr.expiryTime!.difference(DateTime.now());
-    if (remaining.isNegative || remaining.inSeconds < 1) {
-      loadEventQr(eventId);
-      return;
-    }
-
-    _expiryTimer = Timer(remaining, () {
-      loadEventQr(eventId);
+    _expiryTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!isExpired) {
+        eventQr.refresh();
+      } else {
+        _expiryTimer?.cancel();
+      }
     });
   }
 
@@ -124,12 +123,10 @@ class OrganizerEventQrController extends GetxController {
 
     final lower = rawMessage.toLowerCase();
 
-    if (lower.contains('not found') ||
-        lower.contains('không tồn tại')) {
+    if (lower.contains('not found') || lower.contains('không tồn tại')) {
       return 'Không tìm thấy người tham gia này.';
     }
-    if (lower.contains('permission') ||
-        lower.contains('quyền')) {
+    if (lower.contains('permission') || lower.contains('quyền')) {
       return 'Bạn không có quyền lấy QR của người này.';
     }
     if (lower.contains('already checked in')) {

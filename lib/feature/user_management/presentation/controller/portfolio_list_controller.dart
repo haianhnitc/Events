@@ -10,8 +10,8 @@ class PortfolioListController extends GetxController {
   final RxList<PortfolioEntity> publishedPortfolios = <PortfolioEntity>[].obs;
   final RxList<PortfolioEntity> draftPortfolios = <PortfolioEntity>[].obs;
 
-  final RxBool isLoadingPublished = true.obs;
-  final RxBool isLoadingDrafts = true.obs;
+  final RxBool isLoadingPublished = false.obs;
+  final RxBool isLoadingDrafts = false.obs;
   final RxBool hasMorePublished = true.obs;
   final RxBool hasMoreDrafts = true.obs;
 

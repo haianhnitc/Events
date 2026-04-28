@@ -1,3 +1,4 @@
+import 'package:events_app/feature/common/domain/enum/app_enum.dart';
 import 'package:events_app/feature/common/utils/app_date_utils.dart';
 import 'package:events_app/feature/event_management/domain/entity/event_summary_entity.dart';
 import 'package:events_app/feature/organizer/presentation/controller/organizer_attendance_list_controller.dart';
@@ -36,8 +37,8 @@ class _OrganizerAttendanceReportPageState
 
     if (widget.eventId != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        final found = _eventCtrl.events.firstWhereOrNull(
-            (e) => e.eventId == widget.eventId);
+        final found = _eventCtrl.events
+            .firstWhereOrNull((e) => e.eventId == widget.eventId);
         if (found != null && mounted) {
           setState(() => _selectedEvent = found);
           _onEventSelected(found);
@@ -63,15 +64,17 @@ class _OrganizerAttendanceReportPageState
       logs = logs.where((l) {
         final created = l.createdTime;
         if (created == null) return false;
-        return created.isAfter(_selectedDateRange!.start.subtract(const Duration(days: 1))) &&
-            created.isBefore(_selectedDateRange!.end.add(const Duration(days: 1)));
+        return created.isAfter(
+                _selectedDateRange!.start.subtract(const Duration(days: 1))) &&
+            created
+                .isBefore(_selectedDateRange!.end.add(const Duration(days: 1)));
       }).toList();
     }
 
     if (_selectedFilter == 'checkin') {
-      logs = logs.where((l) => l.type?.name == 'checkIn').toList();
+      logs = logs.where((l) => l.type == AttendanceLogType.checkIn).toList();
     } else if (_selectedFilter == 'checkout') {
-      logs = logs.where((l) => l.type?.name == 'checkOut').toList();
+      logs = logs.where((l) => l.type == AttendanceLogType.checkOut).toList();
     }
 
     return logs;
@@ -323,14 +326,17 @@ class _OrganizerAttendanceReportPageState
             const SizedBox(height: 16),
             Row(
               children: [
+                _buildSummaryItem('Tổng đăng ký', '$total', Icons.group_add,
+                    const Color(0xFF06B6D4)),
+                _buildSummaryItem('Đã check-in', '$checkedIn',
+                    Icons.check_circle, const Color(0xFF10B981)),
+                _buildSummaryItem('Vắng mặt', '$noShow', Icons.cancel,
+                    const Color(0xFFEF4444)),
                 _buildSummaryItem(
-                    'Tổng đăng ký', '$total', Icons.group_add, const Color(0xFF06B6D4)),
-                _buildSummaryItem(
-                    'Đã check-in', '$checkedIn', Icons.check_circle, const Color(0xFF10B981)),
-                _buildSummaryItem(
-                    'Vắng mặt', '$noShow', Icons.cancel, const Color(0xFFEF4444)),
-                _buildSummaryItem('Tỷ lệ', '${(rate * 100).toStringAsFixed(0)}%',
-                    Icons.percent, const Color(0xFFF59E0B)),
+                    'Tỷ lệ',
+                    '${(rate * 100).toStringAsFixed(0)}%',
+                    Icons.percent,
+                    const Color(0xFFF59E0B)),
               ],
             ),
           ],
@@ -355,9 +361,7 @@ class _OrganizerAttendanceReportPageState
             const SizedBox(height: 6),
             Text(value,
                 style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w800,
-                    color: color)),
+                    fontSize: 16, fontWeight: FontWeight.w800, color: color)),
             const SizedBox(height: 2),
             Text(label,
                 style: TextStyle(fontSize: 10, color: Colors.grey.shade600),
@@ -479,7 +483,8 @@ class _OrganizerAttendanceReportPageState
                         color: Color(0xff273143))),
                 const Spacer(),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
                     color: const Color(0xFF06B6D4).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
@@ -526,11 +531,11 @@ class _OrganizerAttendanceReportPageState
                                     fontWeight: FontWeight.w600,
                                     color: Color(0xff64748B)))),
                         Expanded(
-                          child: Text('Người tham gia',
-                              style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  color: Color(0xff64748B)))),
+                            child: Text('Người tham gia',
+                                style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xff64748B)))),
                         SizedBox(
                             width: 70,
                             child: Text('Thời gian',
@@ -563,7 +568,7 @@ class _OrganizerAttendanceReportPageState
   }
 
   Widget _buildReportLogRow(int index, dynamic log) {
-    final typeName = log.type?.name ?? '';
+    final typeName = log.type?.displayName ?? '';
     final typeColor = typeName == 'checkIn'
         ? const Color(0xFF10B981)
         : const Color(0xFFF59E0B);

@@ -34,7 +34,9 @@ class _OrganizerParticipantListPageState
   void initState() {
     super.initState();
     _ctrl = Get.put(OrganizerParticipantListController());
-    _ctrl.setEventFilter(widget.eventId);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _ctrl.setEventFilter(widget.eventId);
+    });
   }
 
   @override
@@ -47,21 +49,9 @@ class _OrganizerParticipantListPageState
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F8),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xff64748B)),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          'Người tham gia',
-          style: TextStyle(
-              color: Color(0xff273143),
-              fontSize: 17,
-              fontWeight: FontWeight.w700),
-        ),
-        centerTitle: true,
+      appBar: OrganizerAppBar(
+        title: 'Người tham gia',
+        subtitle: widget.eventTitle,
         actions: [
           IconButton(
             icon: const Icon(Icons.person_add_outlined, color: Color(0xff64748B)),
@@ -98,7 +88,7 @@ class _OrganizerParticipantListPageState
                   onClear: () => setState(() {}),
                 ),
                 const SizedBox(height: 12),
-                _buildFilterChips(),
+          Obx(() => _buildFilterChips()),
               ],
             ),
           ),
@@ -153,46 +143,30 @@ class _OrganizerParticipantListPageState
     final total = _ctrl.participants.length;
     final checkedIn = _ctrl.checkedInCount;
     final absent = total - checkedIn;
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: const [
-          BoxShadow(
-              color: Color(0x0F000000), offset: Offset(0, 2), blurRadius: 8)
-        ],
-      ),
-      child: Row(
-        children: [
-          _buildStatItem('$total', 'Đăng ký', const Color(0xFF06B6D4)),
-          _buildDivider(),
-          _buildStatItem('$checkedIn', 'Check-in', const Color(0xFF10B981)),
-          _buildDivider(),
-          _buildStatItem('$absent', 'Vắng', const Color(0xFFEF4444)),
-        ],
-      ),
+    return OrganizerStatBar(
+      variant: OrganizerStatBarVariant.card,
+      stats: [
+        OrganizerStatItem(
+          value: '$total',
+          label: 'Đăng ký',
+          color: const Color(0xFF06B6D4),
+          icon: Icons.people_outline,
+        ),
+        OrganizerStatItem(
+          value: '$checkedIn',
+          label: 'Check-in',
+          color: const Color(0xFF10B981),
+          icon: Icons.login,
+        ),
+        OrganizerStatItem(
+          value: '$absent',
+          label: 'Vắng',
+          color: const Color(0xFFEF4444),
+          icon: Icons.warning_amber,
+        ),
+      ],
     );
   }
-
-  Widget _buildStatItem(String value, String label, Color color) {
-    return Expanded(
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(value,
-              style: TextStyle(
-                  fontSize: 16, fontWeight: FontWeight.w800, color: color)),
-          const SizedBox(width: 4),
-          Text(label, style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDivider() =>
-      Container(width: 1, height: 20, color: Colors.grey.shade200);
 
   Widget _buildParticipantList() {
     if (_ctrl.isLoading.value && _ctrl.participants.isEmpty) {
@@ -225,122 +199,145 @@ class _OrganizerParticipantListPageState
         : const Color(0xFFF59E0B);
     final statusLabel =
         p.hasCheckedIn == true ? 'Đã check-in' : 'Chưa check-in';
-    final isCtv = p.participantType?.name == 'ctv';
+    final isCtv = p.participantType == ParticipantType.ctv;
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: const [
-          BoxShadow(
-              color: Color(0x0F000000), offset: Offset(0, 2), blurRadius: 6)
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
+    return Dismissible(
+      key: Key('participant_${p.eventParticipantId}'),
+      direction: DismissDirection.endToStart,
+      confirmDismiss: (_) async {
+        return await showOrganizerDeleteDialog(
+          context: context,
+          title: 'Xóa người tham gia',
+          message: 'Bạn có chắc muốn xóa ${p.user?.fullName ?? 'người này'} khỏi sự kiện? Hành động này không thể hoàn tác.',
+          confirmLabel: 'Xóa',
+        ) ?? false;
+      },
+      onDismissed: (_) {
+        if (p.eventParticipantId != null) {
+          _ctrl.deleteParticipant(p.eventParticipantId!);
+        }
+      },
+      background: Container(
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 20),
+        margin: const EdgeInsets.only(bottom: 10),
+        decoration: BoxDecoration(
+          color: const Color(0xFFEF4444),
           borderRadius: BorderRadius.circular(12),
-          onTap: () {
-            if (p.eventParticipantId != null) {
-              Get.to(() => OrganizerParticipantDetailPage(
-                  participantId: p.eventParticipantId!));
-            }
-          },
-          child: Padding(
-            padding: const EdgeInsets.all(14),
-            child: Row(
-              children: [
-                CircleAvatar(
-                  radius: 22,
-                  backgroundColor: const Color(0xFFE0F2FE),
-                  child: Text(
-                    (p.user?.fullName ?? '?')[0],
-                    style: const TextStyle(
-                        fontSize: 16,
-                        color: Color(0xFF06B6D4),
-                        fontWeight: FontWeight.w600),
+        ),
+        child: const Icon(Icons.delete_outline, color: Colors.white),
+      ),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 10),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: const [
+                BoxShadow(
+                    color: Color(0x14000000), offset: Offset(0, 2), blurRadius: 6)
+              ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(12),
+            onTap: () {
+              if (p.eventParticipantId != null) {
+                Get.to(() => OrganizerParticipantDetailPage(
+                    participantId: p.eventParticipantId!));
+              }
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 22,
+                    backgroundColor: const Color(0xFFE0F2FE),
+                    child: Text(
+                      (p.user?.fullName ?? '?')[0],
+                      style: const TextStyle(
+                          fontSize: 16,
+                          color: Color(0xFF06B6D4),
+                          fontWeight: FontWeight.w600),
+                    ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          p.user?.fullName ?? 'N/A',
+                          style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xff273143)),
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Icon(Icons.email_outlined,
+                                size: 12, color: Colors.grey.shade500),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(p.user?.email ?? '',
+                                  style: TextStyle(
+                                      fontSize: 11, color: Colors.grey.shade600),
+                                  overflow: TextOverflow.ellipsis),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        Row(
+                          children: [
+                            Icon(Icons.calendar_today,
+                                size: 12, color: Colors.grey.shade500),
+                            const SizedBox(width: 4),
+                            Text(
+                              p.registeredTime != null
+                                  ? AppDateUtils.formatDate(p.registeredTime!)
+                                  : '',
+                              style: TextStyle(
+                                  fontSize: 11, color: Colors.grey.shade600)),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      Text(
-                        p.user?.fullName ?? 'N/A',
-                        style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xff273143)),
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Icon(Icons.email_outlined,
-                              size: 12, color: Colors.grey.shade500),
-                          const SizedBox(width: 4),
-                          Text(p.user?.email ?? '',
-                              style: TextStyle(
-                                  fontSize: 11, color: Colors.grey.shade600)),
-                        ],
-                      ),
-                      const SizedBox(height: 2),
-                      Row(
-                        children: [
-                          Icon(Icons.phone_outlined,
-                              size: 12, color: Colors.grey.shade500),
-                          const SizedBox(width: 4),
-                          Text(p.user?.phone ?? '',
-                              style: TextStyle(
-                                  fontSize: 11, color: Colors.grey.shade600)),
-                          const SizedBox(width: 10),
-                          Icon(Icons.calendar_today,
-                              size: 12, color: Colors.grey.shade500),
-                          const SizedBox(width: 4),
-                          Text(
-                            p.registeredTime != null
-                                ? AppDateUtils.formatDate(p.registeredTime!)
-                                : '',
-                            style: TextStyle(
-                                fontSize: 11, color: Colors.grey.shade600)),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: isCtv
-                            ? const Color(0xFF8B5CF6).withOpacity(0.1)
-                            : const Color(0xFF06B6D4).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        isCtv ? 'CTV' : 'Người tham dự',
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
                           color: isCtv
-                              ? const Color(0xFF8B5CF6)
-                              : const Color(0xFF06B6D4),
+                              ? const Color(0xFF8B5CF6).withValues(alpha: 0.1)
+                              : const Color(0xFF06B6D4).withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          isCtv ? 'CTV' : 'Người tham dự',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                            color: isCtv
+                                ? const Color(0xFF8B5CF6)
+                                : const Color(0xFF06B6D4),
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(statusLabel,
-                        style: TextStyle(
-                            fontSize: 11,
-                            color: statusColor,
-                            fontWeight: FontWeight.w600)),
-                  ],
-                ),
-              ],
+                      const SizedBox(height: 6),
+                      Text(statusLabel,
+                          style: TextStyle(
+                              fontSize: 11,
+                              color: statusColor,
+                              fontWeight: FontWeight.w600)),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),

@@ -1,7 +1,18 @@
+import 'package:events_app/feature/common/domain/enum/app_enum.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:events_app/feature/organizer/presentation/controller/organizer_scan_qr_controller.dart';
+
+String _participantTypeName(ParticipantType? type) {
+  if (type == null) return 'ATTENDEE';
+  switch (type) {
+    case ParticipantType.attendee:
+      return 'ATTENDEE';
+    case ParticipantType.ctv:
+      return 'CTV';
+  }
+}
 
 class OrganizerQrScannerPage extends StatefulWidget {
   final int? eventId;
@@ -27,6 +38,8 @@ class _OrganizerQrScannerPageState extends State<OrganizerQrScannerPage> {
     if (widget.eventId != null) {
       _controller.setEventId(widget.eventId!);
       _controller.setTotalParticipants(widget.totalParticipants ?? 0);
+    } else {
+      _controller.setEventId(0);
     }
   }
 
@@ -163,7 +176,8 @@ class _OrganizerQrScannerPageState extends State<OrganizerQrScannerPage> {
   Widget _buildModeToggle() {
     return Center(
       child: Obx(() {
-        final isCheckIn = _controller.scanMode.value == OrganizerScanMode.checkIn;
+        final isCheckIn =
+            _controller.scanMode.value == OrganizerScanMode.checkIn;
         return Container(
           padding: const EdgeInsets.all(4),
           decoration: BoxDecoration(
@@ -181,9 +195,12 @@ class _OrganizerQrScannerPageState extends State<OrganizerQrScannerPage> {
                 },
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                   decoration: BoxDecoration(
-                    color: isCheckIn ? const Color(0xFF06B6D4) : Colors.transparent,
+                    color: isCheckIn
+                        ? const Color(0xFF06B6D4)
+                        : Colors.transparent,
                     borderRadius: BorderRadius.circular(24),
                   ),
                   child: Text(
@@ -198,15 +215,19 @@ class _OrganizerQrScannerPageState extends State<OrganizerQrScannerPage> {
               ),
               GestureDetector(
                 onTap: () {
-                  if (_controller.scanMode.value != OrganizerScanMode.checkOut) {
+                  if (_controller.scanMode.value !=
+                      OrganizerScanMode.checkOut) {
                     _controller.toggleMode();
                   }
                 },
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                   decoration: BoxDecoration(
-                    color: !isCheckIn ? const Color(0xFFF59E0B) : Colors.transparent,
+                    color: !isCheckIn
+                        ? const Color(0xFFF59E0B)
+                        : Colors.transparent,
                     borderRadius: BorderRadius.circular(24),
                   ),
                   child: Text(
@@ -243,9 +264,8 @@ class _OrganizerQrScannerPageState extends State<OrganizerQrScannerPage> {
         final result = _controller.lastScanResult.value;
         final isCheckIn =
             _controller.scanMode.value == OrganizerScanMode.checkIn;
-        final modeColor = isCheckIn
-            ? const Color(0xFF06B6D4)
-            : const Color(0xFFF59E0B);
+        final modeColor =
+            isCheckIn ? const Color(0xFF06B6D4) : const Color(0xFFF59E0B);
 
         return Column(
           mainAxisSize: MainAxisSize.min,
@@ -277,7 +297,8 @@ class _OrganizerQrScannerPageState extends State<OrganizerQrScannerPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            result.scanResult?.participantName ?? 'Người tham gia',
+                            result.scanResult?.participantName ??
+                                'Người tham gia',
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
@@ -286,7 +307,7 @@ class _OrganizerQrScannerPageState extends State<OrganizerQrScannerPage> {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            result.scanResult?.participantType?.name.toUpperCase() ??
+                            _participantTypeName(result.scanResult?.participantType) ??
                                 'ATTENDEE',
                             style: const TextStyle(
                               fontSize: 12,
@@ -358,9 +379,8 @@ class _OrganizerQrScannerPageState extends State<OrganizerQrScannerPage> {
             final result = _controller.lastScanResult.value;
             final isCheckIn =
                 _controller.scanMode.value == OrganizerScanMode.checkIn;
-            final modeColor = isCheckIn
-                ? const Color(0xFF06B6D4)
-                : const Color(0xFFF59E0B);
+            final modeColor =
+                isCheckIn ? const Color(0xFF06B6D4) : const Color(0xFFF59E0B);
 
             return Container(
               margin: const EdgeInsets.symmetric(horizontal: 32),
@@ -449,29 +469,18 @@ class _OrganizerQrScannerPageState extends State<OrganizerQrScannerPage> {
   }
 
   Widget _buildCorner(bool top, bool left) {
-    final isCheckIn =
-        _controller.scanMode.value == OrganizerScanMode.checkIn;
-    final color = isCheckIn
-        ? const Color(0xFF06B6D4)
-        : const Color(0xFFF59E0B);
+    final isCheckIn = _controller.scanMode.value == OrganizerScanMode.checkIn;
+    final color = isCheckIn ? const Color(0xFF06B6D4) : const Color(0xFFF59E0B);
 
     return Container(
       width: 30,
       height: 30,
       decoration: BoxDecoration(
         border: Border(
-          top: top
-              ? BorderSide(color: color, width: 4)
-              : BorderSide.none,
-          bottom: !top
-              ? BorderSide(color: color, width: 4)
-              : BorderSide.none,
-          left: left
-              ? BorderSide(color: color, width: 4)
-              : BorderSide.none,
-          right: !left
-              ? BorderSide(color: color, width: 4)
-              : BorderSide.none,
+          top: top ? BorderSide(color: color, width: 4) : BorderSide.none,
+          bottom: !top ? BorderSide(color: color, width: 4) : BorderSide.none,
+          left: left ? BorderSide(color: color, width: 4) : BorderSide.none,
+          right: !left ? BorderSide(color: color, width: 4) : BorderSide.none,
         ),
       ),
     );

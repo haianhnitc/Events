@@ -13,7 +13,8 @@ class OrganizerRecruitmentFormPage extends StatefulWidget {
   final int? eventId;
   final int? recruitmentId;
 
-  const OrganizerRecruitmentFormPage({super.key, this.eventId, this.recruitmentId});
+  const OrganizerRecruitmentFormPage(
+      {super.key, this.eventId, this.recruitmentId});
 
   @override
   State<OrganizerRecruitmentFormPage> createState() =>
@@ -33,14 +34,16 @@ class _OrganizerRecruitmentFormPageState
     _formCtrl = Get.put(OrganizerRecruitmentFormController());
     _eventCtrl = Get.put(OrganizerEventListController());
     _formCtrl.initForCreate();
-    _eventCtrl.loadEvents(reset: true);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _eventCtrl.loadEvents(reset: true);
+    });
 
     if (widget.recruitmentId != null) {
       _formCtrl.loadRecruitment(widget.recruitmentId!);
     } else if (widget.eventId != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        final event = _eventCtrl.events.firstWhereOrNull(
-            (e) => e.eventId == widget.eventId);
+        final event = _eventCtrl.events
+            .firstWhereOrNull((e) => e.eventId == widget.eventId);
         if (event != null) {
           setState(() => _selectedEvent = event);
         }
@@ -49,15 +52,15 @@ class _OrganizerRecruitmentFormPageState
 
     ever(_formCtrl.editingRecruitment, (r) {
       if (r != null && r.eventId != null) {
-        final event = _eventCtrl.events.firstWhereOrNull(
-            (e) => e.eventId == r.eventId);
+        final event =
+            _eventCtrl.events.firstWhereOrNull((e) => e.eventId == r.eventId);
         if (event != null) {
           setState(() => _selectedEvent = event);
         } else {
           setState(() => _selectedEvent = EventSummaryEntity(
-            eventId: r.eventId,
-            title: r.eventTitle,
-          ));
+                eventId: r.eventId,
+                title: r.eventTitle,
+              ));
         }
       }
     });
@@ -82,11 +85,11 @@ class _OrganizerRecruitmentFormPageState
           onPressed: () => Navigator.pop(context),
         ),
         title: Obx(() => Text(
-              _formCtrl.isEditMode ? 'Chỉnh sửa tuyển CTV' : 'Tạo bài tuyển CTV',
-              style: const TextStyle(
-                  color: Color(0xff273143),
-                  fontSize: 17,
-                  fontWeight: FontWeight.w700))),
+            _formCtrl.isEditMode ? 'Chỉnh sửa tuyển CTV' : 'Tạo bài tuyển CTV',
+            style: const TextStyle(
+                color: Color(0xff273143),
+                fontSize: 17,
+                fontWeight: FontWeight.w700))),
         centerTitle: true,
       ),
       body: Obx(() {
@@ -98,6 +101,10 @@ class _OrganizerRecruitmentFormPageState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              if (_selectedEvent != null) ...[
+                _buildEventInfoSection(),
+                const SizedBox(height: 16),
+              ],
               _buildEventSection(),
               const SizedBox(height: 16),
               _buildBannerSection(),
@@ -150,7 +157,8 @@ class _OrganizerRecruitmentFormPageState
                 child: DropdownButton<EventSummaryEntity>(
                   value: _selectedEvent,
                   hint: Text('Chọn sự kiện',
-                      style: TextStyle(color: Colors.grey.shade400, fontSize: 14)),
+                      style:
+                          TextStyle(color: Colors.grey.shade400, fontSize: 14)),
                   isExpanded: true,
                   items: events
                       .map((e) => DropdownMenuItem(
@@ -186,7 +194,8 @@ class _OrganizerRecruitmentFormPageState
                 previewUrl: _formCtrl.bannerPreviewUrl.value,
                 fileType: FileType.recruitmentBanner,
                 height: 140,
-                onSuccess: (fileId, url) => _formCtrl.onBannerUploaded(fileId, url),
+                onSuccess: (fileId, url) =>
+                    _formCtrl.onBannerUploaded(fileId, url),
                 onRemove: () {
                   _formCtrl.bannerFileId.value = null;
                   _formCtrl.bannerPreviewUrl.value = null;
@@ -195,6 +204,115 @@ class _OrganizerRecruitmentFormPageState
         ],
       ),
     );
+  }
+
+  Widget _buildEventInfoSection() {
+    final ev = _selectedEvent;
+    if (ev == null) return const SizedBox.shrink();
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: _cardDecoration(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.event, size: 16, color: Color(0xFF06B6D4)),
+              const SizedBox(width: 6),
+              const Text('Thông tin sự kiện liên kết',
+                  style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xff273143))),
+            ],
+          ),
+          const SizedBox(height: 12),
+          _buildInfoRow('Tiêu đề sự kiện', ev.title ?? 'N/A'),
+          const SizedBox(height: 8),
+          if (ev.startTime != null) ...[
+            _buildInfoRow('Thời gian',
+                AppDateUtils.formatDate(ev.startTime!)),
+            const SizedBox(height: 8),
+          ],
+          if (ev.capacity != null || ev.totalParticipants != null) ...[
+            _buildInfoRow(
+              'Sức chứa',
+              ev.capacity != null
+                  ? '${ev.totalParticipants ?? 0} / ${ev.capacity}'
+                  : '${ev.totalParticipants ?? 0} người',
+            ),
+            const SizedBox(height: 8),
+          ],
+          if (ev.status != null) ...[
+            _buildInfoRow('Trạng thái', _getEventStatusLabel(ev.status!)),
+            const SizedBox(height: 8),
+          ],
+          if (ev.price != null && ev.price != 0) ...[
+            _buildInfoRow('Phí tham gia', _formatPrice(ev.price!)),
+            const SizedBox(height: 8),
+          ],
+          if (ev.youthUnionPoint != null && ev.youthUnionPoint != 0) ...[
+            _buildInfoRow('Điểm đoàn', '${ev.youthUnionPoint} điểm'),
+            const SizedBox(height: 8),
+          ],
+          if (ev.certificateName != null && ev.certificateName!.isNotEmpty) ...[
+            _buildInfoRow('Chứng chỉ', ev.certificateName!),
+            const SizedBox(height: 8),
+          ],
+          if (ev.banner != null) ...[
+            const SizedBox(height: 4),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.network(
+                ev.banner!,
+                height: 120,
+                width: double.infinity,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  String _formatPrice(int price) {
+    if (price == 0) return 'Miễn phí';
+    return '${price.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]},')}đ';
+  }
+
+  Widget _buildInfoRow(String label, String value) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 110,
+          child: Text(label,
+              style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+        ),
+        Expanded(
+          child: Text(value,
+              style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xff273143))),
+        ),
+      ],
+    );
+  }
+
+  String _getEventStatusLabel(EventStatus status) {
+    switch (status) {
+      case EventStatus.draft:
+        return 'Bản nháp';
+      case EventStatus.published:
+        return 'Đã xuất bản';
+      case EventStatus.closed:
+        return 'Đã đóng';
+      case EventStatus.cancelled:
+        return 'Đã hủy';
+    }
   }
 
   Widget _buildBasicSection() {
@@ -347,10 +465,24 @@ class _OrganizerRecruitmentFormPageState
             style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
           ),
           const SizedBox(height: 16),
-          _buildCategoryGroup('Lĩnh vực', [9, 10, 11, 12, 13, 14, 15, 16], [
-            'Công nghệ', 'Văn hóa - Nghệ thuật', 'Kỹ năng mềm',
-            'Khởi nghiệp', 'Thể thao', 'Định hướng nghề nghiệp',
-            'Học thuật', 'Tình nguyện',
+          _buildCategoryGroup('Lĩnh vực', [
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
+          ], [
+            'Công nghệ',
+            'Văn hóa - Nghệ thuật',
+            'Kỹ năng mềm',
+            'Khởi nghiệp',
+            'Thể thao',
+            'Định hướng nghề nghiệp',
+            'Học thuật',
+            'Tình nguyện',
           ]),
         ],
       ),
@@ -587,11 +719,15 @@ class _OrganizerRecruitmentFormPageState
         return '1 CHỌN';
       case RequirementQuestionType.multipleChoice:
         return 'NHIỀU CHỌN';
+      case RequirementQuestionType.rating:
+        return 'ĐÁNH GIÁ';
     }
   }
 
-  void _showAddQuestionDialog({int? index, RequirementQuestionCreateParams? existing}) {
-    final contentCtrl = TextEditingController(text: existing?.questionText ?? '');
+  void _showAddQuestionDialog(
+      {int? index, RequirementQuestionCreateParams? existing}) {
+    final contentCtrl =
+        TextEditingController(text: existing?.questionText ?? '');
     final isRequired = existing?.isRequired ?? false;
     final selectedType = existing?.questionType ?? RequirementQuestionType.text;
     final optionCtrls = <TextEditingController>[];
@@ -611,102 +747,113 @@ class _OrganizerRecruitmentFormPageState
       AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(index == null ? 'Thêm câu hỏi' : 'Sửa câu hỏi'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              TextField(
-                controller: contentCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Nội dung câu hỏi',
-                  hintText: 'VD: Bạn có kinh nghiệm tham gia sự kiện?',
-                  border: OutlineInputBorder(),
-                ),
-                maxLines: 2,
-              ),
-              const SizedBox(height: 16),
-              const Text('Loại câu hỏi',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
-              const SizedBox(height: 8),
-              Obx(() => Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      _buildReqTypeChip(typeRx, RequirementQuestionType.text, 'Text'),
-                      _buildReqTypeChip(typeRx, RequirementQuestionType.singleChoice, '1 chọn'),
-                      _buildReqTypeChip(typeRx, RequirementQuestionType.multipleChoice, 'Nhiều chọn'),
-                    ],
-                  )),
-              const SizedBox(height: 16),
-              Obx(() {
-                final type = typeRx.value;
-                if (type == RequirementQuestionType.text) {
-                  return const SizedBox.shrink();
-                }
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text('Tùy chọn',
-                            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
-                        TextButton.icon(
-                          onPressed: () {
-                            optionCtrls.add(TextEditingController());
-                          },
-                          icon: const Icon(Icons.add, size: 14),
-                          label: const Text('Thêm'),
-                          style: TextButton.styleFrom(
-                              foregroundColor: const Color(0xFF06B6D4)),
-                        ),
-                      ],
+        content: StatefulBuilder(
+          builder: (ctx, setDialogState) {
+            return SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextField(
+                    controller: contentCtrl,
+                    decoration: const InputDecoration(
+                      labelText: 'Nội dung câu hỏi',
+                      hintText: 'VD: Bạn có kinh nghiệm tham gia sự kiện?',
+                      border: OutlineInputBorder(),
                     ),
-                    const SizedBox(height: 8),
-                    ...List.generate(optionCtrls.length, (i) {
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: Row(
+                    maxLines: 2,
+                  ),
+                  const SizedBox(height: 16),
+                  const Text('Loại câu hỏi',
+                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                  const SizedBox(height: 8),
+                  Obx(() => Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          _buildReqTypeChip(
+                              typeRx, RequirementQuestionType.text, 'Text'),
+                          _buildReqTypeChip(typeRx,
+                              RequirementQuestionType.singleChoice, '1 chọn'),
+                          _buildReqTypeChip(typeRx,
+                              RequirementQuestionType.multipleChoice, 'Nhiều chọn'),
+                          _buildReqTypeChip(typeRx,
+                              RequirementQuestionType.rating, 'Đánh giá'),
+                        ],
+                      )),
+                  const SizedBox(height: 16),
+                  Obx(() {
+                    final type = typeRx.value;
+                    if (type == RequirementQuestionType.text ||
+                        type == RequirementQuestionType.rating) {
+                      return const SizedBox.shrink();
+                    }
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Expanded(
-                              child: TextField(
-                                controller: optionCtrls[i],
-                                decoration: InputDecoration(
-                                  hintText: 'Tùy chọn ${i + 1}',
-                                  border: const OutlineInputBorder(),
-                                  contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 10),
-                                ),
-                              ),
+                            const Text('Tùy chọn',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w600, fontSize: 13)),
+                            TextButton.icon(
+                              onPressed: () {
+                                optionCtrls.add(TextEditingController());
+                              },
+                              icon: const Icon(Icons.add, size: 14),
+                              label: const Text('Thêm'),
+                              style: TextButton.styleFrom(
+                                  foregroundColor: const Color(0xFF06B6D4)),
                             ),
-                            if (optionCtrls.length > 2)
-                              IconButton(
-                                icon: const Icon(Icons.close, size: 18),
-                                onPressed: () {
-                                  optionCtrls[i].dispose();
-                                  optionCtrls.removeAt(i);
-                                },
-                              ),
                           ],
                         ),
-                      );
-                    }),
-                  ],
-                );
-              }),
-              const SizedBox(height: 12),
-              Obx(() => CheckboxListTile(
-                    value: requiredRx.value,
-                    onChanged: (v) => requiredRx.value = v ?? false,
-                    title: const Text('Bắt buộc trả lời',
-                        style: TextStyle(fontSize: 13)),
-                    controlAffinity: ListTileControlAffinity.leading,
-                    contentPadding: EdgeInsets.zero,
-                    activeColor: const Color(0xFF06B6D4),
-                  )),
-            ],
-          ),
+                        const SizedBox(height: 8),
+                        ...List.generate(optionCtrls.length, (i) {
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: TextField(
+                                    controller: optionCtrls[i],
+                                    decoration: InputDecoration(
+                                      hintText: 'Tùy chọn ${i + 1}',
+                                      border: const OutlineInputBorder(),
+                                      contentPadding: const EdgeInsets.symmetric(
+                                          horizontal: 12, vertical: 10),
+                                    ),
+                                  ),
+                                ),
+                                if (optionCtrls.length > 2)
+                                  IconButton(
+                                    icon: const Icon(Icons.close, size: 18),
+                                    onPressed: () {
+                                      optionCtrls[i].dispose();
+                                      optionCtrls.removeAt(i);
+                                    },
+                                  ),
+                              ],
+                            ),
+                          );
+                        }),
+                      ],
+                    );
+                  }),
+                  const SizedBox(height: 12),
+                  Obx(() => CheckboxListTile(
+                        value: requiredRx.value,
+                        onChanged: (v) => requiredRx.value = v ?? false,
+                        title: const Text('Bắt buộc trả lời',
+                            style: TextStyle(fontSize: 13)),
+                        controlAffinity: ListTileControlAffinity.leading,
+                        contentPadding: EdgeInsets.zero,
+                        activeColor: const Color(0xFF06B6D4),
+                      )),
+                ],
+              ),
+            );
+          },
         ),
         actions: [
           TextButton(
@@ -722,8 +869,9 @@ class _OrganizerRecruitmentFormPageState
             onPressed: () {
               if (contentCtrl.text.trim().isEmpty) return;
               final type = typeRx.value;
-              final needsOptions = type == RequirementQuestionType.singleChoice ||
-                  type == RequirementQuestionType.multipleChoice;
+              final needsOptions =
+                  type == RequirementQuestionType.singleChoice ||
+                      type == RequirementQuestionType.multipleChoice;
               final options = needsOptions
                   ? optionCtrls
                       .where((c) => c.text.trim().isNotEmpty)
@@ -774,14 +922,16 @@ class _OrganizerRecruitmentFormPageState
                 : Colors.grey.shade100,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: isSelected ? const Color(0xFF06B6D4) : Colors.grey.shade300,
+              color:
+                  isSelected ? const Color(0xFF06B6D4) : Colors.grey.shade300,
             ),
           ),
           child: Text(
             label,
             style: TextStyle(
               fontSize: 12,
-              color: isSelected ? const Color(0xFF06B6D4) : Colors.grey.shade600,
+              color:
+                  isSelected ? const Color(0xFF06B6D4) : Colors.grey.shade600,
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
             ),
           ),
@@ -795,8 +945,7 @@ class _OrganizerRecruitmentFormPageState
       color: Colors.white,
       borderRadius: BorderRadius.circular(14),
       boxShadow: const [
-        BoxShadow(
-            color: Color(0x0F000000), offset: Offset(0, 2), blurRadius: 8)
+        BoxShadow(color: Color(0x0F000000), offset: Offset(0, 2), blurRadius: 8)
       ],
     );
   }
@@ -868,8 +1017,8 @@ class _OrganizerRecruitmentFormPageState
                 initialTime: TimeOfDay.now(),
               );
               if (time != null) {
-                onChanged(
-                    DateTime(date.year, date.month, date.day, time.hour, time.minute));
+                onChanged(DateTime(
+                    date.year, date.month, date.day, time.hour, time.minute));
               } else {
                 onChanged(date);
               }

@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:events_app/feature/common/domain/enum/app_enum.dart';
 import 'package:events_app/feature/organizer/presentation/controller/organizer_invite_manual_controller.dart';
 import 'package:flutter/material.dart';
@@ -36,8 +37,10 @@ class _OrganizerInviteDialog extends StatefulWidget {
 class _OrganizerInviteDialogState extends State<_OrganizerInviteDialog> {
   late OrganizerInviteManualController _inviteCtrl;
   final _emailController = TextEditingController();
+  final _focusNode = FocusNode();
   ParticipantType _participantType = ParticipantType.attendee;
   String? _emailError;
+  bool _isSuccess = false;
 
   @override
   void initState() {
@@ -63,6 +66,7 @@ class _OrganizerInviteDialogState extends State<_OrganizerInviteDialog> {
   @override
   void dispose() {
     _emailController.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -94,8 +98,10 @@ class _OrganizerInviteDialogState extends State<_OrganizerInviteDialog> {
       participantType: _participantType,
     );
 
-    if (_inviteCtrl.errorMessage.value.isEmpty) {
-      Get.back(result: true);
+    if (_inviteCtrl.errorMessage.value.isEmpty && mounted) {
+      setState(() => _isSuccess = true);
+      await Future.delayed(const Duration(milliseconds: 1200));
+      if (mounted) Get.back(result: true);
     }
   }
 
@@ -112,78 +118,136 @@ class _OrganizerInviteDialogState extends State<_OrganizerInviteDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      title: Column(
-        children: [
-          const Icon(
-            Icons.person_add_alt_1_outlined,
-            size: 40,
-            color: Color(0xff06B6D4),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'Mời người tham gia',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: Color(0xff273143),
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: 400),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 32,
+              offset: const Offset(0, 8),
             ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            widget.eventTitle,
-            style: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w400,
-              color: Color(0xff64748B),
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-      content: SingleChildScrollView(
+          ],
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildTypeSelector(),
-            const SizedBox(height: 16),
-            _buildEmailField(),
+            _buildHeader(),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _buildEventBanner(),
+                  const SizedBox(height: 20),
+                  _buildTypeSelector(),
+                  const SizedBox(height: 16),
+                  _buildEmailField(),
+                  const SizedBox(height: 20),
+                  _buildActions(),
+                ],
+              ),
+            ),
           ],
         ),
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Get.back(result: false),
-          child: const Text(
-            'Hủy',
-            style: TextStyle(color: Color(0xff64748B)),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Stack(
+      children: [
+        Container(
+          height: 100,
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF06B6D4), Color(0xFF0891B2)],
+            ),
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(24),
+              topRight: Radius.circular(24),
+            ),
+          ),
+          child: Center(
+            child: _isSuccess
+                ? const Icon(Icons.check_circle_outline,
+                    size: 48, color: Colors.white)
+                : const Icon(Icons.person_add_rounded,
+                    size: 44, color: Colors.white),
           ),
         ),
-        Obx(() => ElevatedButton(
-              onPressed: _inviteCtrl.isSubmitting.value ? null : _handleInvite,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF06B6D4),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+        Positioned(
+          top: 12,
+          right: 12,
+          child: _isSuccess
+              ? const SizedBox.shrink()
+              : GestureDetector(
+                  onTap: () => Get.back(result: false),
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.close,
+                        size: 18, color: Colors.white),
+                  ),
+                ),
+        ),
+        Positioned(
+          bottom: 12,
+          left: 0,
+          right: 0,
+          child: Column(
+            children: [
+              Text(
+                _isSuccess ? 'Thành công!' : 'Mời người tham gia',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
                 ),
               ),
-              child: _inviteCtrl.isSubmitting.value
-                  ? const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(
-                          strokeWidth: 2, color: Colors.white),
-                    )
-                  : const Text(
-                      'Mời',
-                      style: TextStyle(color: Colors.white),
-                    ),
-            )),
+            ],
+          ),
+        ),
       ],
+    );
+  }
+
+  Widget _buildEventBanner() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF0FDFA),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFF99F6E4)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.event_outlined,
+              size: 16, color: Color(0xFF14B8A6)),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              widget.eventTitle,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF0F766E),
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -197,99 +261,140 @@ class _OrganizerInviteDialogState extends State<_OrganizerInviteDialog> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Loại',
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            color: Colors.grey.shade700,
-          ),
-        ),
-        const SizedBox(height: 8),
         Row(
           children: [
-            _buildTypeOption(
-              type: ParticipantType.attendee,
-              label: 'Người tham dự',
-              icon: Icons.event,
-              enabled: canSelectAttendee,
+            const Text(
+              'Loại người tham gia',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF334155),
+              ),
             ),
-            const SizedBox(width: 8),
-            _buildTypeOption(
-              type: ParticipantType.ctv,
-              label: 'CTV',
-              icon: Icons.group,
-              enabled: canSelectCtv,
+            const SizedBox(width: 6),
+            Container(
+              width: 4,
+              height: 4,
+              decoration: const BoxDecoration(
+                color: Color(0xFF94A3B8),
+                shape: BoxShape.circle,
+              ),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              _recruitmentTypeLabel,
+              style: const TextStyle(
+                fontSize: 11,
+                color: Color(0xFF94A3B8),
+              ),
             ),
           ],
         ),
-        const SizedBox(height: 4),
-        Text(
-          _recruitmentTypeLabel,
-          style: const TextStyle(
-            fontSize: 11,
-            color: Color(0xff64748B),
-          ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            Expanded(
+              child: _buildTypeCard(
+                type: ParticipantType.attendee,
+                label: 'Người tham dự',
+                icon: Icons.event_available_outlined,
+                color: const Color(0xFF06B6D4),
+                enabled: canSelectAttendee,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _buildTypeCard(
+                type: ParticipantType.ctv,
+                label: 'Cộng tác viên',
+                icon: Icons.rocket_launch_outlined,
+                color: const Color(0xFF8B5CF6),
+                enabled: canSelectCtv,
+              ),
+            ),
+          ],
         ),
       ],
     );
   }
 
-  Widget _buildTypeOption({
+  Widget _buildTypeCard({
     required ParticipantType type,
     required String label,
     required IconData icon,
+    required Color color,
     required bool enabled,
   }) {
     final isSelected = _participantType == type && enabled;
     final isDisabled = !enabled;
 
-    return Expanded(
-      child: GestureDetector(
-        onTap: enabled ? () => setState(() => _participantType = type) : null,
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          decoration: BoxDecoration(
+    return GestureDetector(
+      onTap: enabled ? () => setState(() => _participantType = type) : null,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeInOut,
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? color.withOpacity(0.08)
+              : isDisabled
+                  ? const Color(0xFFF8FAFC)
+                  : Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
             color: isSelected
-                ? const Color(0xFF06B6D4).withOpacity(0.1)
-                : Colors.grey.shade50,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: isSelected
-                  ? const Color(0xFF06B6D4)
-                  : isDisabled
-                      ? Colors.grey.shade200
-                      : Colors.grey.shade200,
-              width: isSelected ? 1.5 : 1,
-            ),
+                ? color
+                : isDisabled
+                    ? const Color(0xFFE2E8F0)
+                    : const Color(0xFFE2E8F0),
+            width: isSelected ? 1.8 : 1,
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: color.withOpacity(0.15),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? color.withOpacity(0.15)
+                    : isDisabled
+                        ? const Color(0xFFE2E8F0)
+                        : const Color(0xFFF1F5F9),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
                 icon,
-                size: 16,
+                size: 20,
                 color: isDisabled
-                    ? Colors.grey.shade300
+                    ? const Color(0xFFCBD5E1)
                     : isSelected
-                        ? const Color(0xFF06B6D4)
-                        : Colors.grey.shade600,
+                        ? color
+                        : const Color(0xFF64748B),
               ),
-              const SizedBox(width: 4),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                  color: isDisabled
-                      ? Colors.grey.shade300
-                      : isSelected
-                          ? const Color(0xFF06B6D4)
-                          : const Color(0xff273143),
-                ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                color: isDisabled
+                    ? const Color(0xFFCBD5E1)
+                    : isSelected
+                        ? color
+                        : const Color(0xFF475569),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -299,31 +404,47 @@ class _OrganizerInviteDialogState extends State<_OrganizerInviteDialog> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        const Text(
           'Email người được mời',
           style: TextStyle(
-            fontSize: 12,
+            fontSize: 13,
             fontWeight: FontWeight.w600,
-            color: Colors.grey.shade700,
+            color: Color(0xFF334155),
           ),
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 8),
         TextField(
           controller: _emailController,
+          focusNode: _focusNode,
           keyboardType: TextInputType.emailAddress,
+          textInputAction: TextInputAction.done,
+          onSubmitted: (_) => _handleInvite(),
+          style: const TextStyle(fontSize: 14),
           decoration: InputDecoration(
-            hintText: 'Nhập email',
+            hintText: 'Nhập email người được mời',
             hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 13),
             prefixIcon:
-                Icon(Icons.email_outlined, size: 18, color: Colors.grey.shade400),
+                Icon(Icons.mail_outline_rounded, size: 20, color: Colors.grey.shade400),
             errorText: _emailError,
-            filled: true,
-            fillColor: Colors.grey.shade50,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide.none,
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFFEF4444), width: 1.2),
             ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFFEF4444), width: 1.5),
+            ),
+            filled: true,
+            fillColor: const Color(0xFFF8FAFC),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFF06B6D4), width: 1.5),
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           ),
           onChanged: (_) {
             if (_emailError != null) setState(() {});
@@ -331,5 +452,99 @@ class _OrganizerInviteDialogState extends State<_OrganizerInviteDialog> {
         ),
       ],
     );
+  }
+
+  Widget _buildActions() {
+    return Obx(() {
+      if (_isSuccess) {
+        return Container(
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          decoration: BoxDecoration(
+            color: const Color(0xFF10B981).withOpacity(0.08),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: const Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.check_circle, size: 18, color: Color(0xFF10B981)),
+              SizedBox(width: 8),
+              Text(
+                'Đã thêm người tham gia thành công',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF059669),
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+
+      return Row(
+        children: [
+          Expanded(
+            child: OutlinedButton(
+              onPressed: () => Get.back(result: false),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                side: const BorderSide(color: Color(0xFFE2E8F0)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text(
+                'Hủy',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF64748B),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            flex: 2,
+            child: ElevatedButton(
+              onPressed:
+                  _inviteCtrl.isSubmitting.value ? null : _handleInvite,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF06B6D4),
+                disabledBackgroundColor: const Color(0xFFBAE6FD),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: _inviteCtrl.isSubmitting.value
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: Colors.white),
+                    )
+                  : const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.person_add_outlined,
+                            size: 18, color: Colors.white),
+                        SizedBox(width: 8),
+                        Text(
+                          'Mời',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+            ),
+          ),
+        ],
+      );
+    });
   }
 }

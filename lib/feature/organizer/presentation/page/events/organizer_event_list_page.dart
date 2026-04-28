@@ -4,7 +4,6 @@ import 'package:events_app/feature/event_management/domain/entity/event_summary_
 import 'package:events_app/feature/organizer/presentation/controller/organizer_event_list_controller.dart';
 import 'package:events_app/feature/organizer/presentation/page/events/organizer_create_event_page.dart';
 import 'package:events_app/feature/organizer/presentation/page/events/organizer_event_detail_page.dart';
-import 'package:events_app/feature/organizer/presentation/page/events/organizer_event_list_page.dart';
 import 'package:events_app/feature/organizer/presentation/page/events/organizer_event_statistics_page.dart';
 import 'package:events_app/feature/organizer/presentation/widget/widgets.dart';
 import 'package:events_app/routes/organizer_app_layout_controller.dart';
@@ -65,18 +64,13 @@ class _OrganizerEventListPageState extends State<OrganizerEventListPage>
           ),
         ),
         centerTitle: true,
-        actions: [
-          IconButton(
-            onPressed: () => _showSortOptions(),
-            icon: const Icon(Icons.filter_list, color: Color(0xff64748B)),
-          ),
-        ],
         bottom: TabBar(
           controller: _tabController,
           isScrollable: true,
           labelColor: const Color(0xff06B6D4),
           unselectedLabelColor: Colors.grey.shade600,
           indicatorColor: const Color(0xff06B6D4),
+          dividerColor: Colors.grey.shade200,
           labelStyle:
               const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
           tabs: const [
@@ -115,16 +109,23 @@ class _OrganizerEventListPageState extends State<OrganizerEventListPage>
                   description: 'Tạo sự kiện mới để bắt đầu',
                   icon: Icons.event_outlined,
                   actionLabel: 'Tạo sự kiện',
-                  onAction: () => Get.to(() => const OrganizerCreateEventPage()),
+                  onAction: () =>
+                      Get.to(() => const OrganizerCreateEventPage()),
                 );
               }
               return RefreshIndicator(
                 onRefresh: _ctrl.refreshEvents,
                 child: ListView.builder(
                   padding: const EdgeInsets.all(16),
-                  itemCount: events.length,
+                  itemCount: events.length + (_ctrl.isLoading.value ? 1 : 0),
                   itemBuilder: (context, index) {
-                    final event = events[index];
+                    if (_ctrl.isLoading.value && index == 0) {
+                      return const Padding(
+                        padding: EdgeInsets.only(bottom: 8),
+                        child: LinearProgressIndicator(),
+                      );
+                    }
+                    final event = events[index - (_ctrl.isLoading.value ? 1 : 0)];
                     return _buildEventCard(event);
                   },
                 ),
@@ -134,6 +135,7 @@ class _OrganizerEventListPageState extends State<OrganizerEventListPage>
         ],
       ),
       floatingActionButton: FloatingActionButton(
+        heroTag: 'organizer_event_list_fab',
         onPressed: () => Get.to(() => const OrganizerCreateEventPage()),
         backgroundColor: const Color(0xFF06B6D4),
         child: const Icon(Icons.add, color: Colors.white),
@@ -172,8 +174,7 @@ class _OrganizerEventListPageState extends State<OrganizerEventListPage>
                       const BorderRadius.vertical(top: Radius.circular(14)),
                   image: event.banner != null
                       ? DecorationImage(
-                          image: NetworkImage(event.banner!),
-                          fit: BoxFit.cover)
+                          image: NetworkImage(event.banner!), fit: BoxFit.cover)
                       : null,
                 ),
                 child: event.banner == null
@@ -213,11 +214,11 @@ class _OrganizerEventListPageState extends State<OrganizerEventListPage>
                             size: 13, color: Colors.grey.shade600),
                         const SizedBox(width: 4),
                         Text(
-                          event.startTime != null
-                              ? AppDateUtils.formatDate(event.startTime!)
-                              : 'N/A',
-                          style: TextStyle(
-                              fontSize: 12, color: Colors.grey.shade600)),
+                            event.startTime != null
+                                ? AppDateUtils.formatDate(event.startTime!)
+                                : 'N/A',
+                            style: TextStyle(
+                                fontSize: 12, color: Colors.grey.shade600)),
                         const SizedBox(width: 16),
                         Icon(Icons.people_outline,
                             size: 13, color: Colors.grey.shade600),
@@ -246,9 +247,11 @@ class _OrganizerEventListPageState extends State<OrganizerEventListPage>
                         _buildActionBtn(
                           icon: Icons.edit_outlined,
                           label: 'Sửa',
+                          enabled: event.status != EventStatus.published,
                           onTap: () {
                             if (event.eventId != null) {
-                              Get.to(() => OrganizerCreateEventPage(eventId: event.eventId));
+                              Get.to(() => OrganizerCreateEventPage(
+                                  eventId: event.eventId));
                             }
                           },
                         ),
@@ -258,7 +261,8 @@ class _OrganizerEventListPageState extends State<OrganizerEventListPage>
                           label: 'Thống kê',
                           onTap: () {
                             if (event.eventId != null) {
-                              Get.to(() => OrganizerEventStatisticsPage(eventId: event.eventId!));
+                              Get.to(() => OrganizerEventStatisticsPage(
+                                  eventId: event.eventId!));
                             }
                           },
                         ),
@@ -278,24 +282,25 @@ class _OrganizerEventListPageState extends State<OrganizerEventListPage>
     required IconData icon,
     required String label,
     required VoidCallback onTap,
+    bool enabled = true,
   }) {
     return Expanded(
       child: GestureDetector(
-        onTap: onTap,
+        onTap: enabled ? onTap : null,
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
-            color: Colors.grey.shade50,
+            color: enabled ? Colors.grey.shade50 : Colors.grey.shade100,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 14, color: const Color(0xff64748B)),
+              Icon(icon, size: 14, color: enabled ? const Color(0xff64748B) : Colors.grey.shade400),
               const SizedBox(width: 4),
               Text(
                 label,
-                style: const TextStyle(fontSize: 12, color: Color(0xff64748B)),
+                style: TextStyle(fontSize: 12, color: enabled ? const Color(0xff64748B) : Colors.grey.shade400),
               ),
             ],
           ),
@@ -304,41 +309,19 @@ class _OrganizerEventListPageState extends State<OrganizerEventListPage>
     );
   }
 
-  Widget _buildSortTile(String label, String sortKey, IconData icon, VoidCallback onTap) {
-    final isSelected = _ctrl.sortBy.value == sortKey;
-    return ListTile(
-      leading: Icon(icon, color: isSelected ? const Color(0xFF06B6D4) : const Color(0xff64748B)),
-      title: Text(
-        label,
-        style: TextStyle(
-          color: isSelected ? const Color(0xFF06B6D4) : const Color(0xff273143),
-          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-        ),
-      ),
-      trailing: isSelected
-          ? const Icon(Icons.check, size: 18, color: Color(0xFF06B6D4))
-          : null,
-      onTap: () {
-        onTap();
-        Get.back();
-      },
-    );
-  }
-
   OrganizerStatusBadge _getStatusBadge(status) {
     if (status == null) return OrganizerStatusBadge.draft();
-    switch (status.name) {
-      case 'published':
+    switch (status) {
+      case EventStatus.published:
         return OrganizerStatusBadge.published();
-      case 'draft':
+      case EventStatus.draft:
         return OrganizerStatusBadge.draft();
-      case 'closed':
+      case EventStatus.closed:
         return OrganizerStatusBadge.closed();
-      case 'cancelled':
+      case EventStatus.cancelled:
         return OrganizerStatusBadge.cancelled();
-      default:
-        return OrganizerStatusBadge.draft();
     }
+    return OrganizerStatusBadge.draft();
   }
 
   EventStatus? _tabIndexToStatus(int index) {
@@ -356,55 +339,4 @@ class _OrganizerEventListPageState extends State<OrganizerEventListPage>
     }
   }
 
-  void _showSortOptions() {
-    Get.bottomSheet(
-      Container(
-        padding: const EdgeInsets.all(16),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Sắp xếp theo',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: Color(0xff273143),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Obx(() => _buildSortTile(
-              'Thời gian bắt đầu',
-              'startTime',
-              Icons.calendar_today_outlined,
-              () => _ctrl.setSort('startTime', 'DESC'),
-            )),
-            Obx(() => _buildSortTile(
-              'Thời gian tạo',
-              'createdTime',
-              Icons.access_time,
-              () => _ctrl.setSort('createdTime', 'DESC'),
-            )),
-            Obx(() => _buildSortTile(
-              'Số người tham gia',
-              'totalParticipants',
-              Icons.people_outline,
-              () => _ctrl.setSort('totalParticipants', 'DESC'),
-            )),
-            Obx(() => _buildSortTile(
-              'Tên sự kiện',
-              'title',
-              Icons.title,
-              () => _ctrl.setSort('title', 'ASC'),
-            )),
-            const SizedBox(height: 16),
-          ],
-        ),
-      ),
-    );
-  }
 }

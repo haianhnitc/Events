@@ -4,8 +4,6 @@ import 'package:events_app/api_template/services/failure.dart';
 import 'package:events_app/feature/organizer/participant/data/datasource/organizer_participant_datasource.dart';
 import 'package:events_app/feature/participant/data/model/participant_model.dart';
 import 'package:events_app/feature/participant/domain/entity/participant_entity.dart';
-import 'package:events_app/feature/ticket/data/model/ticket_model.dart';
-import 'package:events_app/feature/ticket/domain/entity/ticket_entity.dart';
 import 'package:events_app/feature/organizer/participant/domain/repository/organizer_participant_repository.dart';
 import 'package:events_app/feature/organizer/participant/domain/usecase/organizer_participant_params.dart';
 import 'package:injectable/injectable.dart';
@@ -51,16 +49,4 @@ class OrganizerParticipantRepositoryImpl
     return response.toEitherUnit();
   }
 
-  @override
-  Future<Either<FailureEntity, List<TicketEntity>>> getTickets(
-      GetOrganizerTicketsParams params) async {
-    final response = await _datasource.getTickets(
-      eventId: params.eventId,
-      page: params.page,
-      size: params.size,
-    );
-    return response
-        .toEither()
-        .map((models) => models.map((m) => m.toEntity()).toList());
-  }
 }

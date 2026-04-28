@@ -24,9 +24,9 @@ class RankListPage extends StatelessWidget {
 
   Widget _buildHeader(RankListController ctrl) {
     return Obx(() {
-    final my = ctrl.myRank.value;
-    final avatarUrl = ctrl.currentAvatarUrl;
-    final userName = ctrl.currentUserName ?? '';
+      final my = ctrl.myRank.value;
+      final avatarUrl = ctrl.currentAvatarUrl;
+      final userName = ctrl.currentUserName ?? '';
 
       return Container(
         width: double.infinity,
@@ -42,7 +42,8 @@ class RankListPage extends StatelessWidget {
           child: Column(
             children: [
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 child: Row(
                   children: [
                     IconButton(
@@ -70,7 +71,8 @@ class RankListPage extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+                  border:
+                      Border.all(color: Colors.white.withValues(alpha: 0.2)),
                 ),
                 child: Row(
                   children: [
@@ -130,7 +132,8 @@ class RankListPage extends StatelessWidget {
                     ),
                     if (my != null) ...[
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
                           color: Colors.white.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(20),
@@ -138,7 +141,8 @@ class RankListPage extends StatelessWidget {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.monetization_on, color: Colors.amber, size: 16),
+                            const Icon(Icons.monetization_on,
+                                color: Colors.amber, size: 16),
                             const SizedBox(width: 4),
                             Text(
                               '${my.totalCoin ?? 0}',
@@ -178,14 +182,14 @@ class RankListPage extends StatelessWidget {
 
   Widget _buildLevelFilter(RankListController ctrl) {
     return Container(
-      height: 44,
+      height: 52,
       color: Colors.white,
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(vertical: 6),
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 12),
         itemCount: ctrl.levelFilters.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        separatorBuilder: (_, __) => const SizedBox(width: 6),
         itemBuilder: (context, index) {
           final level = ctrl.levelFilters[index];
           return Obx(() {
@@ -194,20 +198,28 @@ class RankListPage extends StatelessWidget {
               onTap: () => ctrl.onLevelChanged(level['label']!),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: isSelected ? const Color(0xFF06B6D4) : Colors.transparent,
+                  color:
+                      isSelected ? const Color(0xFF06B6D4) : Colors.transparent,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: isSelected ? const Color(0xFF06B6D4) : const Color(0xFFE2E8F0),
+                    color: isSelected
+                        ? const Color(0xFF06B6D4)
+                        : const Color(0xFFE2E8F0),
                   ),
                 ),
-                child: Text(
-                  level['label']!,
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: isSelected ? Colors.white : const Color(0xff64748B),
+                child: Center(
+                  child: Text(
+                    level['label']!,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      height: 17 / 13,
+                      color:
+                          isSelected ? Colors.white : const Color(0xff64748B),
+                    ),
                   ),
                 ),
               ),
@@ -231,7 +243,8 @@ class RankListPage extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.leaderboard_outlined, size: 64, color: Colors.grey.shade300),
+              Icon(Icons.leaderboard_outlined,
+                  size: 64, color: Colors.grey.shade300),
               const SizedBox(height: 12),
               Text(
                 'Chưa có dữ liệu xếp hạng',
@@ -283,7 +296,9 @@ class RankListPage extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(14),
-          border: isMe ? Border.all(color: const Color(0xFF06B6D4), width: 1.5) : null,
+          border: isMe
+              ? Border.all(color: const Color(0xFF06B6D4), width: 1.5)
+              : null,
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.04),
@@ -299,7 +314,8 @@ class RankListPage extends StatelessWidget {
               height: 80,
               decoration: BoxDecoration(
                 color: _getRankBadgeColor(rank.ranking).withValues(alpha: 0.15),
-                borderRadius: const BorderRadius.horizontal(left: Radius.circular(14)),
+                borderRadius:
+                    const BorderRadius.horizontal(left: Radius.circular(14)),
               ),
               child: Center(
                 child: Text(
@@ -307,103 +323,113 @@ class RankListPage extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w800,
-                    color: isTop3 ? _getRankBadgeColor(rank.ranking) : Colors.grey.shade400,
+                    color: isTop3
+                        ? _getRankBadgeColor(rank.ranking)
+                        : Colors.grey.shade400,
                   ),
                 ),
               ),
             ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-              child: Row(
-                children: [
-                  _buildAvatar(rank),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Flexible(
-                              child: Text(
-                                rank.user?.fullName ?? 'Không tên',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: isMe ? const Color(0xFF06B6D4) : const Color(0xff273143),
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            if (isMe) ...[
-                              const SizedBox(width: 4),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF06B6D4).withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: const Text(
-                                  'Bạn',
+            Expanded(
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                child: Row(
+                  children: [
+                    _buildAvatar(rank),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  rank.user?.fullName ?? 'Không tên',
                                   style: TextStyle(
-                                    fontSize: 10,
+                                    fontSize: 14,
                                     fontWeight: FontWeight.w600,
-                                    color: Color(0xFF06B6D4),
+                                    color: isMe
+                                        ? const Color(0xFF06B6D4)
+                                        : const Color(0xff273143),
                                   ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
-                            ],
-                          ],
-                        ),
-                        const SizedBox(height: 6),
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: _getLevelColor(rank.level).withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Text(
-                                rank.levelName ?? 'Chưa có',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  color: _getLevelColor(rank.level),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.monetization_on, size: 12, color: Colors.grey.shade400),
-                                const SizedBox(width: 3),
-                                Text(
-                                  '${rank.totalCoin ?? 0}',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.grey.shade600,
+                              if (isMe) ...[
+                                const SizedBox(width: 4),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 5, vertical: 1),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF06B6D4)
+                                        .withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: const Text(
+                                    'Bạn',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFF06B6D4),
+                                    ),
                                   ),
                                 ),
                               ],
-                            ),
-                          ],
-                        ),
-                      ],
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 7, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: _getLevelColor(rank.level)
+                                      .withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  rank.levelName ?? 'Chưa có',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: _getLevelColor(rank.level),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.monetization_on,
+                                      size: 12, color: Colors.amber),
+                                  const SizedBox(width: 3),
+                                  Text(
+                                    '${rank.totalCoin ?? 0}',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.grey.shade600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    ),
-  );
+    );
   }
 
   Widget _buildAvatar(RankEntity rank) {

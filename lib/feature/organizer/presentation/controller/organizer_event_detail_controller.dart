@@ -16,7 +16,7 @@ class OrganizerEventDetailController extends GetxController {
       networkGetIt<PublishOrganizerEventUsecase>();
 
   final Rx<EventEntity?> event = Rx<EventEntity?>(null);
-  final RxBool isLoading = false.obs;
+  final RxBool isLoading = true.obs;
   final RxBool isActionLoading = false.obs;
 
   int? _eventId;
@@ -29,7 +29,6 @@ class OrganizerEventDetailController extends GetxController {
   }
 
   Future<void> loadEvent(int eventId) async {
-    if (isLoading.value) return;
     _eventId = eventId;
     isLoading.value = true;
     final result = await _getEventByIdUsecase(eventId);

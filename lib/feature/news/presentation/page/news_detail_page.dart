@@ -1,3 +1,4 @@
+import 'package:events_app/feature/common/domain/enum/app_enum.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:events_app/feature/news/domain/entity/news_entity.dart';
@@ -95,7 +96,8 @@ class _NewsDetailPageState extends State<NewsDetailPage> {
               color: Colors.black.withValues(alpha: 0.3),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.bookmark_border, color: Colors.white, size: 20),
+            child: const Icon(Icons.bookmark_border,
+                color: Colors.white, size: 20),
           ),
           onPressed: () {},
         ),
@@ -151,7 +153,8 @@ class _NewsDetailPageState extends State<NewsDetailPage> {
                     .split(',')
                     .where((t) => t.trim().isNotEmpty)
                     .map((t) => Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
                             color: const Color(0xFFE3F2FD),
                             borderRadius: BorderRadius.circular(12),
@@ -185,7 +188,8 @@ class _NewsDetailPageState extends State<NewsDetailPage> {
             Row(
               children: [
                 if (widget.news.createdTime != null) ...[
-                  Icon(Icons.access_time, size: 14, color: Colors.grey.shade500),
+                  Icon(Icons.access_time,
+                      size: 14, color: Colors.grey.shade500),
                   const SizedBox(width: 4),
                   Text(
                     _formatTime(widget.news.createdTime!),
@@ -194,7 +198,8 @@ class _NewsDetailPageState extends State<NewsDetailPage> {
                   const SizedBox(width: 16),
                 ],
                 if (widget.news.viewCount != null) ...[
-                  Icon(Icons.remove_red_eye_outlined, size: 14, color: Colors.grey.shade500),
+                  Icon(Icons.remove_red_eye_outlined,
+                      size: 14, color: Colors.grey.shade500),
                   const SizedBox(width: 4),
                   Text(
                     '${_formatNumber(widget.news.viewCount!)} lượt xem',
@@ -237,23 +242,23 @@ class _NewsDetailPageState extends State<NewsDetailPage> {
     String label;
     VoidCallback? onTap;
 
-    switch (targetType.name) {
-      case 'event':
+    switch (targetType) {
+      case NewsTargetType.event:
         icon = Icons.event;
         label = 'Xem sự kiện';
         onTap = () {};
         break;
-      case 'user':
+      case NewsTargetType.user:
         icon = Icons.person;
         label = 'Xem hồ sơ';
         onTap = () {};
         break;
-      case 'externalUrl':
+      case NewsTargetType.externalUrl:
         icon = Icons.link;
         label = 'Truy cập liên kết';
         onTap = () {};
         break;
-      case 'package':
+      case NewsTargetType.package:
         icon = Icons.inventory_2_outlined;
         label = 'Xem gói dịch vụ';
         onTap = () {};
@@ -270,7 +275,8 @@ class _NewsDetailPageState extends State<NewsDetailPage> {
         label: Text(label),
         style: OutlinedButton.styleFrom(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ),
       ),
     );
@@ -299,7 +305,8 @@ class _NewsDetailPageState extends State<NewsDetailPage> {
             if (sessionCoins > 0)
               Container(
                 margin: const EdgeInsets.only(bottom: 8),
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: const Color(0xFFFFF9C4),
                   borderRadius: BorderRadius.circular(20),
@@ -353,16 +360,17 @@ class _NewsDetailPageState extends State<NewsDetailPage> {
                         style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.w900,
-                          color: isIdle
-                              ? Colors.orange
-                              : const Color(0xFF10B981),
+                          color:
+                              isIdle ? Colors.orange : const Color(0xFF10B981),
                         ),
                       ),
                       if (isIdle)
-                        Icon(Icons.pause, size: 10, color: Colors.orange.shade400)
+                        Icon(Icons.pause,
+                            size: 10, color: Colors.orange.shade400)
                       else if (isClaiming)
                         const SizedBox(
-                          width: 10, height: 10,
+                          width: 10,
+                          height: 10,
                           child: CircularProgressIndicator(strokeWidth: 1.5),
                         )
                       else

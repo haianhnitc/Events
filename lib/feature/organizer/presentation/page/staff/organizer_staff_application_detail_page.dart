@@ -1,3 +1,4 @@
+import 'package:events_app/feature/common/domain/enum/app_enum.dart';
 import 'package:events_app/feature/common/utils/app_date_utils.dart';
 import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
 import 'package:events_app/feature/organizer/presentation/controller/organizer_staff_application_detail_controller.dart';
@@ -8,7 +9,8 @@ import 'package:get/get.dart';
 class OrganizerStaffApplicationDetailPage extends StatefulWidget {
   final int applicationId;
 
-  const OrganizerStaffApplicationDetailPage({super.key, required this.applicationId});
+  const OrganizerStaffApplicationDetailPage(
+      {super.key, required this.applicationId});
 
   @override
   State<OrganizerStaffApplicationDetailPage> createState() =>
@@ -61,7 +63,7 @@ class _OrganizerStaffApplicationDetailPageState
               const SizedBox(height: 16),
               _buildAnswersSection(app),
               const SizedBox(height: 20),
-              if (app.status?.name.toUpperCase() == 'PENDING')
+              if (app.status == StaffApplicationStatus.pending)
                 _buildActionButtons(),
               const SizedBox(height: 24),
             ],
@@ -73,10 +75,9 @@ class _OrganizerStaffApplicationDetailPageState
 
   Widget _buildProfileCard(app) {
     final applicant = app.applicant;
-    final statusName = app.status?.name.toUpperCase() ?? 'PENDING';
-    final badge = statusName == 'PENDING'
+    final badge = app.status == StaffApplicationStatus.pending
         ? OrganizerStatusBadge.pending()
-        : statusName == 'APPROVED'
+        : app.status == StaffApplicationStatus.approved
             ? OrganizerStatusBadge.approved()
             : OrganizerStatusBadge.rejected();
 
@@ -132,7 +133,8 @@ class _OrganizerStaffApplicationDetailPageState
                     const SizedBox(width: 4),
                     Text(
                       app.eventTitle ?? 'N/A',
-                      style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                      style:
+                          TextStyle(fontSize: 12, color: Colors.grey.shade600),
                     ),
                   ],
                 ),
@@ -144,7 +146,8 @@ class _OrganizerStaffApplicationDetailPageState
                     if (app.appliedTime != null)
                       Text(
                         'Nộp: ${AppDateUtils.formatDate(app.appliedTime!)}',
-                        style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+                        style: TextStyle(
+                            fontSize: 11, color: Colors.grey.shade500),
                       ),
                   ],
                 ),
@@ -212,7 +215,7 @@ class _OrganizerStaffApplicationDetailPageState
                   '${index + 1}',
                   answer.questionText ?? 'Câu hỏi',
                   answer.answerValue ?? '',
-                  answer.questionType?.name ?? 'TEXT',
+                  answer.questionType?.apiValue ?? 'TEXT',
                 ),
               ],
             );
@@ -283,12 +286,13 @@ class _OrganizerStaffApplicationDetailPageState
           ),
           child: Row(
             children: [
-              const Icon(Icons.format_quote, size: 14, color: Color(0xff94A3B8)),
+              const Icon(Icons.format_quote,
+                  size: 14, color: Color(0xff94A3B8)),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(answer,
-                    style:
-                        const TextStyle(fontSize: 13, color: Color(0xff475569))),
+                    style: const TextStyle(
+                        fontSize: 13, color: Color(0xff475569))),
               ),
             ],
           ),
@@ -317,8 +321,8 @@ class _OrganizerStaffApplicationDetailPageState
                     ? const SizedBox(
                         width: 18,
                         height: 18,
-                        child:
-                            CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: Colors.white),
                       )
                     : const Icon(Icons.check_circle_outline,
                         color: Colors.white, size: 18),
@@ -345,8 +349,7 @@ class _OrganizerStaffApplicationDetailPageState
             ),
             icon: const Icon(Icons.cancel_outlined, size: 18),
             label: const Text('Từ chối đơn',
-                style: TextStyle(
-                    fontSize: 14, fontWeight: FontWeight.w600)),
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
           ),
         ),
       ],

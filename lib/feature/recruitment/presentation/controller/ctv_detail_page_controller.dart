@@ -90,6 +90,12 @@ class CtvDetailPageController extends GetxController {
   bool get hasCertificate =>
       (recruitment.value?.certificateName ?? '').trim().isNotEmpty;
 
+  bool get hasRewardInfo =>
+      (recruitment.value?.rewardCoin ?? 0) > 0 ||
+      (recruitment.value?.youthUnionPoint ?? 0) > 0 ||
+      (recruitment.value?.cashRewardAmount ?? 0) > 0 ||
+      hasCertificate;
+
   int get quantity => recruitment.value?.quantity ?? 0;
 
   int get recruitedCount => recruitment.value?.recruitedCtvCount ?? 0;
@@ -115,6 +121,9 @@ class CtvDetailPageController extends GetxController {
     if (item == null) return const <String>[];
 
     final items = <String>[];
+    if ((item.rewardCoin ?? 0) > 0) {
+      items.add('Nhận ngay ${item.rewardCoin} xu');
+    }
     if ((item.youthUnionPoint ?? 0) > 0) {
       items.add('Nhận ngay ${item.youthUnionPoint} điểm đoàn');
     }

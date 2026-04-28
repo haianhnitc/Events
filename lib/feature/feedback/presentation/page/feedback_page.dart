@@ -772,7 +772,6 @@ class _FeedbackPageState extends State<FeedbackPage> {
     final result = await _checkOutUsecase(ScanQrParams(
       eventParticipantId: ctx.eventParticipantId,
       qrContent: ctx.qrContent,
-      action: AttendanceAction.checkOut,
       latitude: currentLat,
       longitude: currentLng,
     ));

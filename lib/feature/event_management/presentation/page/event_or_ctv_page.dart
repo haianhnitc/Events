@@ -41,9 +41,15 @@ class _EventOrCtvPageState extends State<EventOrCtvPage> {
   @override
   void initState() {
     super.initState();
-    Get.lazyPut(() => CategoryController());
-    Get.lazyPut(() => EventController());
-    Get.lazyPut(() => CtvController());
+    if (!Get.isRegistered<CategoryController>()) {
+      Get.put(CategoryController());
+    }
+    if (!Get.isRegistered<EventController>()) {
+      Get.put(EventController());
+    }
+    if (!Get.isRegistered<CtvController>()) {
+      Get.put(CtvController());
+    }
     categoryController.loadCategories();
     _scrollController = ScrollController()..addListener(_handleScroll);
   }
@@ -103,6 +109,7 @@ class _EventOrCtvPageState extends State<EventOrCtvPage> {
       return EventDetailPage(
         key: ValueKey('event_detail_${selectedEvent.eventId}'),
         eventId: selectedEvent.eventId,
+        onBack: () => eventController.closeEventDetail(),
       );
     }
 
@@ -112,6 +119,7 @@ class _EventOrCtvPageState extends State<EventOrCtvPage> {
           'ctv_detail_${selectedCtvRecruitment.ctvRecruitmentId}',
         ),
         ctvRecruitmentId: selectedCtvRecruitment.ctvRecruitmentId,
+        onBack: () => ctvController.closeCtvDetail(),
       );
     }
 

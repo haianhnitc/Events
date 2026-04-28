@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:events_app/api_template/services/failure.dart';
+import 'package:events_app/common/utils/app_location_service.dart';
 import 'package:events_app/common/utils/permission_helper.dart';
 import 'package:events_app/dependency_injection/injection.dart';
 import 'package:events_app/feature/attendance/domain/entity/attendance_entity.dart';
@@ -48,6 +49,7 @@ class OrganizerScanQrController extends GetxController with GetTickerProviderSta
   final Rx<OrganizerScanMode> scanMode = OrganizerScanMode.checkIn.obs;
   final RxString lastScan = ''.obs;
   final RxBool showResultOverlay = false.obs;
+  final RxBool _showingResult = false.obs;
   final Rx<OrganizerScanResultEntity?> lastScanResult =
       Rx<OrganizerScanResultEntity?>(null);
   final RxString lastError = ''.obs;
@@ -56,7 +58,10 @@ class OrganizerScanQrController extends GetxController with GetTickerProviderSta
   final RxInt checkedInCount = 0.obs;
   final RxInt totalParticipants = 0.obs;
 
+  final RxSet<int> _scannedParticipantIds = <int>{}.obs;
+
   final PermissionHelper _permissionHelper = PermissionHelper();
+  final AppLocationService _locationService = AppLocationService();
   final ScanQrUsecase _scanQrUsecase = networkGetIt<ScanQrUsecase>();
   final OrganizerManualCheckInUsecase _manualCheckInUsecase =
       networkGetIt<OrganizerManualCheckInUsecase>();
@@ -144,7 +149,7 @@ class OrganizerScanQrController extends GetxController with GetTickerProviderSta
   }
 
   void onBarcodeDetected(BarcodeCapture barcodeCapture) {
-    if (isProcessing.value || showResultOverlay.value) return;
+    if (isProcessing.value || _showingResult.value) return;
 
     final barcodes = barcodeCapture.barcodes;
     if (barcodes.isEmpty) return;
@@ -170,7 +175,7 @@ class OrganizerScanQrController extends GetxController with GetTickerProviderSta
 
     if (_isQrExpired(code)) {
       _showErrorSnackbar('Mã QR hết hạn',
-          'Mã QR đã hết hạn (1 tiếng). Vui lòng tạo mã mới.');
+          'Mã QR đã hết hạn. Vui lòng tạo mã mới.');
       _resumeScanner();
       return;
     }
@@ -179,68 +184,39 @@ class OrganizerScanQrController extends GetxController with GetTickerProviderSta
     final isEventQr = _isEventQrCode(code);
 
     if (scanMode.value == OrganizerScanMode.checkIn) {
-      await _handleCheckIn(code, isAttendeeQr, isEventQr);
+      await _handleCheckIn(code);
     } else {
-      await _handleCheckOut(code, isAttendeeQr);
+      await _handleCheckOut(code);
     }
   }
 
   bool _isAttendeeQrCode(String code) {
-    return code.startsWith('PARTICIPANT:') || code.startsWith('ATTENDEE:');
+    return code.startsWith('PARTICIPANT:');
   }
 
   bool _isEventQrCode(String code) {
-    return code.startsWith('EVENT:');
+    return code.startsWith('EVENT_CHECKIN:') || code.startsWith('EVENT_CHECKOUT:');
   }
 
   String? _validateQrFormat(String code) {
-    final validPrefixes = ['PARTICIPANT:', 'ATTENDEE:', 'EVENT:', 'TICKET:'];
+    final validPrefixes = ['PARTICIPANT:'];
     final hasValidPrefix = validPrefixes.any((p) => code.startsWith(p));
 
     if (!hasValidPrefix) {
-      return 'Mã QR không đúng định dạng. Vui lòng quét mã QR của người tham gia.';
+      return 'Mã QR không đúng định dạng. Vui lòng quét mã QR người tham gia.';
     }
 
     final parts = code.split(':');
-    if (parts.length < 2) {
-      return 'Mã QR không đúng định dạng.';
+    if (parts.length < 4) {
+      return 'Mã QR không đúng định dạng. Cần đủ 4 phần: PARTICIPANT:id:timestamp:signature.';
     }
 
     return null;
   }
 
-  bool _isQrExpired(String code) {
-    final parts = code.split(':');
-    if (parts.length >= 3) {
-      final timestamp = int.tryParse(parts[2]);
-      if (timestamp != null) {
-        final qrTime = DateTime.fromMillisecondsSinceEpoch(timestamp);
-        return DateTime.now().difference(qrTime).inHours >= 1;
-      }
-    }
-    return false;
-  }
+  bool _isQrExpired(String code) => false;
 
-  Future<void> _handleCheckIn(
-      String code, bool isAttendeeQr, bool isEventQr) async {
-    if (isEventQr) {
-      _showErrorSnackbar(
-        'Không thể check-in',
-        'Đây là mã QR sự kiện. Vui lòng quét mã QR của người tham gia (ATTENDEE/PARTICIPANT).',
-      );
-      _resumeScanner();
-      return;
-    }
-
-    if (!isAttendeeQr) {
-      _showErrorSnackbar(
-        'Không thể check-in',
-        'Mã QR không hợp lệ cho check-in người tham gia.',
-      );
-      _resumeScanner();
-      return;
-    }
-
+  Future<void> _handleCheckIn(String code) async {
     final eventParticipantId = _parseParticipantIdFromQr(code);
     if (eventParticipantId == null) {
       _showErrorSnackbar('Mã QR không hợp lệ', 'Không thể đọc ID từ mã QR.');
@@ -248,6 +224,16 @@ class OrganizerScanQrController extends GetxController with GetTickerProviderSta
       return;
     }
 
+    if (_scannedParticipantIds.contains(eventParticipantId)) {
+      _showErrorSnackbar(
+        'Đã quét rồi',
+        'Mã này đã được quét trong phiên này. Vui lòng quét mã khác.',
+      );
+      _resumeScanner();
+      return;
+    }
+
+    _scannedParticipantIds.add(eventParticipantId);
     final result = await _processAttendeeCheckIn(code, eventParticipantId);
 
     if (!Get.isRegistered<OrganizerScanQrController>()) return;
@@ -266,16 +252,7 @@ class OrganizerScanQrController extends GetxController with GetTickerProviderSta
     }
   }
 
-  Future<void> _handleCheckOut(String code, bool isAttendeeQr) async {
-    if (!isAttendeeQr) {
-      _showErrorSnackbar(
-        'Không thể check-out',
-        'Mã QR không hợp lệ cho check-out người tham gia.',
-      );
-      _resumeScanner();
-      return;
-    }
-
+  Future<void> _handleCheckOut(String code) async {
     final eventParticipantId = _parseParticipantIdFromQr(code);
     if (eventParticipantId == null) {
       _showErrorSnackbar('Mã QR không hợp lệ', 'Không thể đọc ID từ mã QR.');
@@ -283,7 +260,17 @@ class OrganizerScanQrController extends GetxController with GetTickerProviderSta
       return;
     }
 
-    final result = await _processAttendeeCheckOut(eventParticipantId);
+    if (_scannedParticipantIds.contains(eventParticipantId)) {
+      _showErrorSnackbar(
+        'Đã quét rồi',
+        'Mã này đã được quét trong phiên này. Vui lòng quét mã khác.',
+      );
+      _resumeScanner();
+      return;
+    }
+
+    _scannedParticipantIds.add(eventParticipantId);
+    final result = await _processAttendeeCheckIn(code, eventParticipantId);
 
     if (!Get.isRegistered<OrganizerScanQrController>()) return;
 
@@ -303,7 +290,7 @@ class OrganizerScanQrController extends GetxController with GetTickerProviderSta
 
   int? _parseParticipantIdFromQr(String code) {
     final parts = code.split(':');
-    if (parts.length >= 2) {
+    if (parts.length >= 4) {
       return int.tryParse(parts[1]);
     }
     return null;
@@ -313,14 +300,14 @@ class OrganizerScanQrController extends GetxController with GetTickerProviderSta
       String code, int eventParticipantId) async {
     lastError.value = '';
 
-    final action = scanMode.value == OrganizerScanMode.checkIn
-        ? AttendanceAction.checkIn
-        : AttendanceAction.checkOut;
+    final locationResult = await _locationService.getCurrentLocation();
+    final coords = locationResult.coords;
 
     final result = await _scanQrUsecase(ScanQrParams(
       eventParticipantId: eventParticipantId,
       qrContent: code,
-      action: action,
+      latitude: coords?.latitude,
+      longitude: coords?.longitude,
     ));
 
     OrganizerScanResultEntity? scanResult;
@@ -370,6 +357,7 @@ class OrganizerScanQrController extends GetxController with GetTickerProviderSta
   }
 
   void _onScanSuccess(OrganizerScanResultEntity result, OrganizerScanMode action) {
+    _showingResult.value = true;
     showResultOverlay.value = true;
     lastScanResult.value = result;
 
@@ -391,17 +379,21 @@ class OrganizerScanQrController extends GetxController with GetTickerProviderSta
     Future.delayed(const Duration(milliseconds: 2500), () {
       if (!Get.isRegistered<OrganizerScanQrController>()) return;
       _hideResultOverlay();
-      _resumeScanner();
     });
   }
 
   void _hideResultOverlay() {
+    _showingResult.value = false;
     showResultOverlay.value = false;
     lastScanResult.value = null;
+    isProcessing.value = false;
+    lastScan.value = '';
+    mobileScannerController?.start();
   }
 
   void _resumeScanner() {
     if (!Get.isRegistered<OrganizerScanQrController>()) return;
+    if (_showingResult.value || showResultOverlay.value) return;
     isProcessing.value = false;
     lastScan.value = '';
     mobileScannerController?.start();

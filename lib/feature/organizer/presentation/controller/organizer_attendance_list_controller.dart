@@ -1,3 +1,4 @@
+import 'package:events_app/feature/common/domain/enum/app_enum.dart';
 import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
 import 'package:get/get.dart';
 import 'package:events_app/api_template/services/failure.dart';
@@ -19,10 +20,10 @@ class OrganizerAttendanceListController extends GetxController {
   final Rx<int?> filterEventId = Rx<int?>(null);
 
   Future<void> loadAttendanceLogs({bool refresh = false}) async {
-    if (isLoading.value) return;
     if (refresh) {
       currentPage.value = 0;
       hasMore.value = true;
+      attendanceLogs.clear();
     }
     if (!hasMore.value && !refresh) return;
 
@@ -69,10 +70,10 @@ class OrganizerAttendanceListController extends GetxController {
   }
 
   int get totalCheckIns =>
-      attendanceLogs.where((l) => l.type?.name == 'checkIn').length;
+      attendanceLogs.where((l) => l.type == AttendanceLogType.checkIn).length;
 
   int get totalCheckOuts =>
-      attendanceLogs.where((l) => l.type?.name == 'checkOut').length;
+      attendanceLogs.where((l) => l.type == AttendanceLogType.checkOut).length;
 
   void _handleFailure(FailureEntity failure) {
     failure.when(

@@ -12,20 +12,29 @@ class PackageListPage extends StatefulWidget {
 }
 
 class _PackageListPageState extends State<PackageListPage>
-    with SingleTickerProviderStateMixin {
+    with WidgetsBindingObserver, SingleTickerProviderStateMixin {
   late final PackageListController ctrl;
   late final TabController _tabController;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     ctrl = Get.put(PackageListController());
     _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(_onTabChanged);
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      ctrl.loadMyPackages(refresh: true);
+    }
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _tabController.removeListener(_onTabChanged);
     _tabController.dispose();
     super.dispose();
@@ -315,24 +324,52 @@ class _PackageListPageState extends State<PackageListPage>
           const SizedBox(height: 12),
           SizedBox(
             width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () => ctrl.onPurchasePackage(package),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF06B6D4),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                elevation: 0,
-              ),
-              child: const Text(
-                'Mua gói này',
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
-              ),
-            ),
+            child: Obx(() => _buildPackageButton(package)),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildPackageButton(package) {
+    final pkgId = package.packageId;
+    final owned = pkgId != null && ctrl.hasPackage(pkgId);
+
+    if (owned) {
+      return ElevatedButton(
+        onPressed: null,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF9CA3AF),
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          elevation: 0,
+          disabledBackgroundColor: const Color(0xFF9CA3AF),
+          disabledForegroundColor: Colors.white,
+        ),
+        child: const Text(
+          'Đã sở hữu',
+          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+        ),
+      );
+    }
+
+    return ElevatedButton(
+      onPressed: () => ctrl.onPurchasePackage(package),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: const Color(0xFF06B6D4),
+        foregroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+        elevation: 0,
+      ),
+      child: const Text(
+        'Mua gói này',
+        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
       ),
     );
   }

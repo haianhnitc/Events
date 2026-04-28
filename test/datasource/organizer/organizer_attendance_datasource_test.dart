@@ -26,7 +26,7 @@ class TestOrganizerAttendanceDatasource extends OrganizerAttendanceDatasourceImp
   }) : super(client: StubRestClient());
 
   @override
-  Future<ApiResponse<AttendanceQrModel>> getEventQr(int eventId) async {
+  Future<ApiResponse<AttendanceQrModel>> getEventQr(int eventId, String action) async {
     final envelope = eventQrStub ??
         ApiResponse.success({
           'errorCode': 0,
@@ -143,7 +143,7 @@ void main() {
         }),
       );
 
-      final result = await datasource.getEventQr(1);
+      final result = await datasource.getEventQr(1, 'CHECKIN');
 
       result.when(
         success: (qr) {
@@ -172,7 +172,7 @@ void main() {
         ),
       );
 
-      final result = await datasource.getEventQr(1);
+      final result = await datasource.getEventQr(1, 'CHECKIN');
 
       expect(
         result.when(
@@ -201,7 +201,7 @@ void main() {
         ),
       );
 
-      final result = await datasource.getEventQr(1);
+      final result = await datasource.getEventQr(1, 'CHECKIN');
 
       expect(
         result.when(
@@ -233,7 +233,7 @@ void main() {
         }),
       );
 
-      final result = await datasource.getEventQr(1);
+      final result = await datasource.getEventQr(1, 'CHECKIN');
 
       expect(
         result.when(

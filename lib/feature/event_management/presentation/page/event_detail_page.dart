@@ -11,9 +11,11 @@ class EventDetailPage extends StatefulWidget {
   const EventDetailPage({
     super.key,
     required this.eventId,
+    this.onBack,
   });
 
   final int? eventId;
+  final VoidCallback? onBack;
 
   @override
   State<EventDetailPage> createState() => _EventDetailPageState();
@@ -50,35 +52,68 @@ class _EventDetailPageState extends State<EventDetailPage> {
   @override
   Widget build(BuildContext context) {
     return Obx(
-      () => SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(
-              height: _bannerLogicalHeight.toDouble(),
-              width: double.infinity,
-              child: Stack(
-                children: [
-                  Positioned.fill(child: _buildBanner()),
-                  _buildTag(),
-                ],
+      () {
+        if (_controller.isLoading.value) {
+          return const Scaffold(
+            backgroundColor: Color(0xffF5F5F5),
+            body: Center(
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xff06B6D4)),
               ),
             ),
-            const SizedBox(height: 17),
-            _buildHeader(),
-            const SizedBox(height: 16),
-            Divider(height: 1, color: const Color(0xff273143).withOpacity(0.1))
-                .marginSymmetric(horizontal: 16),
-            const SizedBox(height: 16),
-            _buildEventDetail(context),
-            const SizedBox(height: 16),
-            _buildBenefitCard(),
-            const SizedBox(height: 16),
-            _buildRegisterButton(),
-            const SizedBox(height: 30)
-          ],
-        ),
-      ),
+          );
+        }
+
+        return Scaffold(
+          backgroundColor: const Color(0xffF5F5F5),
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back, color: Color(0xff273143)),
+              onPressed: () {
+                if (widget.onBack != null) {
+                  widget.onBack!();
+                } else {
+                  Get.back();
+                }
+              },
+            ),
+          ),
+          body: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(
+                  height: _bannerLogicalHeight.toDouble(),
+                  width: double.infinity,
+                  child: Stack(
+                    children: [
+                      Positioned.fill(child: _buildBanner()),
+                      _buildTag(),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 17),
+                _buildHeader(),
+                const SizedBox(height: 16),
+                Divider(
+                        height: 1,
+                        color: const Color(0xff273143).withOpacity(0.1))
+                    .marginSymmetric(horizontal: 16),
+                const SizedBox(height: 16),
+                _buildEventDetail(context),
+                const SizedBox(height: 8),
+                _buildBenefitCard(),
+                const SizedBox(height: 16),
+                _buildRegisterButton(),
+                const SizedBox(height: 30)
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -588,9 +623,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
         margin: const EdgeInsets.symmetric(horizontal: 16),
         height: 42,
         decoration: BoxDecoration(
-          color: canTap
-              ? const Color(0xff06B6D4)
-              : const Color(0xffB0B4C0),
+          color: canTap ? const Color(0xff06B6D4) : const Color(0xffB0B4C0),
           borderRadius: BorderRadius.circular(10),
         ),
         child: Stack(

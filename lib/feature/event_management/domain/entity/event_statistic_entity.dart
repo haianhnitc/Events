@@ -9,6 +9,7 @@ class EventStatisticEntity {
   final int? totalCtv;
   final int? totalTicketsSold;
   final int? totalFeedbacks;
+  final int? totalViews;
   final DateTime? lastUpdateTime;
 
   EventStatisticEntity({
@@ -22,6 +23,7 @@ class EventStatisticEntity {
     this.totalCtv,
     this.totalTicketsSold,
     this.totalFeedbacks,
+    this.totalViews,
     this.lastUpdateTime,
   });
 
@@ -36,6 +38,7 @@ class EventStatisticEntity {
     int? totalCtv,
     int? totalTicketsSold,
     int? totalFeedbacks,
+    int? totalViews,
     DateTime? lastUpdateTime,
   }) {
     return EventStatisticEntity(
@@ -49,6 +52,7 @@ class EventStatisticEntity {
       totalCtv: totalCtv ?? this.totalCtv,
       totalTicketsSold: totalTicketsSold ?? this.totalTicketsSold,
       totalFeedbacks: totalFeedbacks ?? this.totalFeedbacks,
+      totalViews: totalViews ?? this.totalViews,
       lastUpdateTime: lastUpdateTime ?? this.lastUpdateTime,
     );
   }

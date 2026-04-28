@@ -10,7 +10,7 @@ import 'package:injectable/injectable.dart';
 
 abstract class AttendanceDatasource {
   Future<ApiResponse<AttendanceQrModel>> getParticipantQr(int eventParticipantId);
-  Future<ApiResponse<AttendanceQrModel>> getEventQr(int eventId);
+  Future<ApiResponse<AttendanceQrModel>> getEventQr(int eventId, String action);
   Future<ApiResponse<AttendanceScanResultModel>> scanQr(ScanQrParams params);
   Future<ApiResponse<AttendanceScanResultModel>> selfCheckin(ScanQrParams params);
 }
@@ -45,10 +45,10 @@ class AttendanceDatasourceImpl extends ApiProvider implements AttendanceDatasour
   }
 
   @override
-  Future<ApiResponse<AttendanceQrModel>> getEventQr(int eventId) async {
+  Future<ApiResponse<AttendanceQrModel>> getEventQr(int eventId, String action) async {
     try {
       final response = await get<Map<String, dynamic>>(
-        ApiPath.attendanceQrEvent(eventId),
+        '${ApiPath.attendanceQrEvent(eventId)}?action=$action',
         (data) => Map<String, dynamic>.from(data as Map),
         requireAuth: true,
       );

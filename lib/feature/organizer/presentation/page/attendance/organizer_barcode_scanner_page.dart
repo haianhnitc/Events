@@ -42,7 +42,9 @@ class _OrganizerBarcodeScannerPageState
           (e) => e.eventId == widget.eventId);
       if (event != null) {
         _selectedEvent = event;
-        _participantCtrl.setEventFilter(widget.eventId);
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _participantCtrl.setEventFilter(widget.eventId);
+        });
       } else {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           final found = _eventCtrl.events.firstWhereOrNull(
@@ -280,7 +282,38 @@ class _OrganizerBarcodeScannerPageState
                   },
                 ),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 8),
+              Obx(() => OutlinedButton(
+                    onPressed: _manualCodeController.text.isEmpty || _checkInCtrl.isSubmitting.value
+                        ? null
+                        : () => _handleManualCheckOut(),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 12),
+                      side: const BorderSide(color: Color(0xFFF59E0B)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10)),
+                    ),
+                    child: _checkInCtrl.isSubmitting.value
+                        ? const SizedBox(
+                            width: 16, height: 16,
+                            child: CircularProgressIndicator(
+                                strokeWidth: 2, color: Color(0xFFF59E0B)),
+                          )
+                        : const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.logout, size: 16, color: Color(0xFFF59E0B)),
+                              SizedBox(width: 4),
+                              Text('Check-out',
+                                  style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFFF59E0B))),
+                            ],
+                          ),
+                  )),
+              const SizedBox(width: 8),
               Obx(() => ElevatedButton(
                     onPressed: _manualCodeController.text.isEmpty || _checkInCtrl.isSubmitting.value
                         ? null
@@ -288,23 +321,29 @@ class _OrganizerBarcodeScannerPageState
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF8B5CF6),
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 12),
+                          horizontal: 14, vertical: 12),
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10)),
                       elevation: 0,
                     ),
                     child: _checkInCtrl.isSubmitting.value
                         ? const SizedBox(
-                            width: 16,
-                            height: 16,
+                            width: 16, height: 16,
                             child: CircularProgressIndicator(
                                 strokeWidth: 2, color: Colors.white),
                           )
-                        : const Text('Xác nhận',
-                            style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white)),
+                        : const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.login, size: 16, color: Colors.white),
+                              SizedBox(width: 4),
+                              Text('Check-in',
+                                  style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white)),
+                            ],
+                          ),
                   )),
             ],
           ),
@@ -337,6 +376,33 @@ class _OrganizerBarcodeScannerPageState
     if (participant.eventParticipantId == null) return;
 
     await _checkInCtrl.manualCheckIn(participant.eventParticipantId!);
+    _manualCodeController.clear();
+  }
+
+  void _handleManualCheckOut() async {
+    if (_selectedEvent == null) return;
+
+    final code = _manualCodeController.text.trim();
+    if (code.isEmpty) return;
+
+    final participant = _participantCtrl.participants.firstWhereOrNull(
+      (p) => p.participantQrContent == code || p.participantQrContent?.contains(code) == true,
+    );
+
+    if (participant == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Không tìm thấy người tham gia với mã này'),
+          backgroundColor: Colors.orange,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    if (participant.eventParticipantId == null) return;
+
+    await _checkInCtrl.manualCheckOut(participant.eventParticipantId!);
     _manualCodeController.clear();
   }
 

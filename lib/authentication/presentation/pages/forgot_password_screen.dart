@@ -93,7 +93,7 @@ class ForgotPasswordScreen extends StatelessWidget {
                               return SizedBox(
                                 height: 48,
                                 child: ElevatedButton(
-                                  onPressed: authController.isLoading.value
+                                  onPressed: authController.isLoadingEmail.value
                                       ? null
                                       : authController.submitForgotPassword,
                                   style: ElevatedButton.styleFrom(
@@ -103,7 +103,7 @@ class ForgotPasswordScreen extends StatelessWidget {
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                   ),
-                                  child: authController.isLoading.value
+                                  child: authController.isLoadingEmail.value
                                       ? const SizedBox(
                                           width: 20,
                                           height: 20,

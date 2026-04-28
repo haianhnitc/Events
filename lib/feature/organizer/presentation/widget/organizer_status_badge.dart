@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:events_app/feature/common/domain/enum/app_enum.dart';
 
 class OrganizerStatusBadge extends StatelessWidget {
   const OrganizerStatusBadge({
@@ -19,7 +20,7 @@ class OrganizerStatusBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -87,4 +88,17 @@ class OrganizerStatusBadge extends StatelessWidget {
         color: Color(0xFF10B981),
         icon: Icons.play_arrow,
       );
+
+  factory OrganizerStatusBadge.fromStatus(EventStatus status) {
+    switch (status) {
+      case EventStatus.published:
+        return OrganizerStatusBadge.published();
+      case EventStatus.draft:
+        return OrganizerStatusBadge.draft();
+      case EventStatus.closed:
+        return OrganizerStatusBadge.closed();
+      case EventStatus.cancelled:
+        return OrganizerStatusBadge.cancelled();
+    }
+  }
 }

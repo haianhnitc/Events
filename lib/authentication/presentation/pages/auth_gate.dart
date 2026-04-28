@@ -56,7 +56,10 @@ class _AuthGateState extends State<AuthGate> {
     switch (event) {
       case AuthEvent.logoutComplete:
       case AuthEvent.sessionExpired:
+        _authEventSubscription?.cancel();
         _authController.resetAllRegisterFields();
+        _authController.loginFormState?.reset();
+        _authController.loginFormState = null;
         AppSnackbarUtils.showError(
           'Phiên đăng nhập hết hạn',
           'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.',
@@ -64,6 +67,7 @@ class _AuthGateState extends State<AuthGate> {
         Get.offAll(() => const LoginScreen());
 
       case AuthEvent.accountDisabled:
+        _authEventSubscription?.cancel();
         _authController.currentUser.value = null;
         try {
           _authController.logout();
@@ -88,6 +92,50 @@ class _AuthGateState extends State<AuthGate> {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
+      if (_authController.isLoadingSession.value) {
+        return Scaffold(
+          backgroundColor: const Color(0xff06B6D4),
+          body: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 72,
+                  height: 72,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  child: const Icon(
+                    Icons.calendar_today_rounded,
+                    color: Colors.white,
+                    size: 36,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                const Text(
+                  'Đang tải...',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      }
+
       final user = _authController.currentUser.value;
 
       if (user == null) {

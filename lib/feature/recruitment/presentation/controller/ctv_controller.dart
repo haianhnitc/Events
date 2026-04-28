@@ -49,8 +49,8 @@ class CtvController extends GetxController
   final RxMap<int, List<String>> selectedFilters = <int, List<String>>{}.obs;
   final RxString keyword = ''.obs;
   final RxBool hasMore = false.obs;
+  final RxBool isLoading = false.obs;
   final RxBool isLoadingMore = false.obs;
-  final RxBool isLoading = true.obs;
   final RxBool isLoadingEvents = false.obs;
 
   int _currentPage = 0;
@@ -69,11 +69,15 @@ class CtvController extends GetxController
 
   void _reapplyFiltersIfReady() {
     if (!_categoryController.hasLoaded.value) return;
+    if (_allRecruitments.isEmpty) {
+      loadRecruitments(refresh: true);
+      return;
+    }
     _applyFiltersAndSync();
   }
 
   Future<void> loadRecruitments({bool refresh = false}) async {
-    if (isLoadingMore.value || isLoading.value) return;
+    if (isLoadingMore.value) return;
 
     if (refresh) {
       _currentPage = 0;
@@ -85,11 +89,8 @@ class CtvController extends GetxController
 
     if (!hasMore.value && !refresh) return;
 
-    if (refresh || _currentPage == 0) {
-      isLoading.value = true;
-    } else {
-      isLoadingMore.value = true;
-    }
+    isLoading.value = _currentPage == 0;
+    isLoadingMore.value = _currentPage > 0;
 
     final result = await _getRecruitmentsUsecase(
       GetRecruitmentsParams(
@@ -115,7 +116,7 @@ class CtvController extends GetxController
           _currentPage++;
           hasMore.value = data.length >= _pageSize;
           await _ensureEventsLoaded();
-          _applyFiltersAndSync();
+          _reapplyFiltersIfReady();
         }
         isLoading.value = false;
         isLoadingMore.value = false;
@@ -322,11 +323,12 @@ class CtvController extends GetxController
           }
           break;
         case RequirementQuestionType.rating:
-          final rating = ratingAnswers[qId];
+          final ratingStr = ratingAnswers[qId];
+          final rating = ratingStr != null ? int.tryParse(ratingStr) : null;
           if (rating != null && rating > 0) {
             answers.add(AnswerItem(
               questionId: qId,
-              answerText: rating,
+              answerText: rating.toString(),
             ));
           }
           break;

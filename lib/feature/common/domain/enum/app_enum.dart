@@ -31,6 +31,17 @@ extension AttendanceLogTypeApiValue on AttendanceLogType {
   }
 }
 
+extension AttendanceLogTypeDisplayName on AttendanceLogType {
+  String get displayName {
+    switch (this) {
+      case AttendanceLogType.checkIn:
+        return 'CHECK IN';
+      case AttendanceLogType.checkOut:
+        return 'CHECK OUT';
+    }
+  }
+}
+
 @JsonEnum()
 enum CategoryType {
   @JsonValue('SCHOOL')
@@ -213,6 +224,8 @@ enum ParticipantStatus {
 }
 
 extension ParticipantStatusApiValue on ParticipantStatus {
+  String get name => toString().split('.').last;
+
   String get apiValue {
     switch (this) {
       case ParticipantStatus.registered:
@@ -274,6 +287,17 @@ extension EventRecruitmentTypeApiValue on EventRecruitmentType {
         return null;
     }
   }
+
+  String get displayName {
+    switch (this) {
+      case EventRecruitmentType.ctvOnly:
+        return 'CTV';
+      case EventRecruitmentType.attendeeOnly:
+        return 'Người tham gia';
+      case EventRecruitmentType.both:
+        return 'Cả hai';
+    }
+  }
 }
 
 @JsonEnum()
@@ -282,6 +306,26 @@ enum EventRoleType {
   attendee,
   @JsonValue('CTV')
   ctv,
+}
+
+extension EventRoleTypeApiValue on EventRoleType {
+  String get apiValue {
+    switch (this) {
+      case EventRoleType.attendee:
+        return 'ATTENDEE';
+      case EventRoleType.ctv:
+        return 'CTV';
+    }
+  }
+
+  String get displayName {
+    switch (this) {
+      case EventRoleType.attendee:
+        return 'Người tham gia';
+      case EventRoleType.ctv:
+        return 'CTV';
+    }
+  }
 }
 
 @JsonEnum()
@@ -451,6 +495,15 @@ extension ParticipantTypeApiValue on ParticipantType {
     }
   }
 
+  String get displayName {
+    switch (this) {
+      case ParticipantType.attendee:
+        return 'ATTENDEE';
+      case ParticipantType.ctv:
+        return 'CTV';
+    }
+  }
+
   static ParticipantType? fromApiValue(Object? rawValue) {
     if (rawValue is! String) return null;
     switch (rawValue.toUpperCase()) {
@@ -487,6 +540,19 @@ extension PaymentProviderApiValue on PaymentProvider {
         return 'STRIPE';
       case PaymentProvider.sepay:
         return 'SEPAY';
+    }
+  }
+
+  String get displayName {
+    switch (this) {
+      case PaymentProvider.momo:
+        return 'Momo';
+      case PaymentProvider.vnpay:
+        return 'VNPay';
+      case PaymentProvider.stripe:
+        return 'Stripe';
+      case PaymentProvider.sepay:
+        return 'SePay';
     }
   }
 
@@ -585,6 +651,17 @@ extension ScanMethodApiValue on ScanMethod {
         return null;
     }
   }
+
+  String get displayName {
+    switch (this) {
+      case ScanMethod.eventQr:
+        return 'QR sự kiện';
+      case ScanMethod.staffQr:
+        return 'QR nhân viên';
+      case ScanMethod.manual:
+        return 'Thủ công';
+    }
+  }
 }
 
 @JsonEnum()
@@ -620,6 +697,17 @@ extension StaffApplicationStatusApiValue on StaffApplicationStatus {
         return StaffApplicationStatus.rejected;
       default:
         return null;
+    }
+  }
+
+  String get displayName {
+    switch (this) {
+      case StaffApplicationStatus.pending:
+        return 'Đang chờ';
+      case StaffApplicationStatus.approved:
+        return 'Đã duyệt';
+      case StaffApplicationStatus.rejected:
+        return 'Từ chối';
     }
   }
 }
@@ -663,6 +751,19 @@ extension TicketStatusApiValue on TicketStatus {
         return TicketStatus.expired;
       default:
         return null;
+    }
+  }
+
+  String get displayName {
+    switch (this) {
+      case TicketStatus.unpaid:
+        return 'Chưa thanh toán';
+      case TicketStatus.issued:
+        return 'Đã bán';
+      case TicketStatus.used:
+        return 'Đã dùng';
+      case TicketStatus.expired:
+        return 'Hết hạn';
     }
   }
 }
@@ -711,6 +812,7 @@ extension TransactionReferenceTypeApiValue on TransactionReferenceType {
 }
 
 @JsonEnum()
+@JsonEnum()
 enum TransactionStatus {
   @JsonValue('PENDING')
   pending,
@@ -718,6 +820,19 @@ enum TransactionStatus {
   success,
   @JsonValue('FAILED')
   failed,
+}
+
+extension TransactionStatusApiValue on TransactionStatus {
+  String get apiValue {
+    switch (this) {
+      case TransactionStatus.pending:
+        return 'PENDING';
+      case TransactionStatus.success:
+        return 'SUCCESS';
+      case TransactionStatus.failed:
+        return 'FAILED';
+    }
+  }
 }
 
 @JsonEnum()
@@ -818,8 +933,8 @@ extension UserStatusApiValue on UserStatus {
 enum VerificationStatus {
   @JsonValue('PENDING')
   pending,
-  @JsonValue('VERIFIED')
-  verified,
+  @JsonValue('APPROVED')
+  approved,
   @JsonValue('REJECTED')
   rejected,
 }
@@ -829,8 +944,8 @@ extension VerificationStatusApiValue on VerificationStatus {
     switch (this) {
       case VerificationStatus.pending:
         return 'PENDING';
-      case VerificationStatus.verified:
-        return 'VERIFIED';
+      case VerificationStatus.approved:
+        return 'APPROVED';
       case VerificationStatus.rejected:
         return 'REJECTED';
     }
@@ -844,9 +959,8 @@ extension VerificationStatusApiValue on VerificationStatus {
     switch (rawValue.toUpperCase()) {
       case 'PENDING':
         return VerificationStatus.pending;
-      case 'VERIFIED':
-      case 'APPROVED':  
-        return VerificationStatus.verified;
+      case 'APPROVED':
+        return VerificationStatus.approved;
       case 'REJECTED':
         return VerificationStatus.rejected;
       default:
@@ -925,6 +1039,17 @@ extension AttendanceActionApiValue on AttendanceAction {
         return AttendanceAction.checkOut;
       default:
         return null;
+    }
+  }
+}
+
+extension AttendanceActionDisplayName on AttendanceAction {
+  String get displayName {
+    switch (this) {
+      case AttendanceAction.checkIn:
+        return 'CHECK IN';
+      case AttendanceAction.checkOut:
+        return 'CHECK OUT';
     }
   }
 }

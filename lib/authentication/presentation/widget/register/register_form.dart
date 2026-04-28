@@ -904,7 +904,7 @@ class _RegisterFormState extends State<RegisterForm> {
     return Obx(() => SizedBox(
       height: 48,
       child: ElevatedButton(
-        onPressed: _isTermsAccepted && !authController.isLoading.value
+        onPressed: _isTermsAccepted && !authController.isLoadingEmail.value
             ? () {
                 if (widget.isGoogleRegister) {
                   authController.submitGoogleRegister(
@@ -924,7 +924,7 @@ class _RegisterFormState extends State<RegisterForm> {
           ),
           elevation: 0,
         ),
-        child: authController.isLoading.value
+        child: authController.isLoadingEmail.value
             ? const SizedBox(
                 width: 20,
                 height: 20,

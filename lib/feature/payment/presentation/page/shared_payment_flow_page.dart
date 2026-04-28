@@ -1,4 +1,5 @@
 import 'package:events_app/feature/common/domain/enum/app_enum.dart';
+import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
 import 'package:events_app/feature/payment/domain/entity/payment_url_entity.dart';
 import 'package:events_app/feature/payment/domain/entity/transaction_entity.dart';
 import 'package:events_app/feature/payment/presentation/controller/sepay_payment_controller.dart';
@@ -20,9 +21,10 @@ class SharedPaymentCheckoutPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final controller = SharedPaymentCheckoutController(args: args)..init();
     return GetBuilder<SharedPaymentCheckoutController>(
-      init: SharedPaymentCheckoutController(args: args),
-      builder: (controller) => _CheckoutView(controller: controller),
+      init: controller,
+      builder: (ctrl) => _CheckoutView(controller: ctrl),
     );
   }
 }
@@ -129,6 +131,11 @@ class _CheckoutView extends StatelessWidget {
 
   Future<void> _onPay(BuildContext context, SharedPaymentCheckoutController controller) async {
     FocusScope.of(context).unfocus();
+    if (controller.finalAmount <= 0) {
+      AppSnackbarUtils.showSuccess('Thành công', 'Thanh toán hoàn tất!');
+      Get.back(result: true);
+      return;
+    }
     final payment = await controller.createPayment();
     if (payment == null) return;
     Get.to(
@@ -169,6 +176,7 @@ class _SharedPaymentQrPageState extends State<SharedPaymentQrPage> {
   @override
   void initState() {
     super.initState();
+    Get.lazyPut(() => SePayPaymentController());
     _paymentController = Get.find<SePayPaymentController>();
     _status = TransactionStatus.pending;
     _startPolling();
@@ -186,6 +194,10 @@ class _SharedPaymentQrPageState extends State<SharedPaymentQrPage> {
 
   void _onPaymentSuccess(TransactionEntity transaction) {
     setState(() => _status = transaction.status ?? TransactionStatus.success);
+    AppSnackbarUtils.showSuccess('Thành công', 'Thanh toán hoàn tất!');
+    Future.delayed(const Duration(milliseconds: 800), () {
+      if (mounted) Get.back(result: true);
+    });
   }
 
   void _onPaymentFailed(TransactionEntity transaction) {

@@ -1,4 +1,7 @@
+import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
+import 'package:events_app/api_template/services/failure.dart';
 import 'package:events_app/dependency_injection/injection.dart';
 import 'package:events_app/feature/common/domain/entity/package_entity.dart';
 import 'package:events_app/feature/user_management/domain/entity/user_package_entity.dart';
@@ -13,9 +16,9 @@ class PackageListController extends GetxController {
   final RxList<UserPackageEntity> myPackages = <UserPackageEntity>[].obs;
   final RxList<UserPackageEntity> expiredPackages = <UserPackageEntity>[].obs;
 
-  final RxBool isLoadingAvailable = true.obs;
-  final RxBool isLoadingMyPackages = true.obs;
-  final RxBool isLoadingExpired = true.obs;
+  final RxBool isLoadingAvailable = false.obs;
+  final RxBool isLoadingMyPackages = false.obs;
+  final RxBool isLoadingExpired = false.obs;
 
   final RxBool hasMoreAvailable = true.obs;
   final RxBool hasMoreMyPackages = true.obs;
@@ -53,14 +56,13 @@ class PackageListController extends GetxController {
   }
 
   Future<void> loadAvailablePackages({bool refresh = false}) async {
-    if (isLoadingAvailable.value) return;
     if (refresh) {
       _availablePage = 0;
       hasMoreAvailable.value = true;
       availablePackages.clear();
     }
+    if (isLoadingAvailable.value) return;
     if (!hasMoreAvailable.value && !refresh) return;
-
     isLoadingAvailable.value = true;
 
     final result = await _userRepo.getPackages(
@@ -69,7 +71,11 @@ class PackageListController extends GetxController {
     );
 
     result.fold(
-      (failure) => isLoadingAvailable.value = false,
+      (failure) {
+        debugPrint('[PackageList] getPackages failed: $failure');
+        _handleFailure(failure);
+        isLoadingAvailable.value = false;
+      },
       (data) {
         if (data.isEmpty) {
           hasMoreAvailable.value = false;
@@ -104,8 +110,13 @@ class PackageListController extends GetxController {
     );
 
     result.fold(
-      (failure) => isLoadingMyPackages.value = false,
+      (failure) {
+        debugPrint('[PackageList] getUserPackages failed: $failure');
+        _handleFailure(failure);
+        isLoadingMyPackages.value = false;
+      },
       (data) {
+        debugPrint('[PackageList] getUserPackages returned: $data');
         if (data.isEmpty) {
           hasMoreMyPackages.value = false;
         } else {
@@ -139,8 +150,13 @@ class PackageListController extends GetxController {
     );
 
     result.fold(
-      (failure) => isLoadingExpired.value = false,
+      (failure) {
+        debugPrint('[PackageList] getExpiredPackages failed: $failure');
+        _handleFailure(failure);
+        isLoadingExpired.value = false;
+      },
       (data) {
+        debugPrint('[PackageList] getExpiredPackages returned: $data');
         if (data.isEmpty) {
           hasMoreExpired.value = false;
         } else {
@@ -157,10 +173,15 @@ class PackageListController extends GetxController {
     );
   }
 
+  bool hasPackage(int packageId) {
+    return myPackages.any((p) => p.packageId == packageId);
+  }
+
   void onPurchasePackage(PackageEntity package) {
     final pkgId = package.packageId;
     final price = package.price ?? 0;
     if (pkgId == null) return;
+    if (hasPackage(pkgId)) return;
 
     final args = SharedPaymentFlowArgs.forPackagePurchase(
       packageId: pkgId,
@@ -182,5 +203,16 @@ class PackageListController extends GetxController {
     );
 
     Get.to(() => SharedPaymentCheckoutPage(args: args));
+  }
+
+  void _handleFailure(FailureEntity failure) {
+    failure.when(
+      serverFailure: (_, message) => AppSnackbarUtils.showError('Lỗi', message),
+      dataParsingFailure: () =>
+          AppSnackbarUtils.showError('Lỗi', 'Không đọc được dữ liệu'),
+      noConnectionFailure: () =>
+          AppSnackbarUtils.showError('Lỗi', 'Không có kết nối mạng'),
+      systemFailure: (_, message) => AppSnackbarUtils.showError('Lỗi', message),
+    );
   }
 }

@@ -853,7 +853,7 @@ class _OrganizerAttendanceOverviewPageState
   }
 
   Widget _buildLogItem(log) {
-    final isCheckIn = log.type?.name == 'checkIn';
+    final isCheckIn = log.type == AttendanceLogType.checkIn;
     final participant = log.eventParticipant;
     final user = participant?.user;
     final name = user?.fullName ?? 'N/A';

@@ -448,6 +448,7 @@ class _ApplicationBottomSheetState extends State<_ApplicationBottomSheet> {
   final Map<int, TextEditingController> _textControllers = {};
   final Map<int, int?> _singleChoiceSelections = {};
   final Map<int, Set<int>> _multipleChoiceSelections = {};
+  final Map<int, int> _ratingSelections = {};
 
   @override
   void dispose() {
@@ -708,6 +709,8 @@ class _ApplicationBottomSheetState extends State<_ApplicationBottomSheet> {
       return _buildSingleChoiceQuestion(question);
     } else if (questionType == RequirementQuestionType.multipleChoice) {
       return _buildMultipleChoiceQuestion(question);
+    } else if (questionType == RequirementQuestionType.rating) {
+      return _buildRatingQuestion(question);
     }
 
     _textControllers[question.questionId!] ??= TextEditingController();
@@ -989,6 +992,66 @@ class _ApplicationBottomSheetState extends State<_ApplicationBottomSheet> {
               ),
             );
           }),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRatingQuestion(RequirementQuestionEntity question) {
+    const maxRating = 5;
+    final currentRating = _ratingSelections[question.questionId] ?? 0;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xffF8F9FA),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xffE5E7EB)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildQuestionHeader(question),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(maxRating, (index) {
+              final rating = index + 1;
+              final isSelected = rating <= currentRating;
+              return GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _ratingSelections[question.questionId!] = rating;
+                  });
+                  widget.controller.ratingAnswers[question.questionId!] = rating;
+                },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                  child: Icon(
+                    isSelected ? Icons.star : Icons.star_border,
+                    size: 40,
+                    color: isSelected
+                        ? const Color(0xffF59E0B)
+                        : const Color(0xffD1D5DB),
+                  ),
+                ),
+              );
+            }),
+          ),
+          const SizedBox(height: 8),
+          Center(
+            child: Text(
+              currentRating > 0 ? '$currentRating / $maxRating' : 'Nhấn để đánh giá',
+              style: TextStyle(
+                fontSize: 13,
+                color: currentRating > 0
+                    ? const Color(0xffF59E0B)
+                    : const Color(0xffB0B4C0),
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
         ],
       ),
     );

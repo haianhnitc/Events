@@ -23,8 +23,8 @@ class AttendanceRepositoryImpl implements AttendanceRepository {
 
   @override
   Future<Either<FailureEntity, AttendanceQrEntity>> getEventQr(
-      int eventId) async {
-    final response = await _datasource.getEventQr(eventId);
+      int eventId, String action) async {
+    final response = await _datasource.getEventQr(eventId, action);
     return response.toEitherNullable().map((m) => m.toEntity());
   }
 

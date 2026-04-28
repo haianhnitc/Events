@@ -8,6 +8,17 @@ import 'package:events_app/feature/user_management/domain/entity/user_summary_en
 import 'package:events_app/feature/user_management/domain/repository/user_repository.dart';
 import 'package:events_app/feature/event_management/domain/entity/event_summary_entity.dart';
 import 'package:events_app/feature/common/domain/enum/app_enum.dart';
+import 'package:events_app/api_template/services/failure.dart';
+
+String _participantTypeName(ParticipantType? type) {
+  if (type == null) return 'ATTENDEE';
+  switch (type) {
+    case ParticipantType.attendee:
+      return 'ATTENDEE';
+    case ParticipantType.ctv:
+      return 'CTV';
+  }
+}
 
 class _SelectableEventItem {
   final EventSummaryEntity event;
@@ -86,7 +97,9 @@ class _PortfolioCreatePageState extends State<PortfolioCreatePage> {
           ParticipantType? participantType;
 
           epResult.fold(
-            (_) {},
+            (failure) {
+              if (failure is ServerFailure && failure.code == '403') return;
+            },
             (registrations) {
               if (registrations.isNotEmpty) {
                 eventParticipantId = registrations.first.eventParticipantId;
@@ -587,7 +600,7 @@ class _PortfolioCreatePageState extends State<PortfolioCreatePage> {
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
-                                item.participantType!.name,
+                                _participantTypeName(item.participantType),
                                 style: TextStyle(
                                   fontSize: 10,
                                   fontWeight: FontWeight.w600,

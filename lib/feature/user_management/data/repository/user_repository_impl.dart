@@ -64,14 +64,17 @@ class UserRepositoryImpl implements UserRepository {
       page: page,
       size: size,
     );
-    return response.toEitherNullable().map((payload) {
-      if (payload == null) return <EventSummaryEntity>[];
-      final content = payload['content'] as List<dynamic>? ?? [];
-      return content
-          .map((e) =>
-              EventSummaryModel.fromJson(e as Map<String, dynamic>).toEntity())
-          .toList();
-    });
+    return response.toEither().fold(
+      (failure) => Left(failure),
+      (data) {
+        if (data is! Map<String, dynamic>) return const Right([]);
+        final content = data['content'] as List<dynamic>? ?? [];
+        return Right(content
+            .map((e) =>
+                EventSummaryModel.fromJson(e as Map<String, dynamic>).toEntity())
+            .toList());
+      },
+    );
   }
 
   @override
@@ -91,13 +94,16 @@ class UserRepositoryImpl implements UserRepository {
       page: page,
       size: size,
     );
-    return response.toEitherNullable().map((payload) {
-      if (payload == null) return <RankEntity>[];
-      final content = payload['content'] as List<dynamic>? ?? [];
-      return content
-          .map((e) => RankModel.fromJson(e as Map<String, dynamic>).toEntity())
-          .toList();
-    });
+    return response.toEither().fold(
+      (failure) => Left(failure),
+      (data) {
+        if (data is! Map<String, dynamic>) return const Right([]);
+        final content = data['content'] as List<dynamic>? ?? [];
+        return Right(content
+            .map((e) => RankModel.fromJson(e as Map<String, dynamic>).toEntity())
+            .toList());
+      },
+    );
   }
 
   @override
@@ -111,14 +117,17 @@ class UserRepositoryImpl implements UserRepository {
       size: size,
       sort: sort,
     );
-    return response.toEitherNullable().map((payload) {
-      if (payload == null) return <PackageEntity>[];
-      final content = payload['content'] as List<dynamic>? ?? [];
-      return content
-          .map((e) =>
-              PackageModel.fromJson(e as Map<String, dynamic>).toEntity())
-          .toList();
-    });
+    return response.toEither().fold(
+      (failure) => Left(failure),
+      (data) {
+        if (data is! Map<String, dynamic>) return const Right([]);
+        final content = data['content'] as List<dynamic>? ?? [];
+        return Right(content
+            .map((e) =>
+                PackageModel.fromJson(e as Map<String, dynamic>).toEntity())
+            .toList());
+      },
+    );
   }
 
   @override
@@ -127,14 +136,17 @@ class UserRepositoryImpl implements UserRepository {
     int size = 20,
   }) async {
     final response = await _datasource.getUserPackages(page: page, size: size);
-    return response.toEitherNullable().map((payload) {
-      if (payload == null) return <UserPackageEntity>[];
-      final content = payload['content'] as List<dynamic>? ?? [];
-      return content
-          .map((e) =>
-              UserPackageModel.fromJson(e as Map<String, dynamic>).toEntity())
-          .toList();
-    });
+    return response.toEither().fold(
+      (failure) => Left(failure),
+      (data) {
+        if (data is! Map<String, dynamic>) return const Right([]);
+        final content = data['content'] as List<dynamic>? ?? [];
+        return Right(content
+            .map((e) =>
+                UserPackageModel.fromJson(e as Map<String, dynamic>).toEntity())
+            .toList());
+      },
+    );
   }
 
   @override
@@ -144,14 +156,17 @@ class UserRepositoryImpl implements UserRepository {
   }) async {
     final response =
         await _datasource.getExpiredPackages(page: page, size: size);
-    return response.toEitherNullable().map((payload) {
-      if (payload == null) return <UserPackageEntity>[];
-      final content = payload['content'] as List<dynamic>? ?? [];
-      return content
-          .map((e) =>
-              UserPackageModel.fromJson(e as Map<String, dynamic>).toEntity())
-          .toList();
-    });
+    return response.toEither().fold(
+      (failure) => Left(failure),
+      (data) {
+        if (data is! Map<String, dynamic>) return const Right([]);
+        final content = data['content'] as List<dynamic>? ?? [];
+        return Right(content
+            .map((e) =>
+                UserPackageModel.fromJson(e as Map<String, dynamic>).toEntity())
+            .toList());
+      },
+    );
   }
 
   @override
@@ -167,14 +182,17 @@ class UserRepositoryImpl implements UserRepository {
       page: page,
       size: size,
     );
-    return response.toEitherNullable().map((payload) {
-      if (payload == null) return <PortfolioEntity>[];
-      final content = payload['content'] as List<dynamic>? ?? [];
-      return content
-          .map((e) =>
-              PortfolioModel.fromJson(e as Map<String, dynamic>).toEntity())
-          .toList();
-    });
+    return response.toEither().fold(
+      (failure) => Left(failure),
+      (data) {
+        if (data is! Map<String, dynamic>) return const Right([]);
+        final content = data['content'] as List<dynamic>? ?? [];
+        return Right(content
+            .map((e) =>
+                PortfolioModel.fromJson(e as Map<String, dynamic>).toEntity())
+            .toList());
+      },
+    );
   }
 
   @override
@@ -201,12 +219,15 @@ class UserRepositoryImpl implements UserRepository {
       eventId: eventId,
       userId: userId,
     );
-    return response.toEitherNullable().map((payload) {
-      if (payload == null) return <ParticipantEntity>[];
-      final content = payload['content'] as List<dynamic>? ?? [];
-      return content
-          .map((e) => ParticipantModel.fromJson(e as Map<String, dynamic>).toEntity())
-          .toList();
-    });
+    return response.toEither().fold(
+      (failure) => Left(failure),
+      (data) {
+        if (data is! Map<String, dynamic>) return const Right([]);
+        final content = data['content'] as List<dynamic>? ?? [];
+        return Right(content
+            .map((e) => ParticipantModel.fromJson(e as Map<String, dynamic>).toEntity())
+            .toList());
+      },
+    );
   }
 }

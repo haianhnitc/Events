@@ -469,8 +469,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
   String _verificationLabel(VerificationStatus? status) {
     switch (status) {
-      case VerificationStatus.verified:
-        return 'Đã xác minh';
+      case VerificationStatus.approved:
+        return 'Đã phê duyệt';
       case VerificationStatus.pending:
         return 'Đang chờ';
       case VerificationStatus.rejected:

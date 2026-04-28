@@ -10,7 +10,7 @@ import 'package:events_app/feature/organizer/attendance/domain/usecase/organizer
 import 'package:injectable/injectable.dart';
 
 abstract class OrganizerAttendanceDatasource {
-  Future<ApiResponse<AttendanceQrModel>> getEventQr(int eventId);
+  Future<ApiResponse<AttendanceQrModel>> getEventQr(int eventId, String action);
   Future<ApiResponse<AttendanceQrModel>> getParticipantQr(int eventParticipantId);
   Future<ApiResponse<EventAttendanceLogModel>> manualCheckIn(OrganizerManualAttendanceParams params);
   Future<ApiResponse<EventAttendanceLogModel>> manualCheckOut(OrganizerManualAttendanceParams params);
@@ -28,10 +28,10 @@ class OrganizerAttendanceDatasourceImpl extends ApiProvider
       : super(client: client ?? NRDRestClient());
 
   @override
-  Future<ApiResponse<AttendanceQrModel>> getEventQr(int eventId) async {
+  Future<ApiResponse<AttendanceQrModel>> getEventQr(int eventId, String action) async {
     try {
       final response = await get<Map<String, dynamic>>(
-        ApiPath.attendanceQrEvent(eventId),
+        '${ApiPath.attendanceQrEvent(eventId)}?action=$action',
         (data) => Map<String, dynamic>.from(data as Map),
         requireAuth: true,
       );

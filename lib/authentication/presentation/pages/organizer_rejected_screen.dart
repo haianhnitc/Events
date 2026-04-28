@@ -362,7 +362,7 @@ class _OrganizerRejectedScreenState extends State<OrganizerRejectedScreen> {
   Widget _buildResubmitButton() {
     return Obx(() {
       final docs = _authController.uploadedVerificationDocs;
-      final isLoading = _authController.isLoading.value;
+      final isLoading = _authController.isLoadingEmail.value;
 
       return SizedBox(
         height: 48,

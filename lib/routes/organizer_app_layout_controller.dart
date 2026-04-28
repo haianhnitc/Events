@@ -1,5 +1,4 @@
 import 'package:events_app/feature/organizer/presentation/controller/organizer_attendance_list_controller.dart';
-import 'package:events_app/feature/organizer/presentation/controller/organizer_dashboard_controller.dart';
 import 'package:events_app/feature/organizer/presentation/controller/organizer_event_list_controller.dart';
 import 'package:events_app/feature/organizer/presentation/controller/organizer_recruitment_list_controller.dart';
 import 'package:events_app/feature/organizer/presentation/page/attendance/organizer_attendance_list_page.dart';
@@ -32,9 +31,6 @@ class OrganizerAppLayoutController extends GetxController {
   }
 
   void _initControllers() {
-    if (!Get.isRegistered<OrganizerDashboardController>()) {
-      Get.put(OrganizerDashboardController(), permanent: true);
-    }
     if (!Get.isRegistered<OrganizerEventListController>()) {
       Get.put(OrganizerEventListController(), permanent: true);
     }
@@ -46,12 +42,10 @@ class OrganizerAppLayoutController extends GetxController {
     }
   }
 
-  /// Gọi khi vào page có event context (event detail, attendance setup, ...)
   void setEventContext(int eventId) {
     currentEventId.value = eventId;
   }
 
-  /// Gọi khi rời page event context (back/dispose)
   void clearEventContext() {
     currentEventId.value = null;
   }

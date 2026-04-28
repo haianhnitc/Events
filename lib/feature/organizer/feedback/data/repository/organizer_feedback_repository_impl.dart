@@ -52,13 +52,17 @@ class OrganizerFeedbackRepositoryImpl implements OrganizerFeedbackRepository {
         participantId: params.participantId,
         page: params.page,
         size: params.size);
-    return response.toEitherNullable().map((payload) {
-      final content = payload?['content'] as List<dynamic>? ?? [];
-      return content
-          .map((e) =>
-              FeedbackModel.fromJson(e as Map<String, dynamic>).toEntity())
-          .toList();
-    });
+    return response.toEither().fold(
+      (failure) => Left(failure),
+      (data) {
+        if (data is! Map<String, dynamic>) return const Right([]);
+        final content = data['content'] as List<dynamic>? ?? [];
+        return Right(content
+            .map((e) =>
+                FeedbackModel.fromJson(e as Map<String, dynamic>).toEntity())
+            .toList());
+      },
+    );
   }
 
   @override

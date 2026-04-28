@@ -4,6 +4,10 @@ import 'package:events_app/dependency_injection/injection.dart';
 import 'package:events_app/authentication/presentation/pages/auth_gate.dart';
 import 'package:events_app/authentication/presentation/pages/google_register_screen.dart';
 import 'package:events_app/authentication/presentation/controller/auth_controller.dart';
+import 'package:events_app/feature/payment/presentation/page/transaction_history_page.dart';
+import 'package:events_app/feature/registration/presentation/page/my_registration_page.dart';
+import 'package:events_app/feature/ticket/presentation/page/my_ticket_page.dart';
+import 'package:events_app/feature/feedback/presentation/page/feedback_page.dart';
 import 'package:events_app/api_template/event_network.dart';
 import 'package:events_app/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -53,6 +57,29 @@ class MyApp extends StatelessWidget {
             final args = Get.arguments as Map<String, dynamic>?;
             final isStudent = args?['isStudent'] as bool? ?? true;
             return GoogleRegisterScreen(isStudent: isStudent);
+          },
+        ),
+        GetPage(
+          name: '/my-registration',
+          page: () => const MyRegistrationPage(),
+        ),
+        GetPage(
+          name: '/my-ticket',
+          page: () => const MyTicketPage(),
+        ),
+        GetPage(
+          name: '/transaction-history',
+          page: () => const TransactionHistoryPage(),
+        ),
+        GetPage(
+          name: '/feedback',
+          page: () {
+            final args = Get.arguments as Map<String, dynamic>?;
+            return FeedbackPage(
+              eventId: args?['eventId'] as int? ?? 0,
+              eventTitle: args?['eventTitle'] as String?,
+              checkOutContext: args?['checkOutContext'] as CheckOutContext?,
+            );
           },
         ),
       ],

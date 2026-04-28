@@ -4,6 +4,7 @@ import 'package:events_app/feature/event_management/domain/entity/event_summary_
 import 'package:events_app/feature/organizer/presentation/controller/organizer_event_list_controller.dart';
 import 'package:events_app/feature/organizer/presentation/controller/organizer_recruitment_list_controller.dart';
 import 'package:events_app/feature/organizer/presentation/page/recruitment/organizer_recruitment_form_page.dart';
+import 'package:events_app/feature/organizer/presentation/page/recruitment/organizer_recruitment_detail_page.dart';
 import 'package:events_app/feature/organizer/presentation/page/staff/organizer_staff_application_list_page.dart';
 import 'package:events_app/feature/organizer/presentation/widget/widgets.dart';
 import 'package:flutter/material.dart';
@@ -58,7 +59,7 @@ class _OrganizerRecruitmentListPageState
       body: Column(
         children: [
           Container(
-            color: Colors.white,
+            color: const Color(0xFFF4F6F8),
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
@@ -132,9 +133,15 @@ class _OrganizerRecruitmentListPageState
                 onRefresh: _ctrl.refreshRecruitments,
                 child: ListView.builder(
                   padding: const EdgeInsets.all(16),
-                  itemCount: items.length,
+                  itemCount: items.length + (_ctrl.isLoading.value ? 1 : 0),
                   itemBuilder: (context, index) {
-                    final item = items[index];
+                    if (_ctrl.isLoading.value && index == 0) {
+                      return const Padding(
+                        padding: EdgeInsets.only(bottom: 8),
+                        child: LinearProgressIndicator(),
+                      );
+                    }
+                    final item = items[index - (_ctrl.isLoading.value ? 1 : 0)];
                     return _buildCard(item);
                   },
                 ),
@@ -144,6 +151,7 @@ class _OrganizerRecruitmentListPageState
         ],
       ),
       floatingActionButton: FloatingActionButton(
+        heroTag: 'organizer_recruitment_list_fab',
         onPressed: () => Get.to(() => const OrganizerRecruitmentFormPage()),
         backgroundColor: const Color(0xFF06B6D4),
         child: const Icon(Icons.add, color: Colors.white),
@@ -171,9 +179,12 @@ class _OrganizerRecruitmentListPageState
         child: InkWell(
           borderRadius: BorderRadius.circular(14),
           onTap: () {
-            if (item.ctvRecruitmentId != null) {
-              Get.to(() => OrganizerStaffApplicationListPage(
+            if (item.ctvRecruitmentId == null) return;
+            if (item.isOpen != true) {
+              Get.to(() => OrganizerRecruitmentFormPage(
                   recruitmentId: item.ctvRecruitmentId));
+            } else {
+              Get.to(() => OrganizerRecruitmentDetailPage(recruitment: item));
             }
           },
           child: Padding(
@@ -257,7 +268,7 @@ class _OrganizerRecruitmentListPageState
                         Get.to(() => OrganizerRecruitmentFormPage(
                             recruitmentId: item.ctvRecruitmentId));
                       }
-                    })),
+                    }, enabled: item.isOpen != true)),
                     const SizedBox(width: 8),
                     Expanded(
                       child:                     item.isOpen == true
@@ -319,23 +330,23 @@ class _OrganizerRecruitmentListPageState
     );
   }
 
-  Widget _buildActionBtn(String label, IconData icon, VoidCallback onTap) {
+  Widget _buildActionBtn(String label, IconData icon, VoidCallback onTap, {bool enabled = true}) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: enabled ? onTap : null,
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 8),
         decoration: BoxDecoration(
-          color: Colors.grey.shade50,
+          color: enabled ? Colors.grey.shade50 : Colors.grey.shade100,
           borderRadius: BorderRadius.circular(8),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 14, color: const Color(0xff64748B)),
+            Icon(icon, size: 14, color: enabled ? const Color(0xff64748B) : Colors.grey.shade400),
             const SizedBox(width: 4),
             Text(label,
                 style:
-                    const TextStyle(fontSize: 12, color: Color(0xff64748B))),
+                    TextStyle(fontSize: 12, color: enabled ? const Color(0xff64748B) : Colors.grey.shade400)),
           ],
         ),
       ),

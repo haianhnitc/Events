@@ -39,14 +39,18 @@ class SharedPaymentCheckoutController extends GetxController {
   }
 
   bool get coinInputInvalid {
-    return coinUsedRaw < 0 || coinUsedRaw > currentCoin || coinUsedRaw > args.originalAmount;
+    return coinUsedRaw < 0 ||
+        coinUsedRaw > currentCoin ||
+        coinUsedRaw > args.originalAmount;
   }
 
   bool get isCreatingPayment => _paymentController.isCreatingPayment.value;
 
   SharedPaymentCheckoutController init() {
+    Get.lazyPut(() => SePayPaymentController());
     _paymentController = Get.find<SePayPaymentController>();
-    coinController = TextEditingController(text: args.initialCoinUsed > 0 ? '${args.initialCoinUsed}' : '');
+    coinController = TextEditingController(
+        text: args.initialCoinUsed > 0 ? '${args.initialCoinUsed}' : '');
     return this;
   }
 
@@ -61,6 +65,10 @@ class SharedPaymentCheckoutController extends GetxController {
 
   Future<PaymentUrlEntity?> createPayment() async {
     if (isLoading.value) return null;
+    if (finalAmount <= 0) {
+      AppSnackbarUtils.showSuccess('Thành công', 'Thanh toán thành công!');
+      return null;
+    }
     isLoading.value = true;
 
     try {

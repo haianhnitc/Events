@@ -145,6 +145,7 @@ class AppLayout extends StatelessWidget {
             ],
           ),
           child: FloatingActionButton(
+            heroTag: 'main_qr_fab',
             onPressed: () async {
               final result = await Get.to(() => const QrScannerPage());
               if (result == true) {

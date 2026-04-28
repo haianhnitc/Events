@@ -84,7 +84,7 @@ class TransactionModel {
       'currency': currency,
       'paymentProvider': paymentProvider?.apiValue,
       'externalTransactionId': externalTransactionId,
-      'status': status?.name.toUpperCase(),
+      'status': status?.apiValue,
       'paidAt': paidAt?.toIso8601String(),
       'createdTime': createdTime?.toIso8601String(),
       'paymentUrl': paymentUrl,

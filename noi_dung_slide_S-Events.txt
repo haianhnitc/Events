@@ -1,0 +1,460 @@
+================================================================================
+  NOI DUNG SLIDE - DE TAI: THIET KE VA PHAT TRIEN NEN TANG DANG KY VA QUAN LY
+  SU KIEN S-EVENTS
+================================================================================
+
+========================================
+MO DAU (Chao hoi Hoi dong)
+========================================
+"Kinh thua Hoi dong, em xin chao tat ca anh/chj trong Hoi dong."
+
+========================================
+SLIDE 1: TIEU DE + THONG TIN
+========================================
+TIEU DE: Thiet ke va phat trien nen tang dang ky va quan ly su kien S-Events
+
+Thong tin:
+- Sinh vien thuc hien: [Ten SV] - [MSSV]
+- GVHD: [Ten GV]
+- Khoa: [Ten Khoa] - [Truong]
+- Nam: 2026
+
+========================================
+SLIDE 2: MUC TIEU (Dua len tren truoc noi dung)
+========================================
+
+Muc tieu tong quat:
+Xay dung thanh cong ung dung di dong S-Events — nen tang quan ly su kien toan
+dien danh cho sinh vien va nguoi to chuc, nham tao ra cong cu ho tro tham
+gia, to chuc va quan ly cac hoat dong ngoai khoa mot cach hieu qua va
+chuyen nghiep.
+
+Muc tieu cu the:
+1. Nghien cuu co so ly thuyet ve xu huong tham gia hoat dong ngoai khoa va
+   thuc trang cac nen tang quan ly su kien hien nay.
+2. Phan tich va thiet ke he thong: xay dung bo yeu cau phan mem, thiet ke
+   kien truc tong the va co so du lieu.
+3. Xay dung he thong xac thuc va quan ly nguoi dung: phan loai hai nhom doi
+   tuong chinh (nguoi tham gia & ban to chuc).
+4. Phat trien cac phan he chuc nang: quan ly su kien, dang ky & diem danh QR,
+   thanh toan SePay, phan hoi, tin tuc, tuyen dung cong tac vien, thong bao.
+5. Tich hop he thong thanh toan SePay va he thong vi Coin noi bo.
+6. Xay dung he thong diem danh check-in/check-out bang ma QR + kiem tra vi tri.
+7. Kiem thu va danh gia tren thiet bi di dong thuc te.
+
+========================================
+SLIDE 3: NOI DUNG THUC HIEN
+========================================
+
+"Voi muc tieu nhu tren, de tai cua em co nhung noi dung nhu sau:"
+
+1. Khao sat cac website lien quan
+2. Nghien cuu cong nghe va cong cu phat trien
+3. Phan tich he thong
+4. Trien khai, kiem thu va danh gia he thong
+
+Voi 4 noi dung thuc hien nhu tren, em da the hien trong khoa luan voi cac
+slide nhu sau: [Slide 4 → Slide X]
+
+========================================
+SLIDE 4: DOI TUONG + PHAM VI NGHIEN CUU
+========================================
+
+Doi tuong nghien cuu:
+- Quy trinh nghiep vu quan ly su kien: tao lap, dang ky, tham du, diem danh,
+  danh gia su kien trong moi truong dai hoc.
+- Cong nghe phat trien ung dung di dong da nen tang (Flutter, Dart).
+- Ky thuat xac thuc & quan ly nguoi dung (Firebase Authentication).
+- Ky thuat thanh toan tich hop (SePay).
+- Ky thuat diem danh & xac thuc tham du (QR code + GPS).
+- Mo hinh nen tang ket noi hai chieu (nguoi tham gia ↔ ban to chuc).
+
+Pham vi nghien cuu:
+- Doi tuong su dung: sinh vien, nguoi di lam, to chuc (CLB, doan the, don vi
+  to chuc su kien chuyen nghiep).
+- Pham vi trien khai: moi truong thu nghiem tai [Ten truong].
+- Tinh nang chinh: quan ly tai khoan, su kien, thanh toan, diem danh QR, ve,
+  phan hoi, tin tuc, tuyen dung CTV, thong bao.
+- Ngoai pham vi: cac cong thanh toan khac (VNPay, MoMo), he thong chat day du,
+  chung nhan so, tinh nang AI.
+
+========================================
+SLIDE 5: HE THONG DOI TUONG NGUOI DUNG (Usecase tong quat)
+========================================
+
+Nguoi tham gia:
+- Tim kiem & de xuat su kien ca nhan hoa
+- Dang ky & theo doi trang thai don
+- Check-in / check-out bang ma QR
+- Xu ly thanh toan (SePay + vi Coin)
+- Luu tru & quan ly lich su tham gia
+- Xay dung ho so hoat dong ca nhan
+- Nhan thong bao & nhac nho
+- Danh gia phan hoi sau su kien
+- Xem tin tuc & ung tuyen CTV
+
+Ban to chuc:
+- Tao, chinh sua, xoa & cong bo su kien
+- Quan ly danh sach & xac nhan nguoi tham du
+- Diem danh & theo doi check-in/out
+- Tich hop thanh toan & quan ly ve
+- Thong ke & phan tich du lieu su kien
+- Gui khao sat & thu phan hoi
+- Dang tin tuyen dung CTV & quan ly don ung tuyen
+- Nhan xet & danh gia CTV
+
+(Noi ben ngoai: trinh bay he thong usecase tong quat trong ~30 giay)
+
+========================================
+SLIDE 6: GIOI THIEU S-EVENTS
+========================================
+
+S-Events la gi?
+Nen tang dang ky va quan ly su kien tren nen tang di dong, phuc vu hai nhom
+doi tuong chinh: Nguoi tham gia & Ban to chuc.
+
+Diem noi bat:
+- Tim kiem su kien ca nhan hoa (dua tren so thich, lich su, ky nang)
+- Toan bo trai nghiem tu dang ky → tham du → nhan minh chung, tren 1 app
+- Diem danh chinh xac bang ma QR + GPS
+- Thanh toan tich hop SePay + vi Coin noi bo
+- He thong tuyen dung CTV hieu qua
+- Thong ke chi tiet cho ban to chuc
+
+========================================
+SLIDE 7: KHAO SAT HE THONG LIEN QUAN
+========================================
+
+Cac nen tang hien co:
+1. Luma / AllEvents: Khoi luong su kien lon, doi tuong toan cau → nguoi Viet
+   khó loc, FOMO, rao can ngon ngu & mui gio.
+2. YBOX / iVolunteer: Chi cap nhat thong tin co ban, chua dong bo xuyen suot
+   → nguoi dung phai thao tac thu cong nhieu buoc, thong tin phan tan.
+3. Han che chung: Thieu he thong xac thuc minh chung so, quy trinh tuyen
+   CTV thu cong, phan tan tren nhieu ken.
+
+→ Khoang trong thi truong: thieu nen tang tich hop, chuyen biet, ho tro
+nguoi dung xuyên suot tu tim kiem → tham du → xac thuc minh chung.
+
+(Ghi nho: phan khao sat chi neu website cua minh noi bat, khong can chi
+tiết cac website khac)
+
+========================================
+SLIDE 8: CONG NGHE SU DUNG
+========================================
+
+Flutter (Frontend - App di dong):
+- Cross-platform: 1 ma nguon → chay Android & iOS
+- Hien hao 60fps, Hot Reload tang nang suat phat trien
+- Render bang Skia, khong phu thuoc platform
+
+Java Spring Boot (Backend):
+- Framework Java, "convention over configuration"
+- Tu dong cau hinh, giam ma boilerplate
+- Tich hop Spring Security & Spring Data JPA
+- Dong goi thanh JAR, de trien khai
+
+PostgreSQL (Supabase):
+- He quan tri CSDL quan he doi tuong, pho bien nhat 2025
+- Dam bao tinh ACID, ho tro full-text search
+
+Firebase Authentication:
+- Dich vu BAAS cua Google, ho tro nhieu phuong thuc dang nhap
+- Su dung OAuth 2.0 & OpenID Connect
+
+SePay:
+- Cong thanh toan tich hop trong ung dung
+- Ho tro QR thanh toan, giao dich minh bang & an toan
+
+Cloudinary:
+- Luu tru hinh anh su kien, avatar, logo
+- Tu dong tao responsive images
+
+Render + Docker + GitHub Actions:
+- Cloud hosting + CI/CD tu dong
+- Docker dam bao nhat quan moi truong
+
+========================================
+SLIDE 9: SO DO KIEN TRUC HE THONG
+========================================
+
+[Mo ta bang lời:]
+- Nguoi dung tuong tac qua App Flutter
+- App goi RESTful API len Backend Spring Boot
+- Backend xac thuc Firebase Token
+- Du lieu luu tru PostgreSQL tren Supabase
+- Hinh anh tai len Cloudinary
+- Thanh toan qua SePay
+- CI/CD: GitHub Actions → Docker Image → Deploy len Render
+
+========================================
+SLIDE 10: SO DO USE CASE CHI TIET (Phan Nguoi tham gia)
+========================================
+
+[Mo ta bang lời cac use case chinh:]
+- Dang ky / Dang nhap (email, Google)
+- Tim kiem su kien
+- Dang ky tham gia su kien
+- Thanh toan (SePay / Coin)
+- Nhan ve
+- Check-in / Check-out bang QR
+- Xem danh sach su kien da tham gia
+- Danh gia & gui phan hoi
+- Xem tin tuc
+- Xem & ung tuyen tuyen dung CTV
+- Xem ho so hoat dong ca nhan
+
+========================================
+SLIDE 11: SO DO USE CASE CHI TIET (Phan Ban to chuc)
+========================================
+
+[Mo ta bang lời cac use case chinh:]
+- Tao / Chinh sua / Xoa / Cong bo su kien
+- Quan ly danh sach dang ky
+- Xac nhan / Tu choi don
+- Diem danh QR (tao ma, quet)
+- Quan ly ve su kien
+- Xem thong ke su kien
+- Gui khao sat phan hoi
+- Dang tin tuyen dung CTV
+- Xem & duyet don ung tuyen CTV
+- Danh gia CTV
+
+========================================
+SLIDE 12: SO DO SEQUENCE (VD: Dang ky su kien co thanh toan)
+========================================
+
+[Mo ta bang lời:]
+1. Nguoi dung chon su kien co phi
+2. App hien thi thong tin & yeu cau thanh toan
+3. Nguoi dung chon SePay
+4. App goi API tao giao dich
+5. Backend tao ma QR SePay
+6. Nguoi dung thanh toan ngoai app
+7. SePay webhook thong bao thanh toan thanh cong
+8. Backend cap nhat trang thai → App hien thi ve
+
+========================================
+SLIDE 13: SO DO TUAN TU (VD: Check-in su kien)
+========================================
+
+[Mo ta bang lời:]
+1. Ban to chuc mo scanner, tao ma QR su kien
+2. Nguoi tham gia mo app, vao trang ve su kien
+3. App hien thi ma QR ca nhan
+4. Ban to chuc quet ma QR nguoi tham gia
+5. Backend kiem tra: su kien hop le? vi tri trong pham vi GPS?
+6. Neu hop le → ghi nhan check-in, thong bao nguoi tham gia
+7. Khi ket thuc → tuong tu cho check-out
+
+========================================
+SLIDE 14: BIEU DO CHUC NANG HE THONG
+========================================
+
+[Mo ta:]
+- Cac module chinh: Auth, Event, Registration, Payment, Attendance, Ticket,
+  Feedback, News, Recruitment, Notification, User Profile
+- Moi module gom: Controller, Service, Repository, Model/Entity
+
+========================================
+SLIDE 15: CO SO DU LIEU (ERD)
+========================================
+
+[Mo ta cac bang chinh:]
+- users: thong tin nguoi dung (id, email, name, role, avatar...)
+- organizations: thong tin to chuc (id, name, logo, verified...)
+- events: thong tin su kien (id, title, org_id, time, location, fee...)
+- registrations: don dang ky (id, user_id, event_id, status...)
+- tickets: ve su kien (id, user_id, event_id, qr_code, status...)
+- attendance: diem danh (id, ticket_id, check_in, check_out, location...)
+- transactions: giao dich (id, user_id, amount, type, status...)
+- feedbacks: phan hoi (id, user_id, event_id, rating, comment...)
+- news: tin tuc (id, title, content, event_id...)
+- recruitments: tuyen dung CTV (id, event_id, position, requirements...)
+- applications: don ung tuyen CTV (id, recruitment_id, user_id, answers...)
+- coins: vi Coin (id, user_id, balance...)
+
+========================================
+SLIDE 16: GIAO DIEN CHINH - APP (Screenshot + Mo ta)
+========================================
+
+[Mo ta:]
+- Trang chu: tim kiem, danh muc, su kien noi bat, su kien sap toi
+- Tim kiem su kien: loc theo the loai, thoi gian, dia diem, phi/ mien phi
+- Chi tiet su kien: thong tin, lich, ban to chuc, nguoi tham gia, nut DK
+- Thanh toan: chon SePay hoac vi Coin, tao ma QR
+- Check-in: hien thi ma QR ca nhan, trang thai da diem danh
+- Ve cua toi: danh sach ve, loc theo trang thai
+- Ho so: thong tin ca nhan, ky nang, lich su tham gia, xep hang
+
+========================================
+SLIDE 17: GIAO DIEN CHINH - BAN TO CHUC (Screenshot + Mo ta)
+========================================
+
+[Mo ta:]
+- Dashboard: tong quan so lieu, su kien, nguoi tham du
+- Tao su kien: bieu mau tao day du thong tin
+- Quan ly dang ky: danh sach, loc, xac nhan/tu choi
+- Scanner QR: quet diem danh real-time, hien thi ket qua ngay
+- Thong ke: bieu do, so lieu chi tiet theo thoi gian, doi tuong
+- Tuyen dung CTV: dang tin, xem don, duyet ho so
+
+========================================
+SLIDE 18: HE THONG THANH TOAN SEPay
+========================================
+
+[Mo ta:]
+- Nguoi dung chon thanh toan SePay
+- Backend tao giao dich, sinh ma QR SePay
+- Nguoi dung quet QR thanh toan
+- SePay webhook xac nhan thanh toan
+- Backend cap nhat trang thai giao dich
+- Nguoi dung nhan ve thanh cong
+
+→ Giao dich minh bang, an toan, khong can nhap the.
+
+========================================
+SLIDE 19: HE THONG VI COIN NOI BO
+========================================
+
+[Mo ta:]
+- Nguoi dung nap tien vao vi Coin qua SePay
+- Su dung Coin de thanh toan ve su kien (khong can quet QR ngoai)
+- So du khi nao cu duoc luu tru trong he thong
+- Theo doi lich su giao dich Coin trong app
+
+========================================
+SLIDE 20: HE THONG DIEM DANH QR
+========================================
+
+[Mo ta:]
+- Moi su kien co ma QR rieng (tu dong het han sau su kien ket thuc)
+- Nguoi tham gia: hien thi ma QR tren app → ban to chuc quet
+- Backend kiem tra:
+  1. Ma hop le?
+  2. Nguoi dung co trong danh sach dang ky?
+  3. Vi tri GPS co trong pham vi cho phep?
+- Ghi nhan check-in / check-out + vi tri + thoi gian
+- Thong bao ngay cho nguoi tham gia
+
+========================================
+SLIDE 21: TUYEN DUNG CONG TAC VIEN
+========================================
+
+[Mo ta:]
+- Ban to chuc: dang tin tuyen dung + cau hoi yeu cau
+- Nguoi tham gia: xem tin, loc theo linh vuc, ung tuyen
+- Backend: matching theo ky nang + lich su tham gia
+- Ban to chuc: xem, danh gia, chap nhan/tu choi don
+- Nguoi tham gia: nhan thong bao ket qua
+
+========================================
+SLIDE 22: THONG KE & PHAN TICH
+========================================
+
+[Mo ta:]
+- Tong quan: so su kien, so nguoi dang ky, so nguoi tham du thuc te
+- Bieu do xu huong: so nguoi theo thoi gian, gio cao diem
+- Chi tiet nguoi tham du: gioi tinh, do tuoi, linh vuc quan tam
+- Ty le check-in/check-out, thoi gian o lai trung binh
+- Ty le thanh toan, doanh thu theo su kien
+
+========================================
+SLIDE 23: TRIEN KHAI & KIEN TRUC CI/CD
+========================================
+
+[Mo ta:]
+- Backend: Spring Boot → Docker → Deploy tren Render
+- CI/CD: GitHub Actions
+  - Auto test khi push/PR
+  - Auto build Docker image
+  - Auto deploy len Render khi merge vao main
+- Database: PostgreSQL tren Supabase (sao luu tu dong)
+- App Mobile: thu nghiem tren Android & iOS (local)
+
+========================================
+SLIDE 24: KET QUA Kiem thu
+========================================
+
+[Mo ta:]
+- Cac truong hop kiem thu chinh:
+  - Dang ky / dang nhap: thanh cong
+  - Dang ky su kien mien phi / co phi: thanh cong
+  - Thanh toan SePay: thanh cong
+  - Check-in / check-out QR: thanh cong
+  - Gui & nhan phan hoi: thanh cong
+  - Tuyen dung & ung tuyen CTV: thanh cong
+  - Thong ke: hien thi dung
+- Kien truc: On dinh tren thiet bi thuc te
+- Giao dien: Thuan tien, de su dung
+
+========================================
+SLIDE 25: HUONG PHAT TRIEN
+========================================
+
+[Mo ta:]
+- Tich hop them cong thanh toan (VNPay, MoMo)
+- Xay dung he thong chat nhan tin thoi gian thuc
+- Phat hanh chung nhan so tu dong sau khi tham du
+- Tinh nang AI: goi y su kien ca nhan hoa, chatbot ho tro
+- Phat hanh len CH Play / App Store (CI/CD tu dong)
+
+========================================
+SLIDE 26: KET LUAN
+========================================
+
+[Mo ta:]
+- Da xay dung thanh cong nen tang S-Events voi day du tinh nang:
+  • Quan ly su kien toan dien
+  • Thanh toan tich hop SePay + vi Coin
+  • Diem danh QR + GPS chinh xac
+  • He thong tuyen dung CTV hieu qua
+  • Thong ke chi tiet cho ban to chuc
+- Phu hop voi doi tuong sinh vien, nguoi di lam, cac to chuc
+- Co tinh kha thi va long thuc tien trong thuc te
+
+========================================
+SLIDE 27: CAM ON
+========================================
+
+"Kinh thua Hoi dong, em xin ket thuc phan trinh bay cua minh.
+Em xin cam on Hoi dong da lang nghe. Bay gio em xin phuong phap
+demonstrate tren he thong."
+
+[Sau khi demo xong]
+"Em xin cam on Hoi dong. Em rat mong nhan duoc su dong gop
+y kien tu thay co de em hoan thien de tai tot hon."
+
+========================================
+HUONG DAN TRINH BAY
+========================================
+
+1. Bat dau: "Kinh thua Hoi dong, em xin chao tat ca anh/chj..."
+2. Muc tieu: Dua len tren, noi truoc khi noi noi dung cu the
+3. Noi dung: "Voi muc tieu nhu tren, de tai cua em co nhung noi dung nhu sau:
+   1. Khao sat..., 2. Nghien cuu cong nghe..., 3. Phan tich he thong,
+   4. Trien khai, kiem thu va danh gia..."
+4. Moi slide: ly thuyet 1-2 cau, phan con lai noi ben ngoai (ngoai slide)
+5. Usecase tong quat: noi trong 30 giay
+6. Cong nghe: noi ngan, giai thich tai sao dung, chi de trong slide
+7. Co slide Cong cu trien khai
+8. Cuoi: "Em xin ket thuc o day. Bay gio em xin phuong phap demo..."
+9. Vua cam on vua chuyen slide Cam on
+10. Xin dong gop y kien tu thay co
+
+Phan Demo:
+- Noi doi tuong khach truoc (user → dang nhap → dang ky)
+- "Sau khi DK thanh cong thi get thanh user, bay gio em xin thuc hien
+  tinh nang cua User"
+- "Khi em thuc hien ... thi cac thay co co the thay ..."
+- "Voi tinh nang .. thi tat ca moi nguoi deu xem duoc, no phuc vu
+  cho nguoi dung ..."
+
+========================================
+LUU Y CHUNG
+========================================
+- Trong khoa luan dung "toi"
+- Moi thu deu ghi vao slide, phan ly thuyet 1-2 cau, noi ben ngoai
+- Khong phan slide khao sat website khac (chi neu noi bat so voi minh)
+- Phan demo noi truoc doi tuong, sau do thuc hien thao tac
+================================================================================

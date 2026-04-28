@@ -1,19 +1,19 @@
+import 'package:events_app/feature/common/domain/entity/category_entity.dart';
+import 'package:events_app/feature/common/domain/enum/app_enum.dart';
 import 'package:events_app/feature/common/utils/app_date_utils.dart';
 import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
+import 'package:events_app/feature/event_management/domain/entity/event_entity.dart';
 import 'package:events_app/feature/organizer/presentation/controller/organizer_event_detail_controller.dart';
 import 'package:events_app/feature/organizer/presentation/controller/organizer_event_statistics_controller.dart';
-import 'package:events_app/feature/organizer/presentation/controller/organizer_participant_list_controller.dart';
-import 'package:events_app/routes/organizer_app_layout_controller.dart';
-import 'package:events_app/feature/organizer/presentation/page/attendance/organizer_attendance_list_page.dart';
-import 'package:events_app/feature/organizer/presentation/page/attendance/organizer_attendance_overview_page.dart';
-import 'package:events_app/feature/organizer/presentation/page/attendance/organizer_attendance_setup_page.dart';
-import 'package:events_app/feature/organizer/presentation/page/participants/organizer_participant_list_page.dart';
+import 'package:events_app/feature/organizer/presentation/page/attendance/organizer_event_qr_fullscreen_page.dart';
 import 'package:events_app/feature/organizer/presentation/page/events/organizer_create_event_page.dart';
-import 'package:events_app/feature/organizer/presentation/page/ticket/organizer_ticket_list_page.dart';
+import 'package:events_app/feature/organizer/presentation/page/events/organizer_event_statistics_page.dart';
+import 'package:events_app/feature/organizer/presentation/page/participants/organizer_participant_list_page.dart';
+import 'package:events_app/feature/organizer/presentation/page/feedback/organizer_feedback_list_page.dart';
 import 'package:events_app/feature/organizer/presentation/widget/widgets.dart';
+import 'package:events_app/routes/organizer_app_layout_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class OrganizerEventDetailPage extends StatefulWidget {
   final int eventId;
@@ -28,32 +28,29 @@ class OrganizerEventDetailPage extends StatefulWidget {
 class _OrganizerEventDetailPageState extends State<OrganizerEventDetailPage> {
   late OrganizerEventDetailController _detailCtrl;
   late OrganizerEventStatisticsController _statsCtrl;
-  late OrganizerParticipantListController _participantCtrl;
 
   @override
   void initState() {
     super.initState();
     _detailCtrl = Get.put(OrganizerEventDetailController());
     _statsCtrl = Get.put(OrganizerEventStatisticsController());
-    _participantCtrl = Get.put(OrganizerParticipantListController());
 
     _detailCtrl.setEventId(widget.eventId);
     _statsCtrl.setEventId(widget.eventId);
-    _participantCtrl.setEventFilter(widget.eventId);
 
     _detailCtrl.loadEvent(widget.eventId);
 
-    final layoutCtrl = Get.find<OrganizerAppLayoutController>();
-    layoutCtrl.setEventContext(widget.eventId);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final layoutCtrl = Get.find<OrganizerAppLayoutController>();
+      layoutCtrl.setEventContext(widget.eventId);
+    });
   }
 
   @override
   void dispose() {
     Get.delete<OrganizerEventDetailController>();
     Get.delete<OrganizerEventStatisticsController>();
-    Get.delete<OrganizerParticipantListController>();
 
-    // Clear event context khi rời khỏi event
     final layoutCtrl = Get.find<OrganizerAppLayoutController>();
     layoutCtrl.clearEventContext();
 
@@ -84,13 +81,19 @@ class _OrganizerEventDetailPageState extends State<OrganizerEventDetailPage> {
           IconButton(
             icon: const Icon(Icons.edit_outlined, color: Color(0xff64748B)),
             onPressed: () {
-              final event = _detailCtrl.event.value;
-              if (event != null) {
-                Get.to(() => OrganizerCreateEventPage(
-                  eventId: event.eventId,
-                  event: event,
-                ));
+              final ev = _detailCtrl.event.value;
+              if (ev == null) return;
+              if (ev.status != EventStatus.draft) {
+                AppSnackbarUtils.showError(
+                  'Không thể chỉnh sửa',
+                  'Sự kiện đã xuất bản, không thể chỉnh sửa.',
+                );
+                return;
               }
+              Get.to(() => OrganizerCreateEventPage(
+                    eventId: ev.eventId,
+                    event: ev,
+                  ));
             },
           ),
         ],
@@ -132,11 +135,11 @@ class _OrganizerEventDetailPageState extends State<OrganizerEventDetailPage> {
                       const SizedBox(height: 10),
                       _buildMetaRow(event),
                       const SizedBox(height: 16),
+                      _buildRewardsSection(event),
+                      const SizedBox(height: 20),
                       _buildDescription(event.description),
                       const SizedBox(height: 20),
-                      _buildStatsGrid(stats),
-                      const SizedBox(height: 20),
-                      _buildParticipantSection(),
+                      _buildStatsButton(),
                       const SizedBox(height: 20),
                       _buildActionButtons(event),
                       const SizedBox(height: 20),
@@ -168,29 +171,28 @@ class _OrganizerEventDetailPageState extends State<OrganizerEventDetailPage> {
           ? Center(
               child: Text(
                 title[0],
-                style: const TextStyle(
-                    fontSize: 48, color: Color(0xFF06B6D4)),
+                style: const TextStyle(fontSize: 48, color: Color(0xFF06B6D4)),
               ),
             )
           : null,
     );
   }
 
-  Widget _buildStatusRow(event) {
+  Widget _buildStatusRow(EventEntity event) {
     final status = event.status;
     String statusText = 'N/A';
     Widget statusBadge = OrganizerStatusBadge.pending();
 
-    if (status?.name == 'PUBLISHED') {
+    if (status == EventStatus.published) {
       statusText = 'Đã xuất bản';
       statusBadge = OrganizerStatusBadge.published();
-    } else if (status?.name == 'DRAFT') {
+    } else if (status == EventStatus.draft) {
       statusText = 'Bản nháp';
       statusBadge = OrganizerStatusBadge.pending();
-    } else if (status?.name == 'CANCELLED') {
+    } else if (status == EventStatus.cancelled) {
       statusText = 'Đã hủy';
       statusBadge = OrganizerStatusBadge.rejected();
-    } else if (status?.name == 'CLOSED') {
+    } else if (status == EventStatus.closed) {
       statusText = 'Đã đóng';
       statusBadge = OrganizerStatusBadge.closed();
     }
@@ -209,18 +211,22 @@ class _OrganizerEventDetailPageState extends State<OrganizerEventDetailPage> {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.visibility_outlined, size: 14, color: Color(0xFF06B6D4)),
+                  const Icon(Icons.visibility_outlined,
+                      size: 14, color: Color(0xFF06B6D4)),
                   const SizedBox(width: 4),
                   Text(statusText,
-                      style: const TextStyle(fontSize: 12, color: Color(0xFF06B6D4))),
+                      style: const TextStyle(
+                          fontSize: 12, color: Color(0xFF06B6D4))),
                 ],
               ),
             ),
           ],
         ),
-        if (event.capacity != null && event.totalParticipants != null) ...[
+        if (event.venue?.capacity != null &&
+            event.totalParticipants != null) ...[
           const SizedBox(height: 8),
-          _buildCapacityWarning(event.capacity!, event.totalParticipants!),
+          _buildCapacityWarning(
+              event.venue!.capacity!, event.totalParticipants!),
         ],
       ],
     );
@@ -259,7 +265,8 @@ class _OrganizerEventDetailPageState extends State<OrganizerEventDetailPage> {
           const SizedBox(width: 6),
           Text(
             label,
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: color),
+            style: TextStyle(
+                fontSize: 12, fontWeight: FontWeight.w600, color: color),
           ),
         ],
       ),
@@ -277,24 +284,27 @@ class _OrganizerEventDetailPageState extends State<OrganizerEventDetailPage> {
     );
   }
 
-  Widget _buildMetaRow(event) {
+  Widget _buildMetaRow(EventEntity event) {
     final venue = event.venue;
     final venueName = venue?.name ?? 'N/A';
     final address = venue?.address ?? 'N/A';
 
     String timeRange = 'N/A';
     if (event.startTime != null && event.endTime != null) {
-      timeRange = '${AppDateUtils.formatDate(event.startTime!)} - ${AppDateUtils.formatDate(event.endTime!)}';
+      timeRange =
+          '${AppDateUtils.formatDateTime(event.startTime!)} - ${AppDateUtils.formatDateTime(event.endTime!)}';
+    } else if (event.startTime != null) {
+      timeRange = AppDateUtils.formatDateTime(event.startTime!);
     }
 
     final categories = event.categories;
     final categoryNames = categories
-        ?.map((c) => c.name ?? '')
-        .where((s) => s.isNotEmpty)
+        ?.map((CategoryEntity c) => c.name ?? '')
+        .where((String s) => s.isNotEmpty)
         .join(', ');
 
     final participantCount = event.totalParticipants ?? 0;
-    final capacity = event.capacity ?? 0;
+    final venueCapacity = venue?.capacity;
 
     return Wrap(
       spacing: 16,
@@ -304,8 +314,19 @@ class _OrganizerEventDetailPageState extends State<OrganizerEventDetailPage> {
         _buildMetaItem(Icons.location_on_outlined, '$venueName, $address'),
         if (categoryNames != null && categoryNames.isNotEmpty)
           _buildMetaItem(Icons.category_outlined, categoryNames),
-        if (capacity > 0)
-          _buildMetaItem(Icons.people_outline, '$participantCount / $capacity người'),
+        if (venueCapacity != null && venueCapacity > 0)
+          _buildMetaItem(
+              Icons.people_outline, '$participantCount / $venueCapacity người')
+        else
+          _buildMetaItem(Icons.people_outline, '$participantCount người'),
+        if (event.price != null)
+          _buildMetaItem(
+            Icons.attach_money,
+            event.price == 0 ? 'Miễn phí' : '${event.price}đ',
+          ),
+        if (event.createdTime != null)
+          _buildMetaItem(Icons.access_time,
+              'Tạo ${AppDateUtils.formatDate(event.createdTime!)}'),
       ],
     );
   }
@@ -316,10 +337,66 @@ class _OrganizerEventDetailPageState extends State<OrganizerEventDetailPage> {
       children: [
         Icon(icon, size: 14, color: Colors.grey.shade600),
         const SizedBox(width: 4),
-        Text(text,
-            style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
-            overflow: TextOverflow.ellipsis),
+        Flexible(
+          child: Text(text,
+              style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1),
+        ),
       ],
+    );
+  }
+
+  Widget _buildRewardsSection(EventEntity event) {
+    final badges = <Widget>[];
+
+    if ((event.rewardCoin ?? 0) > 0) {
+      badges.add(_rewardBadge(
+          Icons.stars, const Color(0xFFF59E0B), '${event.rewardCoin} Xu'));
+    }
+    if ((event.youthUnionPoint ?? 0) > 0) {
+      badges.add(_rewardBadge(Icons.badge, const Color(0xFF8B5CF6),
+          '${event.youthUnionPoint} Điểm Đoàn'));
+    }
+    if ((event.certificateName ?? '').trim().isNotEmpty) {
+      badges.add(_rewardBadge(Icons.card_membership, const Color(0xFF06B6D4),
+          event.certificateName!));
+    }
+
+    if (badges.isEmpty) return const SizedBox.shrink();
+
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: badges,
+    );
+  }
+
+  Widget _rewardBadge(IconData icon, Color color, String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: color),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: color,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -329,172 +406,68 @@ class _OrganizerEventDetailPageState extends State<OrganizerEventDetailPage> {
     }
     return Text(
       description,
-      style: const TextStyle(fontSize: 14, color: Color(0xff475569), height: 1.5),
+      style:
+          const TextStyle(fontSize: 14, color: Color(0xff475569), height: 1.5),
     );
   }
 
-  Widget _buildStatsGrid(stats) {
-    final registered = stats?.totalRegistered ?? 0;
-    final checkedIn = stats?.totalCheckedIn ?? 0;
-    final noShow = stats != null && stats.totalRegistered != null
-        ? (stats.totalRegistered! - stats.totalCheckedIn!).clamp(0, 9999)
-        : (registered - checkedIn).clamp(0, 9999);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const OrganizerSectionHeader(title: 'Thống kê'),
-        const SizedBox(height: 8),
-        if (_statsCtrl.isLoadingStats.value)
-          const Center(
-              child: Padding(
-            padding: EdgeInsets.all(16),
-            child: CircularProgressIndicator(),
-          ))
-        else
-          Row(
-            children: [
-              _buildStatItem('$registered', 'Đăng ký', const Color(0xFF06B6D4)),
-              _buildStatItem('$checkedIn', 'Check-in', const Color(0xFF10B981)),
-              _buildStatItem('$noShow', 'Vắng mặt', const Color(0xFFEF4444)),
-            ],
-          ),
-      ],
-    );
-  }
-
-  Widget _buildStatItem(String value, String label, Color color) {
-    return Expanded(
+  Widget _buildStatsButton() {
+    return GestureDetector(
+      onTap: () {
+        Get.to(() => OrganizerEventStatisticsPage(eventId: widget.eventId));
+      },
       child: Container(
-        margin: const EdgeInsets.only(right: 8),
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.08),
+          color: const Color(0xFF06B6D4).withOpacity(0.08),
           borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFF06B6D4).withOpacity(0.2)),
         ),
-        child: Column(
+        child: Row(
           children: [
-            Text(
-              value,
-              style: TextStyle(
-                  fontSize: 22, fontWeight: FontWeight.w800, color: color),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFF06B6D4).withOpacity(0.15),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(Icons.bar_chart_rounded,
+                  size: 20, color: Color(0xFF06B6D4)),
             ),
-            const SizedBox(height: 4),
-            Text(label, style: TextStyle(fontSize: 12, color: color.withOpacity(0.8))),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Xem thống kê sự kiện',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF06B6D4),
+                    ),
+                  ),
+                  SizedBox(height: 2),
+                  Text(
+                    'Đăng ký, Check-in, Tỷ lệ vắng mặt...',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF64748B),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right, color: Color(0xFF06B6D4)),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildParticipantSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        OrganizerSectionHeader(
-          title: 'Người tham gia gần đây',
-          actionLabel: 'Xem tất cả',
-          onActionTap: () {
-            Get.to(() => OrganizerParticipantListPage(
-              eventId: widget.eventId,
-              recruitmentType: _detailCtrl.event.value?.recruitmentType,
-              eventTitle: _detailCtrl.event.value?.title,
-            ));
-          },
-        ),
-        const SizedBox(height: 8),
-        Obx(() {
-          if (_participantCtrl.isLoading.value && _participantCtrl.participants.isEmpty) {
-            return const Padding(
-              padding: EdgeInsets.all(16),
-              child: Center(child: CircularProgressIndicator()),
-            );
-          }
-          final recent = _participantCtrl.participants.take(3).toList();
-          if (recent.isEmpty) {
-            return Container(
-              padding: const EdgeInsets.all(16),
-              child: Center(
-                child: Column(
-                  children: [
-                    Icon(Icons.people_outline, size: 32, color: Colors.grey.shade400),
-                    const SizedBox(height: 8),
-                    Text('Chưa có người tham gia', style: TextStyle(color: Colors.grey.shade500, fontSize: 13)),
-                  ],
-                ),
-              ),
-            );
-          }
-          return Column(
-            children: recent.map((p) => _buildRecentParticipantItem(p)).toList(),
-          );
-        }),
-      ],
-    );
-  }
-
-  Widget _buildRecentParticipantItem(p) {
-    final isCtv = p.participantType?.name == 'ctv';
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: const [
-          BoxShadow(color: Color(0x0F000000), offset: Offset(0, 1), blurRadius: 4),
-        ],
-      ),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 16,
-            backgroundColor: const Color(0xFFE0F2FE),
-            child: Text(
-              (p.user?.fullName ?? '?')[0],
-              style: const TextStyle(fontSize: 13, color: Color(0xFF06B6D4), fontWeight: FontWeight.w600),
-            ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  p.user?.fullName ?? 'N/A',
-                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xff273143)),
-                ),
-                Text(
-                  p.user?.email ?? '',
-                  style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-            decoration: BoxDecoration(
-              color: isCtv ? const Color(0xFF8B5CF6).withOpacity(0.1) : const Color(0xFF06B6D4).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Text(
-              isCtv ? 'CTV' : 'Tham dự',
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.w600,
-                color: isCtv ? const Color(0xFF8B5CF6) : const Color(0xFF06B6D4),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildActionButtons(event) {
-    final isDraft = event.status?.name == 'DRAFT';
-    final isPublished = event.status?.name == 'PUBLISHED';
+  Widget _buildActionButtons(EventEntity event) {
+    final isDraft = event.status == EventStatus.draft;
+    final isPublished = event.status == EventStatus.published;
 
     return Column(
       children: [
@@ -502,99 +475,74 @@ class _OrganizerEventDetailPageState extends State<OrganizerEventDetailPage> {
           children: [
             Expanded(
               child: _buildActionBtn(
-                icon: Icons.qr_code_scanner,
-                label: 'Điểm danh',
-                color: const Color(0xFF06B6D4),
+                icon: Icons.login,
+                label: 'QR Check-in',
+                color: const Color(0xFF10B981),
                 onTap: () {
-                  Get.to(() => OrganizerAttendanceSetupPage(eventId: widget.eventId));
+                  Get.to(() => OrganizerEventQrFullscreenPage(
+                        eventId: widget.eventId,
+                        eventName: _detailCtrl.event.value?.title ?? '',
+                        eventDate: _detailCtrl.event.value?.startTime != null
+                            ? AppDateUtils.formatDate(
+                                _detailCtrl.event.value!.startTime!)
+                            : null,
+                        eventVenue: _detailCtrl.event.value?.venue?.name,
+                        action: 'CHECKIN',
+                      ));
                 },
               ),
             ),
             const SizedBox(width: 10),
+            Expanded(
+              child: _buildActionBtn(
+                icon: Icons.logout,
+                label: 'QR Check-out',
+                color: const Color(0xFFF59E0B),
+                onTap: () {
+                  Get.to(() => OrganizerEventQrFullscreenPage(
+                        eventId: widget.eventId,
+                        eventName: _detailCtrl.event.value?.title ?? '',
+                        eventDate: _detailCtrl.event.value?.startTime != null
+                            ? AppDateUtils.formatDate(
+                                _detailCtrl.event.value!.startTime!)
+                            : null,
+                        eventVenue: _detailCtrl.event.value?.venue?.name,
+                        action: 'CHECKOUT',
+                      ));
+                },
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
             Expanded(
               child: _buildActionBtn(
                 icon: Icons.people_outline,
                 label: 'Người tham gia',
-                color: const Color(0xFF8B5CF6),
-                onTap: () {
-                  Get.to(() => OrganizerParticipantListPage(
-                    eventId: widget.eventId,
-                    recruitmentType: _detailCtrl.event.value?.recruitmentType,
-                    eventTitle: _detailCtrl.event.value?.title,
-                  ));
-                },
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        Row(
-          children: [
-            Expanded(
-              child: _buildActionBtn(
-                icon: Icons.bar_chart_rounded,
-                label: 'Lịch sử điểm danh',
-                color: const Color(0xFF10B981),
-                onTap: () {
-                  Get.to(() => OrganizerAttendanceListPage(eventId: widget.eventId));
-                },
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: _buildActionBtn(
-                icon: Icons.confirmation_number_outlined,
-                label: 'Quản lý vé',
-                color: const Color(0xFFF59E0B),
-                onTap: () {
-                  Get.to(() => OrganizerTicketListPage(eventId: widget.eventId));
-                },
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        Row(
-          children: [
-            Expanded(
-              child: _buildActionBtn(
-                icon: Icons.analytics_outlined,
-                label: 'Tổng quan điểm danh',
                 color: const Color(0xFF06B6D4),
                 onTap: () {
-                  Get.to(() => OrganizerAttendanceOverviewPage(eventId: widget.eventId));
+                  Get.to(() => OrganizerParticipantListPage(
+                        eventId: widget.eventId,
+                        recruitmentType:
+                            _detailCtrl.event.value?.recruitmentType,
+                        eventTitle: _detailCtrl.event.value?.title,
+                      ));
                 },
               ),
             ),
             const SizedBox(width: 10),
             Expanded(
               child: _buildActionBtn(
-                icon: Icons.share_outlined,
-                label: 'Chia sẻ',
-                color: const Color(0xFF8B5CF6),
-                onTap: () async {
-                  final event = _detailCtrl.event.value;
-                  final eventTitle = event?.title ?? 'Sự kiện';
-                  final eventId = event?.eventId;
-                  final shareUrl = eventId != null
-                      ? 'https://events.app/event/$eventId'
-                      : null;
-
-                  final encodedTitle = Uri.encodeComponent(eventTitle ?? '');
-                  final encodedBody = Uri.encodeComponent(
-                    'Hãy cùng tham gia sự kiện "$eventTitle" nhé!'
-                    '${shareUrl != null ? '\n\nLink: $shareUrl' : ''}',
-                  );
-
-                  final mailtoUrl = Uri.parse(
-                    'mailto:?subject=$encodedTitle&body=$encodedBody',
-                  );
-
-                  if (await canLaunchUrl(mailtoUrl)) {
-                    await launchUrl(mailtoUrl, mode: LaunchMode.externalApplication);
-                  } else {
-                    AppSnackbarUtils.showError('Lỗi', 'Không thể mở ứng dụng chia sẻ');
-                  }
+                icon: Icons.feedback_outlined,
+                label: 'Xem feedback',
+                color: const Color(0xFF06B6D4),
+                onTap: () {
+                  Get.to(() => OrganizerFeedbackListPage(
+                        eventId: widget.eventId,
+                        eventTitle: _detailCtrl.event.value?.title,
+                      ));
                 },
               ),
             ),
@@ -604,26 +552,38 @@ class _OrganizerEventDetailPageState extends State<OrganizerEventDetailPage> {
         if (isDraft)
           Obx(() => _buildActionBtn(
                 icon: Icons.publish,
-                label: _detailCtrl.isActionLoading.value ? 'Đang xuất bản...' : 'Xuất bản sự kiện',
+                label: _detailCtrl.isActionLoading.value
+                    ? 'Đang xuất bản...'
+                    : 'Xuất bản sự kiện',
                 color: const Color(0xFF06B6D4),
-                onTap: _detailCtrl.isActionLoading.value ? () {} : () => _handlePublish(),
+                onTap: _detailCtrl.isActionLoading.value
+                    ? () {}
+                    : () => _handlePublish(),
               )),
         if (isPublished) ...[
+          const SizedBox(height: 10),
           Obx(() => _buildActionBtn(
                 icon: Icons.lock_outline,
-                label: _detailCtrl.isActionLoading.value ? 'Đang đóng...' : 'Đóng sự kiện',
+                label: _detailCtrl.isActionLoading.value
+                    ? 'Đang đóng...'
+                    : 'Đóng sự kiện',
                 color: const Color(0xFFF59E0B),
-                onTap: _detailCtrl.isActionLoading.value ? () {} : () => _handleClose(),
+                onTap: _detailCtrl.isActionLoading.value
+                    ? () {}
+                    : () => _handleClose(),
               )),
-          const SizedBox(height: 10),
         ],
-        if (isDraft || isPublished)
-          Obx(() => _buildActionBtn(
-                icon: Icons.cancel_outlined,
-                label: _detailCtrl.isActionLoading.value ? 'Đang hủy...' : 'Hủy sự kiện',
-                color: const Color(0xFFEF4444),
-                onTap: _detailCtrl.isActionLoading.value ? () {} : () => _handleCancel(),
-              )),
+        if (isDraft || isPublished) const SizedBox(height: 10),
+        Obx(() => _buildActionBtn(
+              icon: Icons.cancel_outlined,
+              label: _detailCtrl.isActionLoading.value
+                  ? 'Đang hủy...'
+                  : 'Hủy sự kiện',
+              color: const Color(0xFFEF4444),
+              onTap: _detailCtrl.isActionLoading.value
+                  ? () {}
+                  : () => _handleCancel(),
+            )),
       ],
     );
   }
@@ -705,9 +665,11 @@ class _OrganizerEventDetailPageState extends State<OrganizerEventDetailPage> {
     final event = _detailCtrl.event.value;
     final hasParticipants = (event?.totalParticipants ?? 0) > 0;
 
-    String message = 'Hành động này sẽ hủy sự kiện và không thể hoàn tác. Bạn có chắc muốn hủy?';
+    String message =
+        'Hành động này sẽ hủy sự kiện và không thể hoàn tác. Bạn có chắc muốn hủy?';
     if (hasParticipants) {
-      message = 'Sự kiện đã có người đăng ký. Hủy sự kiện sẽ ảnh hưởng đến người tham gia. Bạn có chắc muốn hủy?';
+      message =
+          'Sự kiện đã có người đăng ký. Hủy sự kiện sẽ ảnh hưởng đến người tham gia. Bạn có chắc muốn hủy?';
     }
 
     final confirm = await Get.dialog<bool>(

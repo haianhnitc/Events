@@ -1,3 +1,4 @@
+import 'package:events_app/feature/common/domain/enum/app_enum.dart';
 import 'package:events_app/feature/common/utils/app_date_utils.dart';
 import 'package:events_app/feature/organizer/presentation/controller/organizer_staff_application_list_controller.dart';
 import 'package:events_app/feature/staff_application/domain/entity/staff_application_entity.dart';
@@ -7,7 +8,8 @@ import 'package:get/get.dart';
 class OrganizerStaffAnswerSummaryPage extends StatefulWidget {
   final int recruitmentId;
 
-  const OrganizerStaffAnswerSummaryPage({super.key, required this.recruitmentId});
+  const OrganizerStaffAnswerSummaryPage(
+      {super.key, required this.recruitmentId});
 
   @override
   State<OrganizerStaffAnswerSummaryPage> createState() =>
@@ -49,7 +51,7 @@ class _OrganizerStaffAnswerSummaryPageState
         }
 
         final approved = _ctrl.applications
-            .where((a) => a.status?.name == 'approved')
+            .where((a) => a.status == StaffApplicationStatus.approved)
             .length;
 
         return SingleChildScrollView(
@@ -132,7 +134,8 @@ class _OrganizerStaffAnswerSummaryPageState
 
   List<Widget> _buildQuestionSummaries() {
     final apps = _ctrl.applications
-        .where((a) => a.applicationAnswers != null && a.applicationAnswers!.isNotEmpty)
+        .where((a) =>
+            a.applicationAnswers != null && a.applicationAnswers!.isNotEmpty)
         .toList();
 
     if (apps.isEmpty) {
@@ -162,17 +165,21 @@ class _OrganizerStaffAnswerSummaryPageState
       final firstAnswer = answers.first;
       final questionType = firstAnswer.questionType;
 
-      if (questionType?.name == 'SINGLE_CHOICE' ||
-          questionType?.name == 'MULTIPLE_CHOICE') {
-        return _buildChoiceSummary(firstAnswer.questionText ?? 'Cau hoi', answers);
+      if (questionType == RequirementQuestionType.singleChoice ||
+          questionType == RequirementQuestionType.multipleChoice) {
+        return _buildChoiceSummary(
+            firstAnswer.questionText ?? 'Cau hoi', answers);
       } else {
-        return _buildTextSummary(firstAnswer.questionText ?? 'Cau hoi', answers, apps);
+        return _buildTextSummary(
+            firstAnswer.questionText ?? 'Cau hoi', answers, apps);
       }
     }).toList();
   }
 
   Widget _buildTextSummary(
-      String question, List<ApplicationAnswerEntity> answers, List<StaffApplicationEntity> apps) {
+      String question,
+      List<ApplicationAnswerEntity> answers,
+      List<StaffApplicationEntity> apps) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
@@ -200,8 +207,7 @@ class _OrganizerStaffAnswerSummaryPageState
                         color: Color(0xff273143))),
               ),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
                   color: const Color(0xFF06B6D4).withOpacity(0.08),
                   borderRadius: BorderRadius.circular(6),
@@ -220,7 +226,8 @@ class _OrganizerStaffAnswerSummaryPageState
               (a) => a.applicationAnswers?.contains(answer) == true,
               orElse: () => apps.first,
             );
-            return _buildAnswerRow(app.applicant?.fullName ?? 'N/A', answer.answerValue ?? '');
+            return _buildAnswerRow(
+                app.applicant?.fullName ?? 'N/A', answer.answerValue ?? '');
           }),
         ],
       ),
@@ -266,7 +273,8 @@ class _OrganizerStaffAnswerSummaryPageState
           ),
           const SizedBox(height: 12),
           ...choiceCount.entries.map((e) {
-            final percent = total > 0 ? (e.value / total * 100).toStringAsFixed(0) : '0';
+            final percent =
+                total > 0 ? (e.value / total * 100).toStringAsFixed(0) : '0';
             return Padding(
               padding: const EdgeInsets.only(bottom: 10),
               child: Row(
@@ -309,8 +317,8 @@ class _OrganizerStaffAnswerSummaryPageState
                   SizedBox(
                     width: 30,
                     child: Text('(${e.value})',
-                        style:
-                            TextStyle(fontSize: 11, color: Colors.grey.shade500)),
+                        style: TextStyle(
+                            fontSize: 11, color: Colors.grey.shade500)),
                   ),
                 ],
               ),

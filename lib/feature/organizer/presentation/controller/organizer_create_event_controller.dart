@@ -249,6 +249,11 @@ class OrganizerCreateEventController extends GetxController {
   }
 
   Future<void> submit() async {
+    if (isReadOnly.value) {
+      AppSnackbarUtils.showError('Không thể chỉnh sửa', 'Sự kiện đã xuất bản, không thể chỉnh sửa.');
+      return;
+    }
+    if (formKey.currentState == null) return;
     if (!formKey.currentState!.validate()) return;
     if (isSubmitting.value) return;
     isSubmitting.value = true;

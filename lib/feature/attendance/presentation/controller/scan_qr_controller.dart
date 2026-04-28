@@ -44,6 +44,7 @@ class ScanQrController extends GetxController with GetTickerProviderStateMixin {
   final RxBool isProcessing = false.obs;
   final RxString lastScan = ''.obs;
   final RxBool showSuccessOverlay = false.obs;
+  final RxSet<String> _pendingCodes = <String>{}.obs;
   final Rx<AttendanceAction?> lastAction = Rx<AttendanceAction?>(null);
   final Rx<AttendanceScanResultEntity?> lastScanResult =
       Rx<AttendanceScanResultEntity?>(null);
@@ -149,6 +150,15 @@ class ScanQrController extends GetxController with GetTickerProviderStateMixin {
   }
 
   Future<void> _processCode(String code) async {
+    if (showSuccessOverlay.value || isProcessing.value) return;
+
+    if (_pendingCodes.contains(code)) {
+      mobileScannerController?.stop();
+      _showErrorSnackbar('Đã quét', 'Mã đang xử lý. Vui lòng đợi.');
+      return;
+    }
+    _pendingCodes.add(code);
+
     isProcessing.value = true;
     lastScan.value = code;
     mobileScannerController?.stop();
@@ -208,36 +218,82 @@ class ScanQrController extends GetxController with GetTickerProviderStateMixin {
 
     final event = await _getEventById(participant.eventId!);
     final coords = await _getCurrentLocation();
-    final action = _determineAction(participant);
+    final action = _parseActionFromQr(code);
 
-    if (action == AttendanceAction.checkIn) {
-      final error = _validateCheckIn(
-        participant: participant,
-        event: event,
-        currentLocation: coords,
-        eventIdFromQr: eventIdFromQr,
+    if (action == null) {
+      _showErrorSnackbar('Mã QR không hợp lệ', 'Mã QR không chứa thông tin hành động.');
+      _resumeScanner();
+      return;
+    }
+
+    if (action == AttendanceAction.checkIn && participant.hasCheckedIn == true) {
+      _showErrorSnackbar('Không thể check-in', 'Bạn đã check-in sự kiện này rồi.');
+      _resumeScanner();
+      return;
+    }
+    if (action == AttendanceAction.checkOut && participant.hasCheckedIn != true) {
+      _showErrorSnackbar('Không thể check-out', 'Bạn chưa check-in sự kiện. Vui lòng check-in trước.');
+      _resumeScanner();
+      return;
+    }
+    if (action == AttendanceAction.checkOut && participant.isCheckOut == true) {
+      _showErrorSnackbar('Không thể check-out', 'Bạn đã check-out sự kiện này rồi.');
+      _resumeScanner();
+      return;
+    }
+
+    if (coords == null) {
+      _showErrorSnackbar('Cần vị trí',
+          'Cần cập nhật vị trí để ${action == AttendanceAction.checkIn ? 'check-in' : 'check-out'}. Vui lòng bật định vị.');
+      _resumeScanner();
+      return;
+    }
+
+    final venueLat = event?.venue?.latitude;
+    final venueLng = event?.venue?.longitude;
+    if (venueLat != null && venueLng != null) {
+      final withinRadius = isWithinRadius(
+        userLat: coords.latitude,
+        userLng: coords.longitude,
+        targetLat: venueLat,
+        targetLng: venueLng,
+        radiusMeters: 1000,
       );
-      if (error != null) {
-        _showErrorSnackbar('Không thể check-in', error);
+      if (!withinRadius) {
+        final distance = calculateDistance(
+          lat1: coords.latitude, lng1: coords.longitude,
+          lat2: venueLat, lng2: venueLng,
+        );
+        final distanceText = distance >= 1000
+            ? '${(distance / 1000).toStringAsFixed(1)} km'
+            : '${distance.round()} m';
+        _showErrorSnackbar('Ngoài phạm vi',
+            'Bạn đang cách địa điểm $distanceText. Cần cách dưới 1 km để ${action == AttendanceAction.checkIn ? 'check-in' : 'check-out'}.');
         _resumeScanner();
         return;
       }
-    } else {
-      final shouldCancel = await _validateCheckOut(
-        participant: participant,
-        event: event,
-        currentLocation: coords,
-        code: code,
-      );
-      if (shouldCancel) return;
+    }
+
+    if (action == AttendanceAction.checkOut) {
+      final eventForFeedback = await _getEventById(participant.eventId!);
+      final coordsForFeedback = await _getCurrentLocation();
+      final hasQuestions = await _eventHasFeedbackQuestions(participant.eventId!);
+      if (hasQuestions) {
+        final willSubmit = await _showFeedbackRequiredDialog(
+          participant: participant,
+          event: eventForFeedback,
+          currentLocation: coordsForFeedback,
+          code: code,
+        );
+        if (!willSubmit) return;
+      }
     }
 
     final result = await _processQrContent(
       code,
       eventParticipantId: participant.eventParticipantId,
-      action: action,
-      latitude: coords?.latitude,
-      longitude: coords?.longitude,
+      latitude: coords.latitude,
+      longitude: coords.longitude,
     );
 
     if (!Get.isRegistered<ScanQrController>()) return;
@@ -257,13 +313,19 @@ class ScanQrController extends GetxController with GetTickerProviderStateMixin {
   }
 
   String? _validateQrFormat(String code) {
-    if (!code.startsWith('EVENT:')) {
-      return 'Bạn cần quét mã QR của sự kiện (EVENT), không phải mã QR cá nhân.';
+    if (!code.startsWith('EVENT_CHECKIN:') && !code.startsWith('EVENT_CHECKOUT:')) {
+      return 'Bạn cần quét mã QR của sự kiện (EVENT_CHECKIN / EVENT_CHECKOUT).';
     }
     final parts = code.split(':');
     if (parts.length != 4) {
       return 'Mã QR không đúng định dạng. Vui lòng quét lại.';
     }
+    return null;
+  }
+
+  AttendanceAction? _parseActionFromQr(String code) {
+    if (code.startsWith('EVENT_CHECKIN:')) return AttendanceAction.checkIn;
+    if (code.startsWith('EVENT_CHECKOUT:')) return AttendanceAction.checkOut;
     return null;
   }
 
@@ -279,7 +341,7 @@ class ScanQrController extends GetxController with GetTickerProviderStateMixin {
     final timestamp = int.tryParse(parts[2]);
     if (timestamp == null) return true;
     final qrTime = DateTime.fromMillisecondsSinceEpoch(timestamp);
-    return DateTime.now().difference(qrTime).inHours >= 1;
+    return DateTime.now().difference(qrTime).inMinutes > 60;
   }
 
   String? _validateCheckIn({
@@ -433,7 +495,7 @@ class ScanQrController extends GetxController with GetTickerProviderStateMixin {
     );
   }
 
-  Future<void> _showFeedbackRequiredDialog({
+  Future<bool> _showFeedbackRequiredDialog({
     required ParticipantEntity participant,
     required EventEntity? event,
     required LocationCoords? currentLocation,
@@ -513,7 +575,7 @@ class ScanQrController extends GetxController with GetTickerProviderStateMixin {
     if (confirmed != true) {
       _clearPendingState();
       _resumeScanner();
-      return;
+      return false;
     }
 
     await Get.to(
@@ -530,6 +592,7 @@ class ScanQrController extends GetxController with GetTickerProviderStateMixin {
         ),
       ),
     );
+    return true;
   }
 
   void _clearPendingState() {
@@ -591,7 +654,6 @@ class ScanQrController extends GetxController with GetTickerProviderStateMixin {
     int? eventParticipantId,
     double? latitude,
     double? longitude,
-    AttendanceAction action = AttendanceAction.checkIn,
   }) async {
     if (isProcessing.value) return null;
 
@@ -600,7 +662,6 @@ class ScanQrController extends GetxController with GetTickerProviderStateMixin {
     final result = await _selfCheckinUsecase(ScanQrParams(
       eventParticipantId: eventParticipantId,
       qrContent: qrContent,
-      action: action,
       latitude: latitude,
       longitude: longitude,
     ));
@@ -615,6 +676,7 @@ class ScanQrController extends GetxController with GetTickerProviderStateMixin {
         lastScanResult.value = scanData;
         lastError.value = '';
         scanResult = scanData;
+        return scanData;
       },
     );
 
@@ -640,14 +702,29 @@ class ScanQrController extends GetxController with GetTickerProviderStateMixin {
 
     Future.delayed(const Duration(milliseconds: 2000), () {
       if (!Get.isRegistered<ScanQrController>()) return;
+      _pendingCodes.remove(lastScan.value);
+      lastScan.value = '';
+      isProcessing.value = false;
+      showSuccessOverlay.value = false;
       Get.back(result: true);
     });
   }
 
   void _resumeScanner() {
     if (!Get.isRegistered<ScanQrController>()) return;
+    _pendingCodes.remove(lastScan.value);
     isProcessing.value = false;
     lastScan.value = '';
+    mobileScannerController?.start();
+  }
+
+  void _clearSessionState() {
+    _pendingCodes.clear();
+    isProcessing.value = false;
+    lastScan.value = '';
+    lastScanResult.value = null;
+    lastError.value = '';
+    showSuccessOverlay.value = false;
     mobileScannerController?.start();
   }
 
@@ -684,20 +761,24 @@ class ScanQrController extends GetxController with GetTickerProviderStateMixin {
 
     if (lower.contains('participant already checked in') ||
         lower.contains('already checked-in') ||
-        lower.contains('already check-in')) {
+        lower.contains('already check-in') ||
+        lower.contains('you have already checked in')) {
       return 'Bạn đã check-in sự kiện này rồi.';
     }
     if (lower.contains('participant already checked out') ||
         lower.contains('already checked-out') ||
-        lower.contains('already check-out')) {
+        lower.contains('already check-out') ||
+        lower.contains('you have already checked out')) {
       return 'Bạn đã check-out sự kiện này rồi.';
     }
     if (lower.contains('must check-in') ||
-        lower.contains('chưa check-in')) {
+        lower.contains('chưa check-in') ||
+        lower.contains('you must check in before checking out')) {
       return 'Bạn cần check-in trước khi check-out.';
     }
     if (lower.contains('qr has expired') ||
-        lower.contains('hết hạn')) {
+        lower.contains('hết hạn') ||
+        lower.contains('check-in/check-out qr has expired')) {
       return 'Mã QR đã hết hạn. Vui lòng tạo mã QR mới.';
     }
     if (lower.contains('invalid qr signature') ||
@@ -708,12 +789,9 @@ class ScanQrController extends GetxController with GetTickerProviderStateMixin {
     if (lower.contains('participant qr does not match')) {
       return 'Mã QR không khớp với tài khoản của bạn.';
     }
-    if (lower.contains('event qr does not belong')) {
-      // New BE format: "EVENT QR does not belong to this event. QR event: 123, your registration event: 456"
-      if (lower.contains('qr event:') || lower.contains('your registration event:')) {
-        return 'Mã QR không thuộc sự kiện bạn đã đăng ký. Vui lòng quét đúng mã QR của sự kiện.';
-      }
-      return 'Mã QR không thuộc sự kiện bạn đã đăng ký.';
+    if (lower.contains('event qr does not belong') ||
+        lower.contains('qr does not belong to this event')) {
+      return 'Mã QR không thuộc sự kiện bạn đã đăng ký. Vui lòng quét đúng mã QR của sự kiện.';
     }
     if (lower.contains('latitude') && lower.contains('required') ||
         lower.contains('cần truy cập vị trí')) {

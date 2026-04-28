@@ -4,26 +4,20 @@ import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
 import 'package:events_app/dependency_injection/injection.dart';
 import 'package:events_app/feature/feedback/domain/entity/feedback_entity.dart';
 import 'package:events_app/feature/participant/domain/entity/participant_entity.dart';
-import 'package:events_app/feature/event_management/domain/entity/event_summary_entity.dart';
 import 'package:events_app/feature/organizer/participant/domain/usecase/organizer_participant_usecase.dart';
 import 'package:events_app/feature/organizer/feedback/domain/usecase/organizer_feedback_usecase.dart';
 import 'package:events_app/feature/organizer/feedback/domain/usecase/organizer_feedback_params.dart';
-import 'package:events_app/feature/user_management/domain/usecase/get_user_participated_events_usecase.dart';
 
 class OrganizerParticipantDetailController extends GetxController {
   GetOrganizerParticipantByIdUsecase get _getParticipantByIdUsecase =>
       networkGetIt<GetOrganizerParticipantByIdUsecase>();
   GetOrganizerFeedbacksUsecase get _getFeedbacksUsecase =>
       networkGetIt<GetOrganizerFeedbacksUsecase>();
-  GetUserParticipatedEventsUsecase get _getParticipatedEventsUsecase =>
-      networkGetIt<GetUserParticipatedEventsUsecase>();
 
   final Rx<ParticipantEntity?> participant = Rx<ParticipantEntity?>(null);
   final RxList<FeedbackEntity> feedbacks = <FeedbackEntity>[].obs;
-  final RxList<EventSummaryEntity> participatedEvents = <EventSummaryEntity>[].obs;
   final RxBool isLoading = false.obs;
   final RxBool isLoadingFeedbacks = false.obs;
-  final RxBool isLoadingHistory = false.obs;
 
   Future<void> loadParticipant(int participantId) async {
     isLoading.value = true;
@@ -37,7 +31,6 @@ class OrganizerParticipantDetailController extends GetxController {
         participant.value = data;
         isLoading.value = false;
         _loadFeedbacks();
-        _loadHistory();
       },
     );
   }
@@ -59,24 +52,6 @@ class OrganizerParticipantDetailController extends GetxController {
       (data) {
         feedbacks.assignAll(data);
         isLoadingFeedbacks.value = false;
-      },
-    );
-  }
-
-  Future<void> _loadHistory() async {
-    final p = participant.value;
-    if (p?.user?.userId == null) return;
-    isLoadingHistory.value = true;
-    final result = await _getParticipatedEventsUsecase(
-      GetUserParticipatedEventsParams(userId: p!.user!.userId!),
-    );
-    result.fold(
-      (failure) {
-        isLoadingHistory.value = false;
-      },
-      (data) {
-        participatedEvents.assignAll(data);
-        isLoadingHistory.value = false;
       },
     );
   }

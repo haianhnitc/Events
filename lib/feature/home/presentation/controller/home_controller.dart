@@ -1,4 +1,5 @@
 import 'package:events_app/api_template/services/failure.dart';
+import 'package:events_app/authentication/presentation/controller/auth_controller.dart';
 import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
 import 'package:events_app/dependency_injection/injection.dart';
 import 'package:events_app/feature/event_management/domain/entity/event_summary_entity.dart';
@@ -65,8 +66,7 @@ class HomeController extends GetxController {
 
   int? _getCurrentUserId() {
     try {
-      final authController = Get.find<dynamic>(tag: 'AuthController');
-      return authController.currentUser.value?.userId;
+      return AuthController.to.currentUser.value?.userId;
     } catch (_) {
       return null;
     }

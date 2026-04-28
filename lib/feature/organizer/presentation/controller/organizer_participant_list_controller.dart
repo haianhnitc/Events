@@ -1,3 +1,4 @@
+import 'package:events_app/feature/common/domain/enum/app_enum.dart';
 import 'package:get/get.dart';
 import 'package:events_app/api_template/services/failure.dart';
 import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
@@ -21,10 +22,10 @@ class OrganizerParticipantListController extends GetxController {
   final Rx<int?> filterEventId = Rx<int?>(null);
 
   Future<void> loadParticipants({bool refresh = false}) async {
-    if (isLoading.value) return;
     if (refresh) {
       currentPage.value = 0;
       hasMore.value = true;
+      participants.clear();
     }
     if (!hasMore.value && !refresh) return;
 
@@ -70,7 +71,8 @@ class OrganizerParticipantListController extends GetxController {
     result.fold(
       (failure) => _handleFailure(failure),
       (_) {
-        AppSnackbarUtils.showSuccess('Thành công', 'Xóa người tham gia thành công');
+        AppSnackbarUtils.showSuccess(
+            'Thành công', 'Xóa người tham gia thành công');
         participants.removeWhere((p) => p.eventParticipantId == participantId);
       },
     );
@@ -86,21 +88,27 @@ class OrganizerParticipantListController extends GetxController {
     loadParticipants(refresh: true);
   }
 
-  int get attendeeCount =>
-      participants.where((p) => p.participantType?.name == 'attendee').length;
+  int get attendeeCount => participants
+      .where((p) => p.participantType == ParticipantType.attendee)
+      .length;
 
-  int get ctvCount =>
-      participants.where((p) => p.participantType?.name == 'ctv').length;
+  int get ctvCount => participants
+      .where((p) => p.participantType == ParticipantType.ctv)
+      .length;
 
   int get checkedInCount =>
       participants.where((p) => p.hasCheckedIn == true).length;
 
   void _handleFailure(FailureEntity failure) {
     failure.when(
-      serverFailure: (_, message) => AppSnackbarUtils.showError('Lỗi', message ?? 'Lấy danh sách thất bại'),
-      dataParsingFailure: () => AppSnackbarUtils.showError('Lỗi', 'Không đọc được dữ liệu'),
-      noConnectionFailure: () => AppSnackbarUtils.showError('Lỗi', 'Không có kết nối mạng'),
-      systemFailure: (_, message) => AppSnackbarUtils.showError('Lỗi', message ?? 'Lỗi hệ thống'),
+      serverFailure: (_, message) => AppSnackbarUtils.showError(
+          'Lỗi', message ?? 'Lấy danh sách thất bại'),
+      dataParsingFailure: () =>
+          AppSnackbarUtils.showError('Lỗi', 'Không đọc được dữ liệu'),
+      noConnectionFailure: () =>
+          AppSnackbarUtils.showError('Lỗi', 'Không có kết nối mạng'),
+      systemFailure: (_, message) =>
+          AppSnackbarUtils.showError('Lỗi', message ?? 'Lỗi hệ thống'),
     );
   }
 }

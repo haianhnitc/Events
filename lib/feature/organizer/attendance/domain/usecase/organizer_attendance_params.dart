@@ -19,3 +19,10 @@ class GetOrganizerAttendanceLogsParams {
     this.size = 20,
   });
 }
+
+class GetOrganizerEventQrParams {
+  final int eventId;
+  final String action;
+
+  const GetOrganizerEventQrParams({required this.eventId, required this.action});
+}

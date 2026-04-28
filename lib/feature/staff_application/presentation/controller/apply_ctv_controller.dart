@@ -23,6 +23,7 @@ class ApplyCtvController extends GetxController {
   final RxMap<int, String> textAnswers = <int, String>{}.obs;
   final RxMap<int, int> singleChoiceAnswers = <int, int>{}.obs;
   final RxMap<int, List<int>> multipleChoiceAnswers = <int, List<int>>{}.obs;
+  final RxMap<int, int> ratingAnswers = <int, int>{}.obs;
   final RxString cvUrl = ''.obs;
   final RxBool isLoading = false.obs;
   final RxBool isSubmitting = false.obs;
@@ -140,6 +141,8 @@ class ApplyCtvController extends GetxController {
       case RequirementQuestionType.multipleChoice:
         final selected = multipleChoiceAnswers[question.questionId];
         return selected != null && selected.isNotEmpty;
+      case RequirementQuestionType.rating:
+        return true;
       case null:
         return true;
     }
@@ -191,6 +194,15 @@ class ApplyCtvController extends GetxController {
             answers.add(AnswerItem(
               questionId: qId,
               selectedOptionIds: selectedIds,
+            ));
+          }
+          break;
+        case RequirementQuestionType.rating:
+          final rating = ratingAnswers[qId];
+          if (rating != null && rating > 0) {
+            answers.add(AnswerItem(
+              questionId: qId,
+              answerText: rating.toString(),
             ));
           }
           break;

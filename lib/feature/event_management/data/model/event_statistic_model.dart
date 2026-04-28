@@ -17,6 +17,7 @@ class EventStatisticModel with _$EventStatisticModel {
     @Default(0) int? totalCtv,
     @Default(0) int? totalTicketsSold,
     @Default(0) int? totalFeedbacks,
+    @Default(0) int? totalViews,
     DateTime? lastUpdateTime,
   }) = _EventStatisticModel;
 
@@ -35,6 +36,7 @@ class EventStatisticModel with _$EventStatisticModel {
       totalCtv: entity.totalCtv,
       totalTicketsSold: entity.totalTicketsSold,
       totalFeedbacks: entity.totalFeedbacks,
+      totalViews: entity.totalViews,
       lastUpdateTime: entity.lastUpdateTime,
     );
   }
@@ -53,6 +55,7 @@ extension EventStatisticModelExtension on EventStatisticModel {
       totalCtv: totalCtv,
       totalTicketsSold: totalTicketsSold,
       totalFeedbacks: totalFeedbacks,
+      totalViews: totalViews,
       lastUpdateTime: lastUpdateTime,
     );
   }

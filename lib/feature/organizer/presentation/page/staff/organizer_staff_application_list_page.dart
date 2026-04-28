@@ -1,3 +1,4 @@
+import 'package:events_app/feature/common/domain/enum/app_enum.dart';
 import 'package:events_app/feature/common/utils/app_date_utils.dart';
 import 'package:events_app/feature/organizer/presentation/controller/organizer_staff_application_list_controller.dart';
 import 'package:events_app/feature/organizer/presentation/page/staff/organizer_staff_application_detail_page.dart';
@@ -63,7 +64,8 @@ class _OrganizerStaffApplicationListPageState
         actions: [
           if (widget.recruitmentId != null)
             IconButton(
-              icon: const Icon(Icons.summarize_outlined, color: Color(0xff64748B)),
+              icon: const Icon(Icons.summarize_outlined,
+                  color: Color(0xff64748B)),
               onPressed: () {
                 Get.to(() => OrganizerStaffAnswerSummaryPage(
                     recruitmentId: widget.recruitmentId!));
@@ -77,7 +79,8 @@ class _OrganizerStaffApplicationListPageState
           labelColor: const Color(0xFF06B6D4),
           unselectedLabelColor: Colors.grey.shade600,
           indicatorColor: const Color(0xFF06B6D4),
-          labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+          labelStyle:
+              const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
           tabs: [
             Obx(() => Tab(text: 'Tất cả (${_ctrl.applications.length})')),
             Obx(() => Tab(text: 'Chờ duyệt (${_ctrl.pendingCount})')),
@@ -110,9 +113,9 @@ class _OrganizerStaffApplicationListPageState
               controller: _tabController,
               children: [
                 _buildApplicationList(null),
-                _buildApplicationList('pending'),
-                _buildApplicationList('approved'),
-                _buildApplicationList('rejected'),
+                _buildApplicationList(StaffApplicationStatus.pending),
+                _buildApplicationList(StaffApplicationStatus.approved),
+                _buildApplicationList(StaffApplicationStatus.rejected),
               ],
             ),
           ),
@@ -121,14 +124,14 @@ class _OrganizerStaffApplicationListPageState
     );
   }
 
-  Widget _buildApplicationList(String? status) {
+  Widget _buildApplicationList(StaffApplicationStatus? status) {
     return Obx(() {
       if (_ctrl.isLoading.value && _ctrl.applications.isEmpty) {
         return const Center(child: CircularProgressIndicator());
       }
       var filtered = _ctrl.applications.toList();
       if (status != null) {
-        filtered = filtered.where((a) => a.status?.name == status).toList();
+        filtered = filtered.where((a) => a.status == status).toList();
       }
       if (_searchController.text.isNotEmpty) {
         final q = _searchController.text.toLowerCase();
@@ -159,10 +162,9 @@ class _OrganizerStaffApplicationListPageState
   }
 
   Widget _buildApplicationCard(app) {
-    final statusName = app.status?.name ?? 'pending';
-    final badge = statusName == 'pending'
+    final badge = app.status == StaffApplicationStatus.pending
         ? OrganizerStatusBadge.pending()
-        : statusName == 'approved'
+        : app.status == StaffApplicationStatus.approved
             ? OrganizerStatusBadge.approved()
             : OrganizerStatusBadge.rejected();
 
@@ -224,16 +226,22 @@ class _OrganizerStaffApplicationListPageState
                             color: Color(0xff273143)),
                       ),
                       const SizedBox(height: 4),
-                      Row(
+                      Wrap(
+                        spacing: 4,
+                        runSpacing: 4,
+                        crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
-                          Icon(Icons.event, size: 12, color: Colors.grey.shade600),
-                          const SizedBox(width: 4),
-                          Text(event,
-                              style: TextStyle(
-                                  fontSize: 12, color: Colors.grey.shade600)),
-                          const SizedBox(width: 10),
-                          Icon(Icons.schedule, size: 12, color: Colors.grey.shade600),
-                          const SizedBox(width: 4),
+                          Icon(Icons.event,
+                              size: 12, color: Colors.grey.shade600),
+                          Flexible(
+                            child: Text(event,
+                                style: TextStyle(
+                                    fontSize: 12, color: Colors.grey.shade600),
+                                overflow: TextOverflow.ellipsis),
+                          ),
+                          const SizedBox(width: 6),
+                          Icon(Icons.schedule,
+                              size: 12, color: Colors.grey.shade600),
                           Text(submittedAt,
                               style: TextStyle(
                                   fontSize: 12, color: Colors.grey.shade600)),

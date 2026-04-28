@@ -8,6 +8,7 @@ import 'package:events_app/feature/payment/domain/repository/sepay_payment_repos
 import 'package:events_app/feature/payment/domain/usecase/sepay_payment_params.dart';
 import 'package:injectable/injectable.dart';
 
+@injectable
 class CreateSePayPaymentUsecase
     implements UseCase<PaymentUrlEntity, CreateTransactionParams> {
   final SePayPaymentRepository _repository;

@@ -19,13 +19,13 @@ class GetOrganizerParticipantQrUsecase implements UseCase<AttendanceQrEntity, in
 }
 
 @injectable
-class GetOrganizerEventQrUsecase implements UseCase<AttendanceQrEntity, int> {
+class GetOrganizerEventQrUsecase implements UseCase<AttendanceQrEntity, GetOrganizerEventQrParams> {
   final OrganizerAttendanceRepository _repository;
   GetOrganizerEventQrUsecase(this._repository);
 
   @override
-  Future<Either<FailureEntity, AttendanceQrEntity>> call(int eventId) async {
-    return await _repository.getEventQr(eventId);
+  Future<Either<FailureEntity, AttendanceQrEntity>> call(GetOrganizerEventQrParams params) async {
+    return await _repository.getEventQr(params.eventId, params.action);
   }
 }
 

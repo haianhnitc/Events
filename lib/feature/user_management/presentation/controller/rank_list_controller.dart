@@ -1,4 +1,7 @@
+import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
+import 'package:events_app/api_template/services/failure.dart';
 import 'package:events_app/authentication/presentation/controller/auth_controller.dart';
 import 'package:events_app/dependency_injection/injection.dart';
 import 'package:events_app/feature/user_management/domain/entity/rank_entity.dart';
@@ -9,7 +12,7 @@ class RankListController extends GetxController {
   UserRepository get _userRepo => networkGetIt<UserRepository>();
 
   final RxList<RankEntity> ranks = <RankEntity>[].obs;
-  final RxBool isLoading = true.obs;
+  final RxBool isLoading = false.obs;
   final RxBool hasMore = true.obs;
   final RxString selectedLevel = 'Tất cả'.obs;
   final Rx<RankEntity?> myRank = Rx<RankEntity?>(null);
@@ -54,7 +57,11 @@ class RankListController extends GetxController {
     );
 
     result.fold(
-      (failure) => isLoading.value = false,
+      (failure) {
+        debugPrint('[RankList] getRanks failed: $failure');
+        _handleFailure(failure);
+        isLoading.value = false;
+      },
       (data) {
         if (data.isEmpty) {
           hasMore.value = false;
@@ -78,8 +85,19 @@ class RankListController extends GetxController {
 
     final result = await _userRepo.getUserRank(user!.userId!);
     result.fold(
-      (failure) {},
+      (failure) => debugPrint('[RankList] getUserRank failed: $failure'),
       (rank) => myRank.value = rank,
+    );
+  }
+
+  void _handleFailure(FailureEntity failure) {
+    failure.when(
+      serverFailure: (_, message) => AppSnackbarUtils.showError('Lỗi', message),
+      dataParsingFailure: () =>
+          AppSnackbarUtils.showError('Lỗi', 'Không đọc được dữ liệu'),
+      noConnectionFailure: () =>
+          AppSnackbarUtils.showError('Lỗi', 'Không có kết nối mạng'),
+      systemFailure: (_, message) => AppSnackbarUtils.showError('Lỗi', message),
     );
   }
 

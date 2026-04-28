@@ -17,6 +17,9 @@ class OrganizerEventStatisticsController extends GetxController {
   final RxBool isLoadingStats = false.obs;
   final RxBool isLoadingAnalytics = false.obs;
   final RxBool isRefreshing = false.obs;
+  final Rx<DateTime?> analyticsLastFetch = Rx<DateTime?>(null);
+
+  static const _analyticsCacheDuration = Duration(minutes: 5);
 
   int? _eventId;
 
@@ -43,11 +46,34 @@ class OrganizerEventStatisticsController extends GetxController {
 
   Future<void> loadAnalytics() async {
     if (_eventId == null || isLoadingAnalytics.value) return;
+
+    if (analytics.value != null && analyticsLastFetch.value != null) {
+      final elapsed = DateTime.now().difference(analyticsLastFetch.value!);
+      if (elapsed < _analyticsCacheDuration) return;
+    }
+
     isLoadingAnalytics.value = true;
     final result = await _getAnalyticsUsecase(_eventId!);
     result.fold(
       (failure) => _handleFailure(failure),
-      (data) => analytics.value = data,
+      (data) {
+        analytics.value = data;
+        analyticsLastFetch.value = DateTime.now();
+      },
+    );
+    isLoadingAnalytics.value = false;
+  }
+
+  Future<void> refreshAnalytics() async {
+    if (_eventId == null || isLoadingAnalytics.value) return;
+    isLoadingAnalytics.value = true;
+    final result = await _getAnalyticsUsecase(_eventId!);
+    result.fold(
+      (failure) => _handleFailure(failure),
+      (data) {
+        analytics.value = data;
+        analyticsLastFetch.value = DateTime.now();
+      },
     );
     isLoadingAnalytics.value = false;
   }
@@ -55,7 +81,7 @@ class OrganizerEventStatisticsController extends GetxController {
   Future<void> refresh() async {
     if (isRefreshing.value) return;
     isRefreshing.value = true;
-    await loadAll();
+    await Future.wait([loadStatistics(), refreshAnalytics()]);
     isRefreshing.value = false;
   }
 

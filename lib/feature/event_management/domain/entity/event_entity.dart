@@ -22,6 +22,8 @@ class EventEntity {
   final int? totalParticipants;
   final UserEventState? userEventState;
   final EventRecruitmentType? recruitmentType;
+  final int? viewCount;
+  final DateTime? lastViewedTime;
 
   EventEntity({
     this.eventId,
@@ -43,6 +45,8 @@ class EventEntity {
     this.totalParticipants,
     this.userEventState,
     this.recruitmentType,
+    this.viewCount,
+    this.lastViewedTime,
   });
 
   EventEntity copyWith({
@@ -65,6 +69,8 @@ class EventEntity {
     int? totalParticipants,
     UserEventState? userEventState,
     EventRecruitmentType? recruitmentType,
+    int? viewCount,
+    DateTime? lastViewedTime,
   }) {
     return EventEntity(
       eventId: eventId ?? this.eventId,
@@ -86,6 +92,8 @@ class EventEntity {
       totalParticipants: totalParticipants ?? this.totalParticipants,
       userEventState: userEventState ?? this.userEventState,
       recruitmentType: recruitmentType ?? this.recruitmentType,
+      viewCount: viewCount ?? this.viewCount,
+      lastViewedTime: lastViewedTime ?? this.lastViewedTime,
     );
   }
 

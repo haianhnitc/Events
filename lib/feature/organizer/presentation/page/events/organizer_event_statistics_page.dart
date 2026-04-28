@@ -1,6 +1,4 @@
-import 'package:events_app/feature/common/utils/app_date_utils.dart';
 import 'package:events_app/feature/organizer/presentation/controller/organizer_event_statistics_controller.dart';
-import 'package:events_app/feature/organizer/presentation/widget/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -87,9 +85,11 @@ class _OrganizerEventStatisticsPageState
     final stats = _ctrl.statistics.value;
     final total = stats?.totalRegistered ?? 0;
     final checkedIn = stats?.totalCheckedIn ?? 0;
+    final checkedOut = stats?.totalCheckedOut ?? 0;
     final noShow = total - checkedIn;
     final rate = total > 0 ? ((checkedIn / total) * 100) : 0.0;
     final ticketsSold = stats?.totalTicketsSold ?? 0;
+    final totalViews = stats?.totalViews ?? 0;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -108,17 +108,32 @@ class _OrganizerEventStatisticsPageState
             const SizedBox(width: 10),
             _buildStatCard('$checkedIn', 'Đã tham dự', const Color(0xFF10B981)),
             const SizedBox(width: 10),
-            _buildStatCard('${rate.toStringAsFixed(0)}%', 'Tỷ lệ', const Color(0xFF8B5CF6)),
+            _buildStatCard('${rate.toStringAsFixed(0)}%', 'Tỷ lệ',
+                const Color(0xFF8B5CF6)),
           ],
         ),
         const SizedBox(height: 10),
         Row(
           children: [
-            _buildStatCard('$ticketsSold', 'Vé bán ra', const Color(0xFFF59E0B)),
+            _buildStatCard(
+                '$ticketsSold', 'Vé bán ra', const Color(0xFFF59E0B)),
             const SizedBox(width: 10),
             _buildStatCard('$noShow', 'Vắng mặt', Colors.grey.shade600),
             const SizedBox(width: 10),
-            _buildStatCard('${stats?.totalCtv ?? 0}', 'CTV', const Color(0xFF06B6D4)),
+            _buildStatCard(
+                '$totalViews', 'Lượt xem', const Color(0xFFEC4899)),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            _buildStatCard(
+                '${stats?.totalCtv ?? 0}', 'CTV', const Color(0xFF06B6D4)),
+            const SizedBox(width: 10),
+            _buildStatCard(
+                '${stats?.totalFeedbacks ?? 0}', 'Feedback', const Color(0xFFF59E0B)),
+            const SizedBox(width: 10),
+            _buildStatCard('$checkedOut', 'Check-out', const Color(0xFF8B5CF6)),
           ],
         ),
       ],
@@ -297,7 +312,8 @@ class _OrganizerEventStatisticsPageState
               Expanded(
                 child: Column(
                   children: [
-                    _buildRateItem('Đã tham dự', checkedIn, const Color(0xFF10B981)),
+                    _buildRateItem(
+                        'Đã tham dự', checkedIn, const Color(0xFF10B981)),
                     const SizedBox(height: 8),
                     _buildRateItem('Vắng mặt', noShow, const Color(0xFFEF4444)),
                   ],
@@ -371,7 +387,9 @@ class _OrganizerEventStatisticsPageState
               );
             }),
           ],
-          if ((gender == null || (gender.femalePercentage == null && gender.malePercentage == null)) &&
+          if ((gender == null ||
+                  (gender.femalePercentage == null &&
+                      gender.malePercentage == null)) &&
               (age == null || age.isEmpty))
             const Center(
               child: Padding(

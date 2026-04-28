@@ -60,7 +60,7 @@ class TestAttendanceDatasource extends AttendanceDatasourceImpl {
   }
 
   @override
-  Future<ApiResponse<AttendanceQrModel>> getEventQr(int eventId) async {
+  Future<ApiResponse<AttendanceQrModel>> getEventQr(int eventId, String action) async {
     return getParticipantQr(eventId);
   }
 

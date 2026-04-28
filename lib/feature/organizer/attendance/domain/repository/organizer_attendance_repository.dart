@@ -5,7 +5,7 @@ import 'package:events_app/feature/attendance/domain/entity/event_attendance_log
 import 'package:events_app/feature/organizer/attendance/domain/usecase/organizer_attendance_params.dart';
 
 abstract class OrganizerAttendanceRepository {
-  Future<Either<FailureEntity, AttendanceQrEntity>> getEventQr(int eventId);
+  Future<Either<FailureEntity, AttendanceQrEntity>> getEventQr(int eventId, String action);
   Future<Either<FailureEntity, AttendanceQrEntity>> getParticipantQr(int eventParticipantId);
 
   Future<Either<FailureEntity, EventAttendanceLogEntity>> manualCheckIn(OrganizerManualAttendanceParams params);

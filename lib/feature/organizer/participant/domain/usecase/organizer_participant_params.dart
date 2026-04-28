@@ -34,15 +34,3 @@ class GetOrganizerParticipantsParams {
     this.size = 20,
   });
 }
-
-class GetOrganizerTicketsParams {
-  final int? eventId;
-  final int page;
-  final int size;
-
-  const GetOrganizerTicketsParams({
-    this.eventId,
-    this.page = 0,
-    this.size = 20,
-  });
-}

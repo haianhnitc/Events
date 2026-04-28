@@ -1,8 +1,8 @@
 import 'package:events_app/authentication/presentation/controller/auth_controller.dart';
 import 'package:events_app/common/presentation/widget/avatar_upload_widget.dart';
+import 'package:events_app/common/presentation/widget/custom_text_field.dart';
 import 'package:events_app/feature/common/domain/enum/app_enum.dart';
 import 'package:events_app/feature/organizer/presentation/controller/organizer_profile_controller.dart';
-import 'package:events_app/feature/user_management/domain/entity/organization_profile_entity.dart';
 import 'package:events_app/routes/navbar/organizer_nav_bar_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -15,29 +15,19 @@ class OrganizerProfilePage extends StatefulWidget {
 }
 
 class _OrganizerProfilePageState extends State<OrganizerProfilePage> {
-  late OrganizerProfileController _controller;
+  late final OrganizerProfileController _controller;
 
   @override
   void initState() {
     super.initState();
     _controller = Get.put(OrganizerProfileController());
-    final auth = Get.find<AuthController>();
-    final user = auth.currentUser.value;
-    if (user != null) {
-      _controller.initWithProfile(OrganizationProfileEntity(
-        userId: user.userId,
-        organizationName: user.organizationProfile?.organizationName ?? user.userProfile?.fullName ?? 'Tổ chức',
-        description: user.organizationProfile?.description,
-        address: user.organizationProfile?.address,
-        logoUrl: user.organizationProfile?.logoUrl ?? user.userProfile?.avatarUrl,
-      ));
-    }
+    _controller.loadProfile();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F6F8),
+      backgroundColor: const Color(0xffF4F6F9),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -47,18 +37,16 @@ class _OrganizerProfilePageState extends State<OrganizerProfilePage> {
         ),
         title: const Text(
           'Hồ sơ tổ chức',
-          style: TextStyle(color: Color(0xff273143), fontSize: 17, fontWeight: FontWeight.w700),
+          style: TextStyle(
+            color: Color(0xff273143),
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+          ),
         ),
         centerTitle: true,
         actions: [
           TextButton(
-            onPressed: () {
-              final auth = Get.find<AuthController>();
-              final orgId = auth.currentUser.value?.userId;
-              if (orgId != null) {
-                _controller.updateProfile(orgId);
-              }
-            },
+            onPressed: _controller.submit,
             child: const Text(
               'Lưu',
               style: TextStyle(
@@ -72,117 +60,155 @@ class _OrganizerProfilePageState extends State<OrganizerProfilePage> {
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _controller.formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildLogoSection(),
-              const SizedBox(height: 24),
-              _buildTextField(
-                label: 'Tên tổ chức',
-                controller: _controller.organizationNameController,
-                validator: _controller.validateOrganizationName,
-                hint: 'Nhập tên tổ chức của bạn',
-              ),
-              const SizedBox(height: 16),
-              _buildTextField(
-                label: 'Mô tả',
-                controller: _controller.descriptionController,
-                validator: _controller.validateDescription,
-                hint: 'Mô tả về tổ chức',
-                maxLines: 4,
-              ),
-              const SizedBox(height: 16),
-              _buildTextField(
-                label: 'Địa chỉ',
-                controller: _controller.addressController,
-                validator: _controller.validateAddress,
-                hint: 'Nhập địa chỉ tổ chức',
-              ),
-              const SizedBox(height: 24),
-              _buildMenuSection(),
-            ],
-          ),
+        child: Column(
+          children: [
+            _buildLogoSection(),
+            const SizedBox(height: 16),
+            _buildReadOnlyInfoSection(),
+            const SizedBox(height: 16),
+            _buildEditableFieldsSection(),
+            const SizedBox(height: 16),
+            _buildMenuSection(),
+            const SizedBox(height: 24),
+          ],
         ),
       ),
     );
   }
 
   Widget _buildLogoSection() {
+    return Align(
+      alignment: Alignment.center,
+      child: Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x0F000000),
+              offset: Offset(0, 2),
+              blurRadius: 8,
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Obx(() => AvatarUploadWidget(
+                  previewUrl: _controller.logoPreviewUrl.value,
+                  fileType: FileType.organizationLogo,
+                  radius: 52,
+                  onSuccess: (fileId, url) =>
+                      _controller.onLogoUploaded(fileId, url),
+                )),
+            const SizedBox(height: 12),
+            const Text(
+              'Nhấn vào biểu tượng máy ảnh để đổi logo',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 12, color: Color(0xff67688C)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildReadOnlyInfoSection() {
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: const [BoxShadow(color: Color(0x0F000000), offset: Offset(0, 2), blurRadius: 8)],
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0F000000),
+            offset: Offset(0, 2),
+            blurRadius: 8,
+          ),
+        ],
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Obx(() => AvatarUploadWidget(
-                previewUrl: _controller.logoPreviewUrl.value,
-                fileType: FileType.organizationLogo,
-                radius: 44,
-                onSuccess: (fileId, url) => _controller.onLogoUploaded(fileId, url),
-              )),
+          _buildSectionHeader('Thông tin tổ chức', Icons.business_outlined),
           const SizedBox(height: 12),
-          const Text(
-            'Logo tổ chức',
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xff273143)),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Nhấn để thay đổi logo',
-            style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-          ),
+          Container(height: 1, color: const Color(0x0F273143)),
+          const SizedBox(height: 12),
+          Obx(() {
+            final org = _controller.orgProfile.value;
+            return Column(
+              children: [
+                _infoRow(
+                  'Tên tổ chức',
+                  org?.organizationName ?? '—',
+                ),
+                _infoRow(
+                  'Loại hình',
+                  _orgTypeLabel(org?.organizationType),
+                ),
+                _infoRow(
+                  'Trạng thái xác minh',
+                  _verificationLabel(org?.verificationStatus),
+                  valueColor: _verificationColor(org?.verificationStatus),
+                ),
+              ],
+            );
+          }),
         ],
       ),
     );
   }
 
-  Widget _buildTextField({
-    required String label,
-    required TextEditingController controller,
-    String? Function(String?)? validator,
-    String? hint,
-    int maxLines = 1,
-  }) {
+  Widget _buildEditableFieldsSection() {
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: const [BoxShadow(color: Color(0x0F000000), offset: Offset(0, 2), blurRadius: 8)],
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0F000000),
+            offset: Offset(0, 2),
+            blurRadius: 8,
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xff475569)),
-          ),
-          const SizedBox(height: 8),
-          TextFormField(
-            controller: controller,
-            validator: validator,
-            maxLines: maxLines,
-            decoration: InputDecoration(
-              hintText: hint,
-              hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(color: Colors.grey.shade200),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(color: Colors.grey.shade200),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: Color(0xFF06B6D4), width: 1.5),
-              ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          _buildSectionHeader('Thông tin có thể chỉnh sửa', Icons.edit_outlined),
+          const SizedBox(height: 12),
+          Container(height: 1, color: const Color(0x0F273143)),
+          const SizedBox(height: 16),
+          CustomTextField(
+            controller: _controller.addressController,
+            labelText: 'Địa chỉ trụ sở',
+            hintText: 'Nhập địa chỉ trụ sở tổ chức',
+            prefixIcon: const Icon(
+              Icons.location_on_outlined,
+              color: Color(0xff64748B),
+              size: 20,
             ),
+            validator: _controller.validateAddress,
+            textInputAction: TextInputAction.next,
+            maxLines: 2,
+          ),
+          const SizedBox(height: 14),
+          CustomTextField(
+            controller: _controller.descriptionController,
+            labelText: 'Mô tả',
+            hintText: 'Mô tả về tổ chức của bạn',
+            prefixIcon: const Icon(
+              Icons.description_outlined,
+              color: Color(0xff64748B),
+              size: 20,
+            ),
+            validator: _controller.validateDescription,
+            textInputAction: TextInputAction.done,
+            maxLines: 4,
           ),
         ],
       ),
@@ -194,7 +220,13 @@ class _OrganizerProfilePageState extends State<OrganizerProfilePage> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
-        boxShadow: const [BoxShadow(color: Color(0x0F000000), offset: Offset(0, 2), blurRadius: 8)],
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0F000000),
+            offset: Offset(0, 2),
+            blurRadius: 8,
+          ),
+        ],
       ),
       child: Column(
         children: [
@@ -211,7 +243,8 @@ class _OrganizerProfilePageState extends State<OrganizerProfilePage> {
               context: context,
               applicationName: 'Events App',
               applicationVersion: '1.0.0',
-              applicationLegalese: '© 2026 Events App. All rights reserved.',
+              applicationLegalese:
+                  '© 2026 Events App. All rights reserved.',
             ),
           ),
           const Divider(height: 1),
@@ -232,7 +265,10 @@ class _OrganizerProfilePageState extends State<OrganizerProfilePage> {
                     ),
                     TextButton(
                       onPressed: () => Get.back(result: true),
-                      child: const Text('Đăng xuất', style: TextStyle(color: Color(0xFFEF4444))),
+                      child: const Text(
+                        'Đăng xuất',
+                        style: TextStyle(color: Color(0xFFEF4444)),
+                      ),
                     ),
                   ],
                 ),
@@ -242,6 +278,54 @@ class _OrganizerProfilePageState extends State<OrganizerProfilePage> {
                 Get.find<OrganizerNavBarController>().reset();
               }
             },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(String title, IconData icon) {
+    return Row(
+      children: [
+        Icon(icon, size: 18, color: const Color(0xff06B6D4)),
+        const SizedBox(width: 8),
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+            color: Color(0xff273143),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _infoRow(String label, String value, {Color? valueColor}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 140,
+            child: Text(
+              label,
+              style: const TextStyle(fontSize: 13, color: Color(0xff67688C)),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value == '—' || value.isEmpty ? 'Chưa cập nhật' : value,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: valueColor ??
+                    (value == '—' || value.isEmpty
+                        ? const Color(0xff67688C)
+                        : const Color(0xff273143)),
+              ),
+            ),
           ),
         ],
       ),
@@ -276,7 +360,8 @@ class _OrganizerProfilePageState extends State<OrganizerProfilePage> {
               Expanded(
                 child: Text(
                   label,
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: textColor),
+                  style:
+                      TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: textColor),
                 ),
               ),
               Icon(Icons.chevron_right, size: 20, color: Colors.grey.shade400),
@@ -285,5 +370,44 @@ class _OrganizerProfilePageState extends State<OrganizerProfilePage> {
         ),
       ),
     );
+  }
+
+  String _orgTypeLabel(OrganizationType? type) {
+    switch (type) {
+      case OrganizationType.university:
+        return 'Trường đại học';
+      case OrganizationType.club:
+        return 'Câu lạc bộ';
+      case OrganizationType.company:
+        return 'Công ty';
+      default:
+        return '—';
+    }
+  }
+
+  String _verificationLabel(VerificationStatus? status) {
+    switch (status) {
+      case VerificationStatus.approved:
+        return 'Đã phê duyệt';
+      case VerificationStatus.pending:
+        return 'Đang chờ xác minh';
+      case VerificationStatus.rejected:
+        return 'Bị từ chối';
+      default:
+        return '—';
+    }
+  }
+
+  Color _verificationColor(VerificationStatus? status) {
+    switch (status) {
+      case VerificationStatus.approved:
+        return const Color(0xFF22C55E);
+      case VerificationStatus.pending:
+        return const Color(0xFFF59E0B);
+      case VerificationStatus.rejected:
+        return const Color(0xFFEF4444);
+      default:
+        return const Color(0xff273143);
+    }
   }
 }

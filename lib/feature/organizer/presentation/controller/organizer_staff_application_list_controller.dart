@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:events_app/feature/common/domain/enum/app_enum.dart';
 import 'package:get/get.dart';
 import 'package:events_app/api_template/services/failure.dart';
 import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
@@ -11,7 +11,8 @@ class OrganizerStaffApplicationListController extends GetxController {
   GetOrganizerStaffApplicationsUsecase get _getApplicationsUsecase =>
       networkGetIt<GetOrganizerStaffApplicationsUsecase>();
 
-  final RxList<StaffApplicationEntity> applications = <StaffApplicationEntity>[].obs;
+  final RxList<StaffApplicationEntity> applications =
+      <StaffApplicationEntity>[].obs;
   final RxBool isLoading = false.obs;
   final RxBool isRefreshing = false.obs;
   final RxInt currentPage = 0.obs;
@@ -28,8 +29,9 @@ class OrganizerStaffApplicationListController extends GetxController {
     }
     if (!hasMore.value && !refresh) return;
 
-    isLoading.value = true;
-    final result = await _getApplicationsUsecase(GetOrganizerStaffApplicationsParams(
+    Future.microtask(() => isLoading.value = true);
+    final result =
+        await _getApplicationsUsecase(GetOrganizerStaffApplicationsParams(
       eventId: filterEventId.value,
       keyword: searchQuery.value.isEmpty ? null : searchQuery.value,
       page: currentPage.value,
@@ -70,21 +72,28 @@ class OrganizerStaffApplicationListController extends GetxController {
     loadApplications(refresh: true);
   }
 
-  int get pendingCount =>
-      applications.where((a) => a.status?.name == 'pending').length;
+  int get pendingCount => applications
+      .where((a) => a.status == StaffApplicationStatus.pending)
+      .length;
 
-  int get approvedCount =>
-      applications.where((a) => a.status?.name == 'approved').length;
+  int get approvedCount => applications
+      .where((a) => a.status == StaffApplicationStatus.approved)
+      .length;
 
-  int get rejectedCount =>
-      applications.where((a) => a.status?.name == 'rejected').length;
+  int get rejectedCount => applications
+      .where((a) => a.status == StaffApplicationStatus.rejected)
+      .length;
 
   void _handleFailure(FailureEntity failure) {
     failure.when(
-      serverFailure: (_, message) => AppSnackbarUtils.showError('Lỗi', message ?? 'Lấy danh sách thất bại'),
-      dataParsingFailure: () => AppSnackbarUtils.showError('Lỗi', 'Không đọc được dữ liệu'),
-      noConnectionFailure: () => AppSnackbarUtils.showError('Lỗi', 'Không có kết nối mạng'),
-      systemFailure: (_, message) => AppSnackbarUtils.showError('Lỗi', message ?? 'Lỗi hệ thống'),
+      serverFailure: (_, message) => AppSnackbarUtils.showError(
+          'Lỗi', message ?? 'Lấy danh sách thất bại'),
+      dataParsingFailure: () =>
+          AppSnackbarUtils.showError('Lỗi', 'Không đọc được dữ liệu'),
+      noConnectionFailure: () =>
+          AppSnackbarUtils.showError('Lỗi', 'Không có kết nối mạng'),
+      systemFailure: (_, message) =>
+          AppSnackbarUtils.showError('Lỗi', message ?? 'Lỗi hệ thống'),
     );
   }
 }

@@ -7,10 +7,9 @@ import 'package:get/get.dart';
 class OrganizerNavBar extends StatelessWidget {
   const OrganizerNavBar({super.key});
 
-  static final controller = Get.find<OrganizerNavBarController>();
-
   @override
   Widget build(BuildContext context) {
+    final controller = Get.find<OrganizerNavBarController>();
     return Obx(
       () => Container(
         decoration: BoxDecoration(
@@ -70,9 +69,10 @@ class OrganizerNavBar extends StatelessWidget {
     required String label,
     required String imagePath,
   }) {
-    final isSelected = controller.selectedPage.value == option;
+    final isSelected =
+        Get.find<OrganizerNavBarController>().selectedPage.value == option;
     return GestureDetector(
-      onTap: () => controller.navigateTo(option),
+      onTap: () => Get.find<OrganizerNavBarController>().navigateTo(option),
       behavior: HitTestBehavior.opaque,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),

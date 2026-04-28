@@ -142,12 +142,14 @@ class AuthController extends GetxController {
       networkGetIt<user_management.GetCurrentUserUsecase>();
 
   final Rx<UserEntity?> currentUser = Rx<UserEntity?>(null);
+  final RxBool isLoadingSession = true.obs;
 
-  final RxBool isLoading = false.obs;
+  final RxBool isLoadingEmail = false.obs;
+  final RxBool isLoadingGoogle = false.obs;
 
   final Rx<GoogleAuthSession> googleAuthResult = GoogleAuthSession.none().obs;
 
-  final GlobalKey<FormState> loginFormKey = GlobalKey<FormState>();
+  FormState? loginFormState;
   final TextEditingController loginEmailController = TextEditingController();
   final TextEditingController loginPasswordController = TextEditingController();
   final RxBool loginObscurePassword = true.obs;
@@ -479,7 +481,9 @@ class AuthController extends GetxController {
   }
 
   Future<void> submitLogin() async {
-    if (!loginFormKey.currentState!.validate()) return;
+    final formState = loginFormState;
+    if (formState == null || !formState.validate()) return;
+    if (isClosed) return;
     await login();
   }
 
@@ -526,7 +530,7 @@ class AuthController extends GetxController {
   }
 
   Future<GoogleAuthSession> signInWithGoogleOnly() async {
-    if (isLoading.value) return GoogleAuthSession.error('Đang xử lý...');
+    if (isLoadingEmail.value) return GoogleAuthSession.error('Đang xử lý...');
 
     try {
       AppSnackbarUtils.showInfo('Google', 'Đang kết nối với Google...');
@@ -549,7 +553,7 @@ class AuthController extends GetxController {
 
   Future<AuthSignInResult> signInWithGoogleExistingUser(
       String firebaseUid) async {
-    isLoading.value = true;
+    isLoadingGoogle.value = true;
     try {
       final result = await _signInWithGoogleExistingUserUsecase(firebaseUid);
 
@@ -581,7 +585,7 @@ class AuthController extends GetxController {
       AppSnackbarUtils.showError('Lỗi', 'Đăng nhập Google thất bại.');
       return AuthSignInResult.failure;
     } finally {
-      isLoading.value = false;
+      isLoadingGoogle.value = false;
     }
   }
 
@@ -660,7 +664,7 @@ class AuthController extends GetxController {
   Future<AuthSignInResult> signUpWithGoogle({
     required SignupParams signupParams,
   }) async {
-    isLoading.value = true;
+    isLoadingGoogle.value = true;
     try {
       final result =
           await networkGetIt<SignUpWithGoogleUsecase>()(signupParams);
@@ -692,7 +696,7 @@ class AuthController extends GetxController {
       AppSnackbarUtils.showError('Lỗi', 'Đăng ký Google thất bại.');
       return AuthSignInResult.failure;
     } finally {
-      isLoading.value = false;
+      isLoadingGoogle.value = false;
     }
   }
 
@@ -701,9 +705,9 @@ class AuthController extends GetxController {
   }
 
   Future<void> login() async {
-    if (isLoading.value) return;
+    if (isLoadingEmail.value) return;
 
-    isLoading.value = true;
+    isLoadingEmail.value = true;
     final result = await _signinUsecase(
       SigninWithEmailAndPasswordParams(
         email: loginEmailController.text.trim(),
@@ -735,7 +739,7 @@ class AuthController extends GetxController {
       },
     );
 
-    isLoading.value = false;
+    isLoadingEmail.value = false;
   }
 
   void _handleSignInFailure((String?, String) failureTuple) {
@@ -814,7 +818,7 @@ class AuthController extends GetxController {
   }
 
   Future<void> register() async {
-    if (isLoading.value) return;
+    if (isLoadingEmail.value) return;
 
     final userProfileParams = _buildUserProfileParams();
     final verificationDocIds = _parseVerificationDocumentIds();
@@ -825,11 +829,11 @@ class AuthController extends GetxController {
         'Thiếu minh chứng',
         'Tổ chức phải có ít nhất 1 tài liệu minh chứng.',
       );
-      isLoading.value = false;
+      isLoadingEmail.value = false;
       return;
     }
 
-    isLoading.value = true;
+    isLoadingEmail.value = true;
     final result = await _signupUsecase(
       SignupWithEmailAndPasswordParams(
         password: registerPasswordController.text,
@@ -887,7 +891,7 @@ class AuthController extends GetxController {
       },
     );
 
-    isLoading.value = false;
+    isLoadingEmail.value = false;
   }
 
   SignupUserProfileParams? _buildUserProfileParams() {
@@ -976,9 +980,9 @@ class AuthController extends GetxController {
   }
 
   Future<void> sendResetPasswordEmail({required String email}) async {
-    if (isLoading.value) return;
+    if (isLoadingEmail.value) return;
 
-    isLoading.value = true;
+    isLoadingEmail.value = true;
     final result = await _sendPasswordResetEmailUsecase(
       SendPasswordResetEmailParams(email: email.trim()),
     );
@@ -1006,10 +1010,11 @@ class AuthController extends GetxController {
       },
     );
 
-    isLoading.value = false;
+    isLoadingEmail.value = false;
   }
 
   void bootstrapSession() {
+    isLoadingSession.value = true;
     _refreshCurrentUserUsecase(const NoParams()).then((fullUserResult) {
       fullUserResult.fold(
         (failure) {
@@ -1024,6 +1029,7 @@ class AuthController extends GetxController {
           _populateCurrentUser(fullUser);
         },
       );
+      isLoadingSession.value = false;
     });
   }
 
@@ -1054,9 +1060,9 @@ class AuthController extends GetxController {
   }
 
   Future<void> logout() async {
-    if (isLoading.value) return;
+    if (isLoadingEmail.value || isLoadingGoogle.value) return;
 
-    isLoading.value = true;
+    isLoadingEmail.value = true;
     _isLoggingOut = true;
     final result = await _signoutUsecase(const NoParams());
 
@@ -1075,11 +1081,19 @@ class AuthController extends GetxController {
       (_) {
         _populateCurrentUser(null);
         resetAllRegisterFields();
+        loginFormState?.reset();
+        loginFormState = null;
         AppSnackbarUtils.showInfo('Đăng xuất', 'Bạn đã đăng xuất thành công.');
       },
     );
 
-    isLoading.value = false;
+    try {
+      await FirebaseAuth.instance.signOut();
+    } catch (_) {}
+
+    isLoadingEmail.value = false;
+    isLoadingGoogle.value = false;
+    _isLoggingOut = false;
     _emitAuthEvent(AuthEvent.logoutComplete);
   }
 }

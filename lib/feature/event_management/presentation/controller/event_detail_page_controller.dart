@@ -1,6 +1,5 @@
 import 'package:events_app/api_template/services/failure.dart';
 import 'package:events_app/dependency_injection/injection.dart';
-import 'package:events_app/feature/common/domain/enum/app_enum.dart';
 import 'package:events_app/feature/common/utils/category_label_utils.dart';
 import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
 import 'package:events_app/feature/event_management/domain/entity/event_entity.dart';
@@ -63,6 +62,11 @@ class EventDetailPageController extends GetxController {
 
   bool get hasCertificate =>
       (event.value?.certificateName ?? '').trim().isNotEmpty;
+
+  bool get hasRewardInfo =>
+      (event.value?.rewardCoin ?? 0) > 0 ||
+      (event.value?.youthUnionPoint ?? 0) > 0 ||
+      hasCertificate;
 
   String get priceLabel {
     final value = event.value?.price;
@@ -144,7 +148,10 @@ class EventDetailPageController extends GetxController {
     if (currentEvent.price == null) {
       items.add('Miễn phí tham dự');
     }
-    if (currentEvent.youthUnionPoint != null) {
+    if ((currentEvent.rewardCoin ?? 0) > 0) {
+      items.add('Nhận ngay ${currentEvent.rewardCoin} xu');
+    }
+    if ((currentEvent.youthUnionPoint ?? 0) > 0) {
       items.add('Nhận ngay ${currentEvent.youthUnionPoint} điểm đoàn');
     }
     if ((currentEvent.certificateName ?? '').trim().isNotEmpty) {
@@ -170,14 +177,12 @@ class EventDetailPageController extends GetxController {
 
   void _handleFailure(FailureEntity failure) {
     failure.when(
-      serverFailure: (_, message) =>
-          AppSnackbarUtils.showError('Lỗi', message),
+      serverFailure: (_, message) => AppSnackbarUtils.showError('Lỗi', message),
       dataParsingFailure: () =>
           AppSnackbarUtils.showError('Lỗi', 'Không đọc được dữ liệu'),
       noConnectionFailure: () =>
           AppSnackbarUtils.showError('Lỗi', 'Không có kết nối mạng'),
-      systemFailure: (_, message) =>
-          AppSnackbarUtils.showError('Lỗi', message),
+      systemFailure: (_, message) => AppSnackbarUtils.showError('Lỗi', message),
     );
   }
 }

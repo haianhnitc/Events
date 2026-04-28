@@ -29,6 +29,8 @@ class EventModel with _$EventModel {
     int? totalParticipants,
     UserEventState? userEventState,
     EventRecruitmentType? recruitmentType,
+    @Default(0) int? viewCount,
+    DateTime? lastViewedTime,
   }) = _EventModel;
 
   factory EventModel.fromJson(Map<String, dynamic> json) =>
@@ -55,6 +57,8 @@ class EventModel with _$EventModel {
       totalParticipants: entity.totalParticipants,
       userEventState: entity.userEventState,
       recruitmentType: entity.recruitmentType,
+      viewCount: entity.viewCount,
+      lastViewedTime: entity.lastViewedTime,
     );
   }
 }
@@ -81,6 +85,8 @@ extension EventModelExtension on EventModel {
       totalParticipants: totalParticipants,
       userEventState: userEventState,
       recruitmentType: recruitmentType,
+      viewCount: viewCount,
+      lastViewedTime: lastViewedTime,
     );
   }
 }

@@ -121,6 +121,11 @@ class MyQrController extends GetxController {
     }
   }
 
+  Future<void> loadQrFor(ParticipantEntity participant) async {
+    if (participant.eventParticipantId == null || participant.isCheckOut == true) return;
+    await _loadQrForParticipant(participant);
+  }
+
   Future<void> _loadQrForParticipant(ParticipantEntity participant) async {
     final epId = participant.eventParticipantId!;
     final participantType = participant.participantType;
@@ -128,13 +133,19 @@ class MyQrController extends GetxController {
 
     AttendanceQrEntity? qr;
 
+    final resolvedEventId = participant.event?.eventId ?? participant.eventId;
+    if (resolvedEventId == null) return;
+
     if (participantType == ParticipantType.attendee && ticketId != null) {
       final result = await _getParticipantQrUsecase(
         GetParticipantQrParams(eventParticipantId: epId),
       );
       result.fold((_) {}, (qrData) => qr = qrData);
-    } else if (participantType == ParticipantType.attendee && ticketId == null) {
-      final result = await _getEventQrUsecase(participant.eventId!);
+    } else if (participantType == ParticipantType.ctv ||
+        (participantType == ParticipantType.attendee && ticketId == null)) {
+      final result = await _getEventQrUsecase(
+        GetEventQrParams(eventId: resolvedEventId, action: 'CHECKIN'),
+      );
       result.fold((_) {}, (qrData) => qr = qrData);
     }
 
@@ -233,6 +244,11 @@ class MyQrController extends GetxController {
     }
     if (lower.contains('invalid qr')) {
       return 'Mã QR không hợp lệ.';
+    }
+    if (lower.contains('free attendee check-in') ||
+        lower.contains('do not require participant qr') ||
+        lower.contains('use event qr')) {
+      return 'Vé miễn phí không cần QR cá nhân. Hãy dùng QR sự kiện do ban tổ chức cung cấp.';
     }
 
     return rawMessage;

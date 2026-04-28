@@ -1,7 +1,6 @@
 import 'package:dartz/dartz.dart';
 import 'package:events_app/api_template/services/failure.dart';
 import 'package:events_app/feature/participant/domain/entity/participant_entity.dart';
-import 'package:events_app/feature/ticket/domain/entity/ticket_entity.dart';
 import 'package:events_app/feature/organizer/participant/domain/usecase/organizer_participant_params.dart';
 
 abstract class OrganizerParticipantRepository {
@@ -11,6 +10,4 @@ abstract class OrganizerParticipantRepository {
   Future<Either<FailureEntity, ParticipantEntity>> createParticipant(
       CreateOrganizerParticipantParams params);
   Future<Either<FailureEntity, Unit>> deleteParticipant(int id);
-  Future<Either<FailureEntity, List<TicketEntity>>> getTickets(
-      GetOrganizerTicketsParams params);
 }
