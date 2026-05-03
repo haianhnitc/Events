@@ -1,6 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:events_app/feature/common/domain/enum/app_enum.dart';
-import '../../domain/entity/verification_document_entity.dart';
+import 'package:events_app/feature/user_management/data/model/user_summary_model.dart';
+import 'package:events_app/feature/user_management/domain/entity/verification_document_entity.dart';
 
 part 'verification_document_model.freezed.dart';
 part 'verification_document_model.g.dart';
@@ -9,7 +10,7 @@ part 'verification_document_model.g.dart';
 class VerificationDocumentModel with _$VerificationDocumentModel {
   const factory VerificationDocumentModel({
     int? verificationDocumentId,
-    int? userId,
+    UserSummaryModel? userSummary,
     DocumentType? documentType,
     String? fileUrl,
     String? originalFileName,
@@ -23,7 +24,9 @@ class VerificationDocumentModel with _$VerificationDocumentModel {
       VerificationDocumentEntity entity) {
     return VerificationDocumentModel(
       verificationDocumentId: entity.verificationDocumentId,
-      userId: entity.userId,
+      userSummary: entity.userSummary != null
+          ? UserSummaryModel.fromEntity(entity.userSummary!)
+          : null,
       documentType: entity.documentType,
       fileUrl: entity.fileUrl,
       originalFileName: entity.originalFileName,
@@ -36,7 +39,7 @@ extension VerificationDocumentModelExtension on VerificationDocumentModel {
   VerificationDocumentEntity toEntity() {
     return VerificationDocumentEntity(
       verificationDocumentId: verificationDocumentId,
-      userId: userId,
+      userSummary: userSummary?.toEntity(),
       documentType: documentType,
       fileUrl: fileUrl,
       originalFileName: originalFileName,

@@ -47,6 +47,9 @@ class EventActionUtils {
     if (status == EventStatus.closed) {
       return const ActionButtonState(label: 'Đã kết thúc', isEnabled: false);
     }
+    if (status == EventStatus.locked) {
+      return const ActionButtonState(label: 'Đang bị khóa', isEnabled: false);
+    }
 
     if (endTime != null && currentTime.isAfter(endTime)) {
       return const ActionButtonState(label: 'Đã kết thúc', isEnabled: false);

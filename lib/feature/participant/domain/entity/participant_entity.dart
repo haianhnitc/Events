@@ -1,11 +1,9 @@
 import 'package:events_app/feature/common/domain/enum/app_enum.dart';
-import 'package:events_app/feature/event_management/domain/entity/event_summary_entity.dart';
 import 'package:events_app/feature/user_management/domain/entity/user_summary_entity.dart';
 
 class ParticipantEntity {
   final int? eventParticipantId;
   final int? eventId;
-  final EventSummaryEntity? event;
   final UserSummaryEntity? user;
   final String? participantQrContent;
   final DateTime? participantQrIssuedAt;
@@ -20,13 +18,12 @@ class ParticipantEntity {
   final bool? hasFeedback;
   final DateTime? feedbackSubmittedTime;
   final int? applicationId;
-  final int? recruitmentId; 
-  final String? eventTitle; 
+  final int? recruitmentId;
+  final String? eventTitle;
 
   ParticipantEntity({
     this.eventParticipantId,
     this.eventId,
-    this.event,
     this.user,
     this.participantQrContent,
     this.participantQrIssuedAt,
@@ -48,7 +45,6 @@ class ParticipantEntity {
   ParticipantEntity copyWith({
     int? eventParticipantId,
     int? eventId,
-    EventSummaryEntity? event,
     UserSummaryEntity? user,
     String? participantQrContent,
     DateTime? participantQrIssuedAt,
@@ -69,10 +65,10 @@ class ParticipantEntity {
     return ParticipantEntity(
       eventParticipantId: eventParticipantId ?? this.eventParticipantId,
       eventId: eventId ?? this.eventId,
-      event: event ?? this.event,
       user: user ?? this.user,
       participantQrContent: participantQrContent ?? this.participantQrContent,
-      participantQrIssuedAt: participantQrIssuedAt ?? this.participantQrIssuedAt,
+      participantQrIssuedAt:
+          participantQrIssuedAt ?? this.participantQrIssuedAt,
       participantType: participantType ?? this.participantType,
       ticketId: ticketId ?? this.ticketId,
       status: status ?? this.status,
@@ -82,7 +78,8 @@ class ParticipantEntity {
       isCheckOut: isCheckOut ?? this.isCheckOut,
       checkOutTime: checkOutTime ?? this.checkOutTime,
       hasFeedback: hasFeedback ?? this.hasFeedback,
-      feedbackSubmittedTime: feedbackSubmittedTime ?? this.feedbackSubmittedTime,
+      feedbackSubmittedTime:
+          feedbackSubmittedTime ?? this.feedbackSubmittedTime,
       applicationId: applicationId ?? this.applicationId,
       recruitmentId: recruitmentId ?? this.recruitmentId,
       eventTitle: eventTitle ?? this.eventTitle,

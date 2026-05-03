@@ -167,11 +167,11 @@ class _OrganizerDashboardPageState extends State<OrganizerDashboardPage> {
                   color: Colors.white.withOpacity(0.15),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Row(
+                child: const Row(
                   children: [
                     Icon(Icons.analytics_outlined,
                         color: Colors.white, size: 20),
-                    const SizedBox(width: 10),
+                    SizedBox(width: 10),
                     Expanded(
                       child: Text(
                         'Tổng quan tháng này',
@@ -643,7 +643,7 @@ class _OrganizerDashboardPageState extends State<OrganizerDashboardPage> {
               );
             }
             if (events.isEmpty) {
-              return OrganizerEmptyState(
+              return const OrganizerEmptyState(
                 message: 'Chưa có sự kiện nào',
                 icon: Icons.event_busy,
                 compact: true,
@@ -753,6 +753,8 @@ class _OrganizerDashboardPageState extends State<OrganizerDashboardPage> {
         return OrganizerStatusBadge.cancelled();
       case EventStatus.draft:
         return OrganizerStatusBadge.draft();
+      case EventStatus.locked:
+        return OrganizerStatusBadge.locked();
     }
   }
 }

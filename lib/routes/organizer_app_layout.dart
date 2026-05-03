@@ -10,7 +10,7 @@ import 'package:events_app/routes/navbar/organizer_nav_bar.dart';
 import 'package:events_app/routes/navbar/organizer_nav_bar_controller.dart';
 import 'package:events_app/routes/organizer_app_layout_controller.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 
 class OrganizerAppLayout extends StatelessWidget {
@@ -30,17 +30,11 @@ class OrganizerAppLayout extends StatelessWidget {
       appBar: AppBar(
         toolbarHeight: 61,
         backgroundColor: Colors.white,
-        elevation: 0,
-        leading: Padding(
-          padding: const EdgeInsets.only(left: 16),
-          child: SvgPicture.asset(
-            AssetPath.logoText,
-            height: 32,
-          ),
+        title: Image.asset(
+          AssetPath.linkLogo,
+          height: 40,
+          fit: BoxFit.contain,
         ),
-        leadingWidth: 120,
-        title: const SizedBox.shrink(),
-        centerTitle: true,
         actions: [
           Obx(() {
             final count = notifCtrl.unreadCount;
@@ -219,8 +213,8 @@ class OrganizerAppLayout extends StatelessWidget {
                           color: const Color(0xFFF59E0B).withOpacity(0.1),
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: const Icon(Icons.qr_code,
-                            color: Color(0xFFF59E0B)),
+                        child:
+                            const Icon(Icons.qr_code, color: Color(0xFFF59E0B)),
                       ),
                       title: const Text(
                         'Quét Barcode',
@@ -240,7 +234,8 @@ class OrganizerAppLayout extends StatelessWidget {
               if (eventId == null) {
                 await Get.to(() => const OrganizerQrScannerPage());
               } else {
-                final result = await Get.to(() => OrganizerQrScannerPage(eventId: eventId));
+                final result = await Get.to(
+                    () => OrganizerQrScannerPage(eventId: eventId));
                 if (result == true) {
                   AppSnackbarUtils.showSuccess(
                       'Thành công', 'Check-in đã được ghi nhận');
@@ -251,7 +246,8 @@ class OrganizerAppLayout extends StatelessWidget {
               if (eventId == null) {
                 await Get.to(() => const OrganizerBarcodeScannerPage());
               } else {
-                await Get.to(() => OrganizerBarcodeScannerPage(eventId: eventId));
+                await Get.to(
+                    () => OrganizerBarcodeScannerPage(eventId: eventId));
               }
             }
           },

@@ -1,5 +1,6 @@
-import 'package:events_app/feature/common/domain/enum/app_enum.dart';
 import 'package:events_app/common/presentation/widget/avatar_upload_widget.dart';
+import 'package:events_app/feature/common/domain/enum/app_enum.dart';
+import 'package:events_app/feature/common/presentation/widget/app_date_time_picker.dart';
 import 'package:events_app/feature/common/utils/app_date_utils.dart';
 import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
 import 'package:events_app/feature/event_management/domain/entity/event_summary_entity.dart';
@@ -98,30 +99,33 @@ class _OrganizerRecruitmentFormPageState
         }
         return SingleChildScrollView(
           padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (_selectedEvent != null) ...[
-                _buildEventInfoSection(),
+          child: Form(
+            key: _formCtrl.formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (_selectedEvent != null) ...[
+                  _buildEventInfoSection(),
+                  const SizedBox(height: 16),
+                ],
+                _buildEventSection(),
                 const SizedBox(height: 16),
+                _buildBannerSection(),
+                const SizedBox(height: 16),
+                _buildBasicSection(),
+                const SizedBox(height: 16),
+                _buildTimeSection(),
+                const SizedBox(height: 16),
+                _buildRewardSection(),
+                const SizedBox(height: 16),
+                _buildCategorySection(),
+                const SizedBox(height: 16),
+                _buildQuestionSection(),
+                const SizedBox(height: 20),
+                _buildPublishButton(),
+                const SizedBox(height: 24),
               ],
-              _buildEventSection(),
-              const SizedBox(height: 16),
-              _buildBannerSection(),
-              const SizedBox(height: 16),
-              _buildBasicSection(),
-              const SizedBox(height: 16),
-              _buildTimeSection(),
-              const SizedBox(height: 16),
-              _buildRewardSection(),
-              const SizedBox(height: 16),
-              _buildCategorySection(),
-              const SizedBox(height: 16),
-              _buildQuestionSection(),
-              const SizedBox(height: 20),
-              _buildPublishButton(),
-              const SizedBox(height: 24),
-            ],
+            ),
           ),
         );
       }),
@@ -230,8 +234,7 @@ class _OrganizerRecruitmentFormPageState
           _buildInfoRow('Tiêu đề sự kiện', ev.title ?? 'N/A'),
           const SizedBox(height: 8),
           if (ev.startTime != null) ...[
-            _buildInfoRow('Thời gian',
-                AppDateUtils.formatDate(ev.startTime!)),
+            _buildInfoRow('Thời gian', AppDateUtils.formatDate(ev.startTime!)),
             const SizedBox(height: 8),
           ],
           if (ev.capacity != null || ev.totalParticipants != null) ...[
@@ -312,6 +315,8 @@ class _OrganizerRecruitmentFormPageState
         return 'Đã đóng';
       case EventStatus.cancelled:
         return 'Đã hủy';
+      case EventStatus.locked:
+        return 'Bị khóa';
     }
   }
 
@@ -375,13 +380,13 @@ class _OrganizerRecruitmentFormPageState
                   fontWeight: FontWeight.w700,
                   color: Color(0xff273143))),
           const SizedBox(height: 14),
-          _buildDatePicker(
+          AppDateTimePicker(
             label: 'Mở đăng ký từ',
             value: _formCtrl.registerOpenTime.value,
             onChanged: _formCtrl.setRegisterOpenTime,
           ),
           const SizedBox(height: 12),
-          _buildDatePicker(
+          AppDateTimePicker(
             label: 'Thời gian bắt đầu chạy thử',
             value: _formCtrl.startTime.value,
             onChanged: _formCtrl.setStartTime,
@@ -765,7 +770,8 @@ class _OrganizerRecruitmentFormPageState
                   ),
                   const SizedBox(height: 16),
                   const Text('Loại câu hỏi',
-                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                      style:
+                          TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
                   const SizedBox(height: 8),
                   Obx(() => Wrap(
                         spacing: 8,
@@ -775,8 +781,10 @@ class _OrganizerRecruitmentFormPageState
                               typeRx, RequirementQuestionType.text, 'Text'),
                           _buildReqTypeChip(typeRx,
                               RequirementQuestionType.singleChoice, '1 chọn'),
-                          _buildReqTypeChip(typeRx,
-                              RequirementQuestionType.multipleChoice, 'Nhiều chọn'),
+                          _buildReqTypeChip(
+                              typeRx,
+                              RequirementQuestionType.multipleChoice,
+                              'Nhiều chọn'),
                           _buildReqTypeChip(typeRx,
                               RequirementQuestionType.rating, 'Đánh giá'),
                         ],
@@ -820,8 +828,9 @@ class _OrganizerRecruitmentFormPageState
                                     decoration: InputDecoration(
                                       hintText: 'Tùy chọn ${i + 1}',
                                       border: const OutlineInputBorder(),
-                                      contentPadding: const EdgeInsets.symmetric(
-                                          horizontal: 12, vertical: 10),
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                              horizontal: 12, vertical: 10),
                                     ),
                                   ),
                                 ),
@@ -982,69 +991,6 @@ class _OrganizerRecruitmentFormPageState
                 borderSide: BorderSide.none),
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDatePicker({
-    required String label,
-    required DateTime? value,
-    required void Function(DateTime?) onChanged,
-    String? Function(DateTime?)? validator,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label,
-            style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: Color(0xff475569))),
-        const SizedBox(height: 4),
-        GestureDetector(
-          onTap: () async {
-            final date = await showDatePicker(
-              context: context,
-              initialDate: DateTime.now().add(const Duration(days: 1)),
-              firstDate: DateTime.now(),
-              lastDate: DateTime.now().add(const Duration(days: 365)),
-            );
-            if (date != null) {
-              final time = await showTimePicker(
-                context: context,
-                initialTime: TimeOfDay.now(),
-              );
-              if (time != null) {
-                onChanged(DateTime(
-                    date.year, date.month, date.day, time.hour, time.minute));
-              } else {
-                onChanged(date);
-              }
-            }
-          },
-          child: Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade50,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.calendar_today,
-                    size: 16, color: Color(0xff94A3B8)),
-                const SizedBox(width: 8),
-                Text(
-                  value != null ? AppDateUtils.formatDate(value) : 'Chọn ngày',
-                  style: TextStyle(
-                      fontSize: 14,
-                      color: value != null
-                          ? const Color(0xff273143)
-                          : Colors.grey.shade400),
-                ),
-              ],
-            ),
           ),
         ),
       ],

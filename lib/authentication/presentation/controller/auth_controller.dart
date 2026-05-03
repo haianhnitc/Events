@@ -24,6 +24,7 @@ import 'package:events_app/feature/user_management/domain/entity/user_entity.dar
 import 'package:events_app/feature/user_management/domain/usecase/get_current_user_usecase.dart'
     as user_management;
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -118,6 +119,32 @@ class AuthController extends GetxController {
   bool _isLoggingOut = false;
 
   Stream<AuthEvent> get authEvents => _authEventController.stream;
+
+  /// In tests, set this static field to provide a mock FirebaseAuth.
+  @visibleForTesting
+  static FirebaseAuth? testFirebaseAuth;
+
+  /// Test-only factory: creates instance without calling Get.put().
+  @visibleForTesting
+  factory AuthController.internal() => AuthController._();
+
+  /// Creates an instance for normal (production) use.
+  factory AuthController() => AuthController._();
+
+  AuthController._();
+
+  @override
+  void onInit() {
+    super.onInit();
+    final auth = testFirebaseAuth ?? FirebaseAuth.instance;
+    _authStateSubscription = auth.authStateChanges().listen(
+      (user) {
+        if (user == null && currentUser.value != null && !_isLoggingOut) {
+          _emitAuthEvent(AuthEvent.sessionExpired);
+        }
+      },
+    );
+  }
 
   final SignInWithGoogleOnlyUsecase _signInWithGoogleOnlyUsecase =
       networkGetIt<SignInWithGoogleOnlyUsecase>();
@@ -216,18 +243,6 @@ class AuthController extends GetxController {
       Get.put(AuthController());
     }
     return Get.find<AuthController>();
-  }
-
-  @override
-  void onInit() {
-    super.onInit();
-    _authStateSubscription = FirebaseAuth.instance.authStateChanges().listen(
-      (user) {
-        if (user == null && currentUser.value != null && !_isLoggingOut) {
-          _emitAuthEvent(AuthEvent.sessionExpired);
-        }
-      },
-    );
   }
 
   @override
@@ -484,20 +499,25 @@ class AuthController extends GetxController {
     final formState = loginFormState;
     if (formState == null || !formState.validate()) return;
     if (isClosed) return;
-    await login();
+    if (formState.mounted) await login();
   }
 
   Future<void> submitRegister({required bool isStudent}) async {
-    final formKey =
-        isStudent ? registerStudentFormKey : registerOrganizerFormKey;
-    if (!formKey.currentState!.validate()) return;
-    await register();
+    final formState = isStudent
+        ? registerStudentFormKey.currentState
+        : registerOrganizerFormKey.currentState;
+    if (formState == null || !formState.validate()) return;
+    if (isClosed) return;
+    if (formState.mounted) await register();
   }
 
   Future<void> submitGoogleRegister({required bool isStudent}) async {
-    final formKey =
-        isStudent ? registerStudentFormKey : registerOrganizerFormKey;
-    if (!formKey.currentState!.validate()) return;
+    final formState = isStudent
+        ? registerStudentFormKey.currentState
+        : registerOrganizerFormKey.currentState;
+    if (formState == null || !formState.validate()) return;
+    if (isClosed) return;
+    if (!formState.mounted) return;
 
     final googleResult = googleAuthResult.value;
     if (googleResult.firebaseUid.isEmpty) {

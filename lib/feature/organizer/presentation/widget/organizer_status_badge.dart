@@ -62,7 +62,13 @@ class OrganizerStatusBadge extends StatelessWidget {
 
   factory OrganizerStatusBadge.cancelled() => const OrganizerStatusBadge(
         label: 'Đã hủy',
-        color: Color(0xff64748B),
+        color: Color(0xffEF4444),
+      );
+
+  factory OrganizerStatusBadge.locked() => const OrganizerStatusBadge(
+        label: 'Đã khóa',
+        color: Color(0xff7C3AED),
+        icon: Icons.lock,
       );
 
   factory OrganizerStatusBadge.pending() => const OrganizerStatusBadge(
@@ -99,6 +105,8 @@ class OrganizerStatusBadge extends StatelessWidget {
         return OrganizerStatusBadge.closed();
       case EventStatus.cancelled:
         return OrganizerStatusBadge.cancelled();
+      case EventStatus.locked:
+        return OrganizerStatusBadge.locked();
     }
   }
 }

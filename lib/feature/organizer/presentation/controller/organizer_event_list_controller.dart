@@ -121,6 +121,11 @@ class OrganizerEventListController extends GetxController {
   }
 
   Future<void> deleteEvent(int eventId) async {
+    final ev = events.firstWhereOrNull((e) => e.eventId == eventId);
+    if (ev?.status != EventStatus.draft && ev?.status != EventStatus.published) {
+      AppSnackbarUtils.showError('Không hợp lệ', 'Sự kiện ở trạng thái này không thể hủy.');
+      return;
+    }
     final confirmed = await Get.dialog<bool>(
       AlertDialog(
         title: const Text('Xác nhận hủy'),
@@ -157,6 +162,11 @@ class OrganizerEventListController extends GetxController {
   }
 
   Future<void> publishEvent(int eventId) async {
+    final ev = events.firstWhereOrNull((e) => e.eventId == eventId);
+    if (ev?.status != EventStatus.draft) {
+      AppSnackbarUtils.showError('Không hợp lệ', 'Chỉ sự kiện nháp mới có thể xuất bản.');
+      return;
+    }
     final result = await _publishEventUsecase(eventId);
     result.fold(
       (failure) => _handleFailure(failure),
@@ -171,6 +181,11 @@ class OrganizerEventListController extends GetxController {
   }
 
   Future<void> closeEvent(int eventId) async {
+    final ev = events.firstWhereOrNull((e) => e.eventId == eventId);
+    if (ev?.status != EventStatus.published) {
+      AppSnackbarUtils.showError('Không hợp lệ', 'Chỉ sự kiện đã xuất bản mới có thể đóng.');
+      return;
+    }
     final params = EventUpdateParams(status: EventStatus.closed);
     final result = await _updateEventUsecase(UpdateOrganizerEventParams(
       eventId: eventId,

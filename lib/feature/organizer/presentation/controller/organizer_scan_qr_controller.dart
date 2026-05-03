@@ -214,7 +214,14 @@ class OrganizerScanQrController extends GetxController with GetTickerProviderSta
     return null;
   }
 
-  bool _isQrExpired(String code) => false;
+  bool _isQrExpired(String code) {
+    final parts = code.split(':');
+    if (parts.length < 4) return true;
+    final timestamp = int.tryParse(parts[2]);
+    if (timestamp == null) return true;
+    final qrTime = DateTime.fromMillisecondsSinceEpoch(timestamp);
+    return DateTime.now().difference(qrTime).inMinutes > 60;
+  }
 
   Future<void> _handleCheckIn(String code) async {
     final eventParticipantId = _parseParticipantIdFromQr(code);

@@ -4,15 +4,48 @@ import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
 import 'package:events_app/dependency_injection/injection.dart';
 import 'package:events_app/feature/participant/domain/entity/participant_entity.dart';
 import 'package:events_app/feature/registration/domain/usecase/registration_usecase.dart';
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 
 class RegistrationController extends GetxController {
-  final CreateRegistrationUsecase _createRegistrationUsecase =
-      networkGetIt<CreateRegistrationUsecase>();
-  final GetMyRegistrationsUsecase _getMyRegistrationsUsecase =
-      networkGetIt<GetMyRegistrationsUsecase>();
-  final CancelRegistrationUsecase _cancelRegistrationUsecase =
-      networkGetIt<CancelRegistrationUsecase>();
+  final CreateRegistrationUsecase _createRegistrationUsecase;
+  final GetMyRegistrationsUsecase _getMyRegistrationsUsecase;
+  final CancelRegistrationUsecase _cancelRegistrationUsecase;
+  final int? Function() _getCurrentUserIdFn;
+
+  RegistrationController._({
+    required CreateRegistrationUsecase createRegistrationUsecase,
+    required GetMyRegistrationsUsecase getMyRegistrationsUsecase,
+    required CancelRegistrationUsecase cancelRegistrationUsecase,
+    required int? Function() getCurrentUserIdFn,
+  })  : _createRegistrationUsecase = createRegistrationUsecase,
+        _getMyRegistrationsUsecase = getMyRegistrationsUsecase,
+        _cancelRegistrationUsecase = cancelRegistrationUsecase,
+        _getCurrentUserIdFn = getCurrentUserIdFn;
+
+  factory RegistrationController() {
+    return RegistrationController._(
+      createRegistrationUsecase: networkGetIt<CreateRegistrationUsecase>(),
+      getMyRegistrationsUsecase: networkGetIt<GetMyRegistrationsUsecase>(),
+      cancelRegistrationUsecase: networkGetIt<CancelRegistrationUsecase>(),
+      getCurrentUserIdFn: () => AuthController.to.currentUser.value?.userId,
+    );
+  }
+
+  @visibleForTesting
+  static RegistrationController internal({
+    required CreateRegistrationUsecase createRegistrationUsecase,
+    required GetMyRegistrationsUsecase getMyRegistrationsUsecase,
+    required CancelRegistrationUsecase cancelRegistrationUsecase,
+    required AuthController Function() authControllerProvider,
+  }) {
+    return RegistrationController._(
+      createRegistrationUsecase: createRegistrationUsecase,
+      getMyRegistrationsUsecase: getMyRegistrationsUsecase,
+      cancelRegistrationUsecase: cancelRegistrationUsecase,
+      getCurrentUserIdFn: () => authControllerProvider().currentUser.value?.userId,
+    );
+  }
 
   final RxList<ParticipantEntity> registrations = <ParticipantEntity>[].obs;
   final RxBool isLoading = false.obs;
@@ -129,8 +162,7 @@ class RegistrationController extends GetxController {
   }
 
   int? _getCurrentUserId() {
-    final user = AuthController.to.currentUser.value;
-    return user?.userId;
+    return _getCurrentUserIdFn();
   }
 
   void _handleFailure(FailureEntity failure) {

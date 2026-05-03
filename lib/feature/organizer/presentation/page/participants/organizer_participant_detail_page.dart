@@ -109,7 +109,7 @@ class _OrganizerParticipantDetailPageState
     final email = user?.email ?? 'N/A';
     final avatar = user?.avatarUrl;
     final typeName = _participantTypeName(p.participantType);
-    final statusName = p.status?.name ?? 'REGISTERED';
+    final statusName = p.status?.apiValue ?? 'REGISTERED';
     final isCheckedIn = p.hasCheckedIn == true;
     final registeredTime = p.registeredTime != null
         ? AppDateUtils.formatDate(p.registeredTime!)
@@ -123,11 +123,11 @@ class _OrganizerParticipantDetailPageState
     String statusLabel;
     Color statusColor;
     switch (statusName) {
-      case 'attended':
+      case 'ATTENDED':
         statusLabel = 'Đã tham dự';
         statusColor = const Color(0xFF10B981);
         break;
-      case 'noShow':
+      case 'NOSHOW':
         statusLabel = 'Vắng mặt';
         statusColor = const Color(0xFFEF4444);
         break;
@@ -178,6 +178,11 @@ class _OrganizerParticipantDetailPageState
                 Text('Đăng ký: $registeredTime',
                     style:
                         TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+                const SizedBox(height: 4),
+                if (user?.joinedAt != null)
+                  Text(
+                      'Tham gia: ${AppDateUtils.formatDate(user!.joinedAt!)}',
+                      style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 6,
@@ -187,6 +192,8 @@ class _OrganizerParticipantDetailPageState
                     _buildChip(statusLabel, statusColor),
                     if (isCheckedIn)
                       _buildChip('Đã check-in', const Color(0xFF10B981)),
+                    if (user?.status == UserStatus.disabled)
+                      _buildChip('Tài khoản bị vô hiệu', const Color(0xFFEF4444)),
                   ],
                 ),
               ],

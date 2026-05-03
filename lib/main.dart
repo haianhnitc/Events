@@ -1,3 +1,4 @@
+import 'package:events_app/feature/event_management/presentation/page/event_detail_page.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:events_app/dependency_injection/injection.dart';
@@ -5,8 +6,7 @@ import 'package:events_app/authentication/presentation/pages/auth_gate.dart';
 import 'package:events_app/authentication/presentation/pages/google_register_screen.dart';
 import 'package:events_app/authentication/presentation/controller/auth_controller.dart';
 import 'package:events_app/feature/payment/presentation/page/transaction_history_page.dart';
-import 'package:events_app/feature/registration/presentation/page/my_registration_page.dart';
-import 'package:events_app/feature/ticket/presentation/page/my_ticket_page.dart';
+import 'package:events_app/feature/events/presentation/page/my_events_page.dart';
 import 'package:events_app/feature/feedback/presentation/page/feedback_page.dart';
 import 'package:events_app/api_template/event_network.dart';
 import 'package:events_app/firebase_options.dart';
@@ -60,12 +60,8 @@ class MyApp extends StatelessWidget {
           },
         ),
         GetPage(
-          name: '/my-registration',
-          page: () => const MyRegistrationPage(),
-        ),
-        GetPage(
-          name: '/my-ticket',
-          page: () => const MyTicketPage(),
+          name: '/my-events',
+          page: () => const MyEventsPage(),
         ),
         GetPage(
           name: '/transaction-history',
@@ -80,6 +76,13 @@ class MyApp extends StatelessWidget {
               eventTitle: args?['eventTitle'] as String?,
               checkOutContext: args?['checkOutContext'] as CheckOutContext?,
             );
+          },
+        ),
+        GetPage(
+          name: '/event-detail',
+          page: () {
+            final args = Get.arguments as Map<String, dynamic>?;
+            return EventDetailPage(eventId: args?['eventId'] as int?);
           },
         ),
       ],

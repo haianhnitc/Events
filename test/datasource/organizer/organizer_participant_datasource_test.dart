@@ -1,8 +1,8 @@
 import 'package:events_app/api_template/base_response/api_response.dart';
 import 'package:events_app/api_template/base_response/api_response_forwarder.dart';
+import 'package:events_app/api_template/services/rest_clients.dart';
 import 'package:events_app/feature/common/domain/enum/app_enum.dart';
 import 'package:events_app/feature/participant/data/model/participant_model.dart';
-import 'package:events_app/feature/ticket/data/model/ticket_model.dart';
 import 'package:events_app/feature/organizer/participant/data/datasource/organizer_participant_datasource.dart';
 import 'package:events_app/feature/organizer/participant/domain/usecase/organizer_participant_params.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -14,15 +14,13 @@ class TestOrganizerParticipantDatasource extends OrganizerParticipantDatasourceI
   ApiResponse<Map<String, dynamic>>? byIdStub;
   ApiResponse<Map<String, dynamic>>? createStub;
   ApiResponse<Map<String, dynamic>>? deleteStub;
-  ApiResponse<Map<String, dynamic>>? ticketsStub;
 
   TestOrganizerParticipantDatasource({
     this.participantsStub,
     this.byIdStub,
     this.createStub,
     this.deleteStub,
-    this.ticketsStub,
-  }) : super(client: null);
+  }) : super(client: StubRestClient());
 
   @override
   Future<ApiResponse<List<ParticipantModel>>> getParticipants({
@@ -112,37 +110,6 @@ class TestOrganizerParticipantDatasource extends OrganizerParticipantDatasourceI
       envelope,
       (_) => null,
       fallbackError: 'Xóa participant thất bại',
-    );
-  }
-
-  @override
-  Future<ApiResponse<List<TicketModel>>> getTickets({
-    int? eventId,
-    int page = 0,
-    int size = 20,
-  }) async {
-    final envelope = ticketsStub ??
-        ApiResponse.success({
-          'errorCode': 0,
-          'statusCode': 200,
-          'message': 'OK',
-          'object': {
-            'content': [fakeTicketJson(id: 1), fakeTicketJson(id: 2)],
-            'totalElements': 2,
-          },
-        });
-    return forwardEnvelopeResponse<List<TicketModel>>(
-      envelope,
-      (object) {
-        if (object is! Map<String, dynamic>) {
-          throw const FormatException('Invalid object payload');
-        }
-        final content = object['content'] as List<dynamic>? ?? [];
-        return content
-            .map((e) => TicketModel.fromJson(e as Map<String, dynamic>))
-            .toList();
-      },
-      fallbackError: 'Lấy danh sách vé thất bại',
     );
   }
 }
@@ -489,101 +456,6 @@ void main() {
           success: (_) => false,
           forbidden: (_) => true,
           unauthorized: (_) => false,
-          notFound: (_) => false,
-          badRequest: (_) => false,
-          conflict: (_) => false,
-          internalServerError: () => false,
-          badGateway: () => false,
-          serviceUnavailable: () => false,
-          gatewayTimeout: () => false,
-          canceled: () => false,
-          responseParsing: () => false,
-          unexpected: (_) => false,
-        ),
-        isTrue,
-      );
-    });
-  });
-
-  group('getTickets', () {
-    test('trả về list ticket khi thành công', () async {
-      final datasource = TestOrganizerParticipantDatasource(
-        ticketsStub: ApiResponse.success({
-          'errorCode': 0,
-          'statusCode': 200,
-          'message': 'OK',
-          'object': {
-            'content': [fakeTicketJson(id: 1), fakeTicketJson(id: 2)],
-            'totalElements': 2,
-          },
-        }),
-      );
-
-      final result = await datasource.getTickets(eventId: 1);
-
-      result.when(
-        success: (tickets) {
-          expect(tickets.length, equals(2));
-          expect(tickets.first.ticketId, equals(1));
-        },
-        unexpected: (_) => fail('Expected success'),
-        badRequest: (_) => fail('Expected success'),
-        unauthorized: (_) => fail('Expected success'),
-        forbidden: (_) => fail('Expected success'),
-        notFound: (_) => fail('Expected success'),
-        conflict: (_) => fail('Expected success'),
-        internalServerError: () => fail('Expected success'),
-        badGateway: () => fail('Expected success'),
-        serviceUnavailable: () => fail('Expected success'),
-        gatewayTimeout: () => fail('Expected success'),
-        canceled: () => fail('Expected success'),
-        responseParsing: () => fail('Expected success'),
-      );
-    });
-
-    test('trả về list rỗng khi không có ticket', () async {
-      final datasource = TestOrganizerParticipantDatasource(
-        ticketsStub: ApiResponse.success({
-          'errorCode': 0,
-          'statusCode': 200,
-          'message': 'OK',
-          'object': {'content': [], 'totalElements': 0},
-        }),
-      );
-
-      final result = await datasource.getTickets(eventId: 1);
-
-      result.when(
-        success: (tickets) => expect(tickets, isEmpty),
-        unexpected: (_) => fail('Expected success'),
-        badRequest: (_) => fail('Expected success'),
-        unauthorized: (_) => fail('Expected success'),
-        forbidden: (_) => fail('Expected success'),
-        notFound: (_) => fail('Expected success'),
-        conflict: (_) => fail('Expected success'),
-        internalServerError: () => fail('Expected success'),
-        badGateway: () => fail('Expected success'),
-        serviceUnavailable: () => fail('Expected success'),
-        gatewayTimeout: () => fail('Expected success'),
-        canceled: () => fail('Expected success'),
-        responseParsing: () => fail('Expected success'),
-      );
-    });
-
-    test('trả về unauthorized khi không có quyền', () async {
-      final datasource = TestOrganizerParticipantDatasource(
-        ticketsStub: const ApiResponse.unauthorized(
-          ApiResponseError(code: '401', message: 'Unauthorized', errors: []),
-        ),
-      );
-
-      final result = await datasource.getTickets(eventId: 1);
-
-      expect(
-        result.when(
-          success: (_) => false,
-          unauthorized: (_) => true,
-          forbidden: (_) => false,
           notFound: (_) => false,
           badRequest: (_) => false,
           conflict: (_) => false,

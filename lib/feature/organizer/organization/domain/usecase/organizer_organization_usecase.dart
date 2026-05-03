@@ -1,6 +1,5 @@
 import 'package:dartz/dartz.dart';
 import 'package:events_app/api_template/services/failure.dart';
-import 'package:events_app/common/helpers/no_params.dart';
 import 'package:events_app/common/helpers/use_case.dart';
 import 'package:events_app/feature/user_management/domain/entity/organization_profile_entity.dart';
 import 'package:events_app/feature/user_management/domain/entity/organization_dashboard_entity.dart';
@@ -34,13 +33,13 @@ class UpdateOrganizerProfileParams {
 
 @injectable
 class GetOrganizerDashboardUsecase
-    implements UseCase<OrganizationDashboardEntity, NoParams> {
+    implements UseCase<OrganizationDashboardEntity, int> {
   final OrganizerOrganizationRepository _repository;
   GetOrganizerDashboardUsecase(this._repository);
 
   @override
   Future<Either<FailureEntity, OrganizationDashboardEntity>> call(
-      NoParams _) async {
-    return await _repository.getDashboard();
+      int organizationId) async {
+    return await _repository.getDashboard(organizationId);
   }
 }

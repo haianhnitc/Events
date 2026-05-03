@@ -1,7 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:events_app/feature/participant/domain/entity/participant_entity.dart';
 import 'package:events_app/feature/common/domain/enum/app_enum.dart';
-import 'package:events_app/feature/event_management/data/model/event_summary_model.dart';
 import 'package:events_app/feature/user_management/data/model/user_summary_model.dart';
 
 part 'participant_model.freezed.dart';
@@ -12,7 +11,6 @@ class ParticipantModel with _$ParticipantModel {
   const factory ParticipantModel({
     int? eventParticipantId,
     int? eventId,
-    EventSummaryModel? event,
     UserSummaryModel? user,
     String? participantQrContent,
     DateTime? participantQrIssuedAt,
@@ -38,9 +36,6 @@ class ParticipantModel with _$ParticipantModel {
     return ParticipantModel(
       eventParticipantId: entity.eventParticipantId,
       eventId: entity.eventId,
-      event: entity.event != null
-          ? EventSummaryModel.fromEntity(entity.event!)
-          : null,
       user: entity.user != null
           ? UserSummaryModel.fromEntity(entity.user!)
           : null,
@@ -68,7 +63,6 @@ extension ParticipantModelExtension on ParticipantModel {
     return ParticipantEntity(
       eventParticipantId: eventParticipantId,
       eventId: eventId,
-      event: event?.toEntity(),
       user: user?.toEntity(),
       participantQrContent: participantQrContent,
       participantQrIssuedAt: participantQrIssuedAt,

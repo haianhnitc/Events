@@ -125,7 +125,8 @@ class _OrganizerEventListPageState extends State<OrganizerEventListPage>
                         child: LinearProgressIndicator(),
                       );
                     }
-                    final event = events[index - (_ctrl.isLoading.value ? 1 : 0)];
+                    final event =
+                        events[index - (_ctrl.isLoading.value ? 1 : 0)];
                     return _buildEventCard(event);
                   },
                 ),
@@ -144,7 +145,7 @@ class _OrganizerEventListPageState extends State<OrganizerEventListPage>
   }
 
   Widget _buildEventCard(EventSummaryEntity event) {
-    final badge = _getStatusBadge(event.status);
+    final badge = _getStatusBadge(event);
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -247,7 +248,7 @@ class _OrganizerEventListPageState extends State<OrganizerEventListPage>
                         _buildActionBtn(
                           icon: Icons.edit_outlined,
                           label: 'Sửa',
-                          enabled: event.status != EventStatus.published,
+                          enabled: event.status == EventStatus.draft,
                           onTap: () {
                             if (event.eventId != null) {
                               Get.to(() => OrganizerCreateEventPage(
@@ -296,11 +297,18 @@ class _OrganizerEventListPageState extends State<OrganizerEventListPage>
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 14, color: enabled ? const Color(0xff64748B) : Colors.grey.shade400),
+              Icon(icon,
+                  size: 14,
+                  color:
+                      enabled ? const Color(0xff64748B) : Colors.grey.shade400),
               const SizedBox(width: 4),
               Text(
                 label,
-                style: TextStyle(fontSize: 12, color: enabled ? const Color(0xff64748B) : Colors.grey.shade400),
+                style: TextStyle(
+                    fontSize: 12,
+                    color: enabled
+                        ? const Color(0xff64748B)
+                        : Colors.grey.shade400),
               ),
             ],
           ),
@@ -309,8 +317,14 @@ class _OrganizerEventListPageState extends State<OrganizerEventListPage>
     );
   }
 
-  OrganizerStatusBadge _getStatusBadge(status) {
+  OrganizerStatusBadge _getStatusBadge(EventSummaryEntity event) {
+    final status = event.status;
     if (status == null) return OrganizerStatusBadge.draft();
+
+    if (event.endTime != null && event.endTime!.isBefore(DateTime.now())) {
+      return OrganizerStatusBadge.closed();
+    }
+
     switch (status) {
       case EventStatus.published:
         return OrganizerStatusBadge.published();
@@ -320,6 +334,8 @@ class _OrganizerEventListPageState extends State<OrganizerEventListPage>
         return OrganizerStatusBadge.closed();
       case EventStatus.cancelled:
         return OrganizerStatusBadge.cancelled();
+      case EventStatus.locked:
+        return OrganizerStatusBadge.locked();
     }
     return OrganizerStatusBadge.draft();
   }
@@ -338,5 +354,4 @@ class _OrganizerEventListPageState extends State<OrganizerEventListPage>
         return null;
     }
   }
-
 }

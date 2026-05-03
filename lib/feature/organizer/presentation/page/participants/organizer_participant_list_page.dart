@@ -54,12 +54,14 @@ class _OrganizerParticipantListPageState
         subtitle: widget.eventTitle,
         actions: [
           IconButton(
-            icon: const Icon(Icons.person_add_outlined, color: Color(0xff64748B)),
+            icon:
+                const Icon(Icons.person_add_outlined, color: Color(0xff64748B)),
             tooltip: 'Thêm người tham gia',
             onPressed: () async {
               final recruitmentType = widget.recruitmentType;
               if (recruitmentType == null) {
-                AppSnackbarUtils.showError('Lỗi', 'Không xác định được loại tuyển dụng của sự kiện');
+                AppSnackbarUtils.showError(
+                    'Lỗi', 'Không xác định được loại tuyển dụng của sự kiện');
                 return;
               }
               final result = await showOrganizerInviteDialog(
@@ -88,7 +90,7 @@ class _OrganizerParticipantListPageState
                   onClear: () => setState(() {}),
                 ),
                 const SizedBox(height: 12),
-          Obx(() => _buildFilterChips()),
+                Obx(() => _buildFilterChips()),
               ],
             ),
           ),
@@ -108,7 +110,9 @@ class _OrganizerParticipantListPageState
           _buildFilterChip('Tất cả', _ctrl.filterType.value == null,
               () => _ctrl.setTypeFilter(null)),
           const SizedBox(width: 8),
-          _buildFilterChip('Người tham dự', _ctrl.filterType.value == 'ATTENDEE',
+          _buildFilterChip(
+              'Người tham dự',
+              _ctrl.filterType.value == 'ATTENDEE',
               () => _ctrl.setTypeFilter('ATTENDEE')),
           const SizedBox(width: 8),
           _buildFilterChip('CTV', _ctrl.filterType.value == 'CTV',
@@ -174,7 +178,7 @@ class _OrganizerParticipantListPageState
     }
     final participants = _ctrl.participants;
     if (participants.isEmpty) {
-      return OrganizerEmptyState(
+      return const OrganizerEmptyState(
         message: 'Chưa có người tham gia',
         description: 'Chưa có ai đăng ký sự kiện này',
         icon: Icons.people_outline,
@@ -206,11 +210,13 @@ class _OrganizerParticipantListPageState
       direction: DismissDirection.endToStart,
       confirmDismiss: (_) async {
         return await showOrganizerDeleteDialog(
-          context: context,
-          title: 'Xóa người tham gia',
-          message: 'Bạn có chắc muốn xóa ${p.user?.fullName ?? 'người này'} khỏi sự kiện? Hành động này không thể hoàn tác.',
-          confirmLabel: 'Xóa',
-        ) ?? false;
+              context: context,
+              title: 'Xóa người tham gia',
+              message:
+                  'Bạn có chắc muốn xóa ${p.user?.fullName ?? 'người này'} khỏi sự kiện? Hành động này không thể hoàn tác.',
+              confirmLabel: 'Xóa',
+            ) ??
+            false;
       },
       onDismissed: (_) {
         if (p.eventParticipantId != null) {
@@ -233,9 +239,9 @@ class _OrganizerParticipantListPageState
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
           boxShadow: const [
-                BoxShadow(
-                    color: Color(0x14000000), offset: Offset(0, 2), blurRadius: 6)
-              ],
+            BoxShadow(
+                color: Color(0x14000000), offset: Offset(0, 2), blurRadius: 6)
+          ],
         ),
         child: Material(
           color: Colors.transparent,
@@ -283,7 +289,8 @@ class _OrganizerParticipantListPageState
                             Expanded(
                               child: Text(p.user?.email ?? '',
                                   style: TextStyle(
-                                      fontSize: 11, color: Colors.grey.shade600),
+                                      fontSize: 11,
+                                      color: Colors.grey.shade600),
                                   overflow: TextOverflow.ellipsis),
                             ),
                           ],
@@ -295,11 +302,11 @@ class _OrganizerParticipantListPageState
                                 size: 12, color: Colors.grey.shade500),
                             const SizedBox(width: 4),
                             Text(
-                              p.registeredTime != null
-                                  ? AppDateUtils.formatDate(p.registeredTime!)
-                                  : '',
-                              style: TextStyle(
-                                  fontSize: 11, color: Colors.grey.shade600)),
+                                p.registeredTime != null
+                                    ? AppDateUtils.formatDate(p.registeredTime!)
+                                    : '',
+                                style: TextStyle(
+                                    fontSize: 11, color: Colors.grey.shade600)),
                           ],
                         ),
                       ],

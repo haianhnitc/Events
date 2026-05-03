@@ -97,7 +97,7 @@ class ApiPath {
 
   // organization
   static String organizationDetail(int id) => '/organizations/$id';
-  static const String organizationDashboard = '/organizations/me/dashboard';
+  static String organizationDashboardById(int id) => '/organizations/$id/dashboard';
 
   // news
   static const String news = '/news';

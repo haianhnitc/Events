@@ -114,14 +114,14 @@ class PermissionHelper {
     }
 
     try {
-      final status = await Permission.location.status;
+      final status = await Permission.locationWhenInUse.status;
 
       if (status.isGranted) {
         return PermissionResult.granted();
       }
 
       if (status.isDenied) {
-        final result = await Permission.location.request();
+        final result = await Permission.locationWhenInUse.request();
         return _mapStatusToResult(result, 'Location');
       }
 

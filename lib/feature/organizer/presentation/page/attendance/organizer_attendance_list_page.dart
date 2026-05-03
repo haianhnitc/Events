@@ -183,7 +183,7 @@ class _OrganizerAttendanceListPageState
               return TabBarView(
                 controller: _tabController,
                 children: [
-                  _buildLogList(null),
+                  _buildLogList(null, useAll: true),
                   _buildLogList(true),
                   _buildParticipantListUnchecked(),
                   _buildLogList('checkout'),
@@ -225,21 +225,25 @@ class _OrganizerAttendanceListPageState
     );
   }
 
-  Widget _buildLogList(Object? filter) {
+  Widget _buildLogList(Object? filter, {bool useAll = false}) {
     if (_attendanceCtrl.isLoading.value &&
         _attendanceCtrl.attendanceLogs.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
-    final allLogs = _attendanceCtrl.attendanceLogs;
+    final allLogs = useAll
+        ? _attendanceCtrl.allParticipantsAndLogs
+        : _attendanceCtrl.attendanceLogs;
     List<EventAttendanceLogEntity> filtered;
     if (filter == null) {
       filtered = allLogs;
     } else if (filter == 'checkout') {
-      filtered =
-          allLogs.where((l) => l.type == AttendanceLogType.checkOut).toList();
+      filtered = allLogs
+          .where((l) => l.type == AttendanceLogType.checkOut && l.eventAttendanceLogId != null)
+          .toList();
     } else {
       final isCheckedIn = filter as bool;
       filtered = allLogs.where((l) {
+        if (l.eventAttendanceLogId == null) return false;
         final isLogCheckIn = l.type == AttendanceLogType.checkIn;
         return isCheckedIn ? isLogCheckIn : !isLogCheckIn;
       }).toList();
@@ -411,9 +415,10 @@ class _OrganizerAttendanceListPageState
   }
 
   Widget _buildLogCard(log) {
-    final isCheckIn = log.type == AttendanceLogType.checkIn;
-    final isCheckOut = log.type == AttendanceLogType.checkOut;
-    final scanMethodName = _getScanMethodLabel(log.scanMethod ?? '');
+    final isPlaceholder = log.eventAttendanceLogId == null;
+    final isCheckIn = log.type == AttendanceLogType.checkIn && !isPlaceholder;
+    final isCheckOut = log.type == AttendanceLogType.checkOut && !isPlaceholder;
+    final scanMethodName = _getScanMethodLabel(log.scanMethod?.name ?? '');
     final scannedByName = log.scannedByUser?.fullName;
     final participant = log.eventParticipant;
     final user = participant?.user;

@@ -6,6 +6,7 @@ import 'package:events_app/authentication/presentation/controller/auth_controlle
 import 'package:events_app/authentication/presentation/pages/login_screen.dart';
 import 'package:events_app/authentication/presentation/pages/organizer_pending_approval_screen.dart';
 import 'package:events_app/authentication/presentation/pages/organizer_rejected_screen.dart';
+import 'package:events_app/common/path/asset_path.dart';
 import 'package:events_app/feature/common/domain/enum/app_enum.dart';
 import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
 import 'package:events_app/routes/organizer_app_layout.dart';
@@ -94,43 +95,50 @@ class _AuthGateState extends State<AuthGate> {
     return Obx(() {
       if (_authController.isLoadingSession.value) {
         return Scaffold(
-          backgroundColor: const Color(0xff06B6D4),
-          body: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  width: 72,
-                  height: 72,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(18),
+          body: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFF0F172A),
+                  Color(0xFF1E293B),
+                  Color(0xFF0F172A),
+                ],
+                stops: [0.0, 0.5, 1.0],
+              ),
+            ),
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset(
+                    AssetPath.linkLogo,
+                    height: 64,
                   ),
-                  child: const Icon(
-                    Icons.calendar_today_rounded,
-                    color: Colors.white,
-                    size: 36,
+                  const SizedBox(height: 32),
+                  const Text(
+                    'Đang tải...',
+                    style: TextStyle(
+                      color: Color(0xFFCBD5E1),
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                      letterSpacing: 0.3,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 20),
-                const Text(
-                  'Đang tải...',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: 22,
+                    height: 22,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        const Color(0xFF06B6D4),
+                      ),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                const SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         );

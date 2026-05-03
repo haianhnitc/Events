@@ -4,6 +4,7 @@ import 'package:events_app/api_template/services/failure.dart';
 import 'package:events_app/dependency_injection/injection.dart';
 import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
 import 'package:events_app/feature/recruitment/domain/entity/ctv_recruitment_entity.dart';
+import 'package:events_app/feature/organizer/presentation/page/recruitment/organizer_recruitment_list_page.dart';
 import 'package:events_app/feature/organizer/recruitment/domain/usecase/organizer_recruitment_usecase.dart';
 import 'package:events_app/feature/organizer/recruitment/domain/usecase/organizer_recruitment_params.dart';
 
@@ -209,8 +210,9 @@ class OrganizerRecruitmentFormController extends GetxController {
           'Thành công',
           isEditMode ? 'Cập nhật tuyển dụng thành công' : 'Tạo tuyển dụng thành công',
         );
+        Get.until((route) => route.isFirst);
+        Get.to(() => const OrganizerRecruitmentListPage());
         isSubmitting.value = false;
-        Get.back(result: r);
       },
     );
   }

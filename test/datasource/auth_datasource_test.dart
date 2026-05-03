@@ -1,59 +1,150 @@
+import 'package:events_app/api_template/base_request/api_request.dart';
+import 'package:events_app/api_template/base_response/api_response.dart';
+import 'package:events_app/api_template/base_response/api_response_forwarder.dart';
+import 'package:events_app/api_template/services/rest_clients.dart';
 import 'package:events_app/authentication/data/datasource/auth_datasource.dart';
 import 'package:events_app/authentication/domain/auth_constants.dart';
 import 'package:events_app/authentication/domain/usecase/signup_params.dart';
-import 'package:events_app/feature/common/domain/enum/app_enum.dart';
+import 'package:events_app/feature/user_management/data/model/user_model.dart';
+import 'package:events_app/feature/user_management/data/model/verification_document_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:mocktail/mocktail.dart';
 
-import '../helpers/api_request_matchers.dart';
 import '../helpers/fake_data.dart';
-import '../helpers/mock_rest_client.dart';
 import '../helpers/api_response_matchers.dart';
 
-// ─── Firebase mocks ────────────────────────────────────────────────────────────
 class MockFirebaseAuth extends Mock implements FirebaseAuth {}
+
 class MockUserCredential extends Mock implements UserCredential {}
+
 class MockFirebaseUser extends Mock implements User {}
+
 class MockAdditionalUserInfo extends Mock implements AdditionalUserInfo {}
+
 class MockGoogleSignIn extends Mock implements GoogleSignIn {}
+
 class MockGoogleSignInAccount extends Mock implements GoogleSignInAccount {}
-class MockGoogleSignInAuthentication extends Mock implements GoogleSignInAuthentication {}
-class MockFirebaseAuthException extends FirebaseAuthException {
-  MockFirebaseAuthException({required super.code, super.message});
+
+class MockGoogleSignInAuthentication extends Mock
+    implements GoogleSignInAuthentication {}
+
+class MockFirebaseAuthException implements FirebaseAuthException {
+  const MockFirebaseAuthException({required this.code, this.message});
+
+  @override
+  final String code;
+
+  @override
+  final String? message;
+
+  @override
+  String? get email => null;
+
+  @override
+  User? get user => null;
+
+  @override
+  AuthCredential? get credential => null;
 }
 
-// ─── Helper: build datasource với mock đã inject ──────────────────────────────
-AuthDatasourceImpl _buildDatasource({
-  required MockFirebaseAuth firebaseAuth,
-  required MockGoogleSignIn googleSignIn,
-  required MockRestClient restClient,
-}) {
-  return AuthDatasourceImpl(
-    firebaseAuth: firebaseAuth,
-    googleSignIn: googleSignIn,
-    client: restClient,
-  );
+/// Test RestClient that records requests and returns configured responses.
+class TestRestClient extends Fake implements RestClient {
+  ApiResponse<Map<String, dynamic>>? nextResponse;
+  final List<ApiRequest> requests = [];
+
+  void reset() {
+    nextResponse = null;
+    requests.clear();
+  }
+
+  @override
+  Future<ApiResponse<Model>> makeRequest<Model>(
+    ApiRequest request,
+    ResponseParser parser,
+    bool requireAuth,
+  ) async {
+    requests.add(request);
+    if (nextResponse != null) {
+      // Clone the response to avoid freezed issues on reuse
+      return _cloneResponse(nextResponse!);
+    }
+    return successEnvelope(null);
+  }
+
+  ApiResponse<Model> _cloneResponse<Model>(ApiResponse<Map<String, dynamic>> from) {
+    return from.when(
+      success: (_) => ApiResponse.success(parser(from.whenOrNull(success: (_) => _) ?? {})),
+      badRequest: (e) => ApiResponse.badRequest(e),
+      unauthorized: (e) => ApiResponse.unauthorized(e),
+      forbidden: (e) => ApiResponse.forbidden(e),
+      notFound: (e) => ApiResponse.notFound(e),
+      conflict: (e) => ApiResponse.conflict(e),
+      internalServerError: () => const ApiResponse.internalServerError(),
+      badGateway: () => const ApiResponse.badGateway(),
+      serviceUnavailable: () => const ApiResponse.serviceUnavailable(),
+      gatewayTimeout: () => const ApiResponse.gatewayTimeout(),
+      canceled: () => const ApiResponse.canceled(),
+      responseParsing: () => const ApiResponse.responseParsing(),
+      unexpected: (e) => ApiResponse.unexpected(e),
+    );
+  }
+
+  @override
+  Future<bool> checkNetwork() async => true;
+}
+
+/// Test datasource that lets us control REST responses via TestRestClient.
+class TestAuthDatasource extends AuthDatasourceImpl {
+  TestAuthDatasource({
+    required TestRestClient testClient,
+    required FirebaseAuth firebaseAuth,
+    required GoogleSignIn googleSignIn,
+  })  : _testClient = testClient,
+        super(
+          client: testClient,
+          firebaseAuth: firebaseAuth,
+          googleSignIn: googleSignIn,
+        );
+
+  final TestRestClient _testClient;
+
+  void stubResponse(ApiResponse<Map<String, dynamic>> response) {
+    _testClient.nextResponse = response;
+  }
+
+  void reset() {
+    _testClient.reset();
+  }
 }
 
 void main() {
   late MockFirebaseAuth mockFirebaseAuth;
   late MockGoogleSignIn mockGoogleSignIn;
-  late MockRestClient mockRestClient;
-  late AuthDatasourceImpl datasource;
-
-  setUpAll(registerFallbacks);
+  late TestRestClient testRestClient;
+  late TestAuthDatasource datasource;
 
   setUp(() {
     mockFirebaseAuth = MockFirebaseAuth();
     mockGoogleSignIn = MockGoogleSignIn();
-    mockRestClient = MockRestClient();
-    datasource = _buildDatasource(
+    testRestClient = TestRestClient();
+    datasource = TestAuthDatasource(
+      testClient: testRestClient,
       firebaseAuth: mockFirebaseAuth,
       googleSignIn: mockGoogleSignIn,
-      restClient: mockRestClient,
     );
+  });
+
+  setUpAll(() {
+    registerFallbackValue(
+      ApiRequest(
+        path: '/fallback',
+        type: ApiRequestType.get,
+        body: const ApiRequestBody.empty(),
+      ),
+    );
+    registerFallbackValue(Uri.parse('https://fallback'));
   });
 
   // ─── signInWithEmailAndPassword ──────────────────────────────────────────────
@@ -69,19 +160,19 @@ void main() {
       when(() => mockCred.user).thenReturn(mockUser);
       when(() => mockUser.getIdToken(any())).thenAnswer((_) async => 'fake-token');
 
-      stubRestClient(mockRestClient, successEnvelope(fakeUserJson()));
+      datasource.stubResponse(successEnvelope(fakeUserJson()));
 
       final result = await datasource.signInWithEmailAndPassword(
           'test@example.com', 'password123');
 
-      expect(result, isA<dynamic>());
+      expect(isSuccess(result), isTrue);
     });
 
     test('trả về unexpected khi Firebase ném FirebaseAuthException', () async {
       when(() => mockFirebaseAuth.signInWithEmailAndPassword(
             email: any(named: 'email'),
             password: any(named: 'password'),
-          )).thenThrow(MockFirebaseAuthException(
+          )).thenThrow(const MockFirebaseAuthException(
         code: 'wrong-password',
         message: 'Wrong password',
       ));
@@ -103,13 +194,10 @@ void main() {
       when(() => mockCred.user).thenReturn(mockUser);
       when(() => mockUser.getIdToken(any())).thenAnswer((_) async => 'fake-token');
 
-      stubRestClient(
-        mockRestClient,
-        successEnvelope(fakeUserJson(
-          role: 'ORGANIZATION',
-          verificationStatus: 'PENDING',
-        )),
-      );
+      datasource.stubResponse(successEnvelope(fakeUserJson(
+        role: 'ORGANIZATION',
+        verificationStatus: 'PENDING',
+      )));
 
       final result = await datasource.signInWithEmailAndPassword(
           'org@example.com', 'password');
@@ -143,13 +231,10 @@ void main() {
       when(() => mockCred.user).thenReturn(mockUser);
       when(() => mockUser.getIdToken(any())).thenAnswer((_) async => 'fake-token');
 
-      stubRestClient(
-        mockRestClient,
-        successEnvelope(fakeUserJson(
-          role: 'ORGANIZATION',
-          verificationStatus: 'REJECTED',
-        )),
-      );
+      datasource.stubResponse(successEnvelope(fakeUserJson(
+        role: 'ORGANIZATION',
+        verificationStatus: 'REJECTED',
+      )));
 
       final result = await datasource.signInWithEmailAndPassword(
           'org@example.com', 'password');
@@ -183,10 +268,7 @@ void main() {
       when(() => mockCred.user).thenReturn(mockUser);
       when(() => mockUser.getIdToken(any())).thenAnswer((_) async => 'fake-token');
 
-      stubRestClient(
-        mockRestClient,
-        successEnvelope(fakeUserJson(status: 'DISABLED')),
-      );
+      datasource.stubResponse(successEnvelope(fakeUserJson(status: 'DISABLED')));
 
       final result = await datasource.signInWithEmailAndPassword(
           'test@example.com', 'password');
@@ -234,7 +316,8 @@ void main() {
           )).thenAnswer((_) async => mockCred);
       when(() => mockCred.user).thenReturn(mockUser);
       when(() => mockUser.getIdToken(any())).thenAnswer((_) async => 'fake-token');
-      stubRestClient(mockRestClient, unauthorizedResponse());
+
+      datasource.stubResponse(unauthorizedResponse());
 
       final result = await datasource.signInWithEmailAndPassword(
           'test@example.com', 'password');
@@ -256,21 +339,21 @@ void main() {
       when(() => mockCred.user).thenReturn(mockUser);
       when(() => mockUser.getIdToken(any())).thenAnswer((_) async => 'fake-token');
 
-      stubRestClient(mockRestClient, successEnvelope(fakeUserJson()));
+      datasource.stubResponse(successEnvelope(fakeUserJson()));
 
       final result = await datasource.signUpWithEmailAndPassword(
         'password123',
         SignupParams(idToken: 'token', email: 'new@example.com', isUser: true),
       );
 
-      expect(result, isA<dynamic>());
+      expect(isSuccess(result), isTrue);
     });
 
     test('trả về unexpected khi Firebase ném exception khi tạo user', () async {
       when(() => mockFirebaseAuth.createUserWithEmailAndPassword(
             email: any(named: 'email'),
             password: any(named: 'password'),
-          )).thenThrow(MockFirebaseAuthException(
+          )).thenThrow(const MockFirebaseAuthException(
         code: 'email-already-in-use',
         message: 'Email already in use',
       ));
@@ -316,26 +399,26 @@ void main() {
 
       final result = await datasource.signInWithGoogleOnly();
 
-      expect(result.errorCode, isNotNull);
+      expect(result.errorCode, equals('EXCEPTION'));
     });
   });
 
   // ─── signOut ─────────────────────────────────────────────────────────────────
   group('signOut', () {
     test('trả về success khi backend và Firebase signout thành công', () async {
-      stubRestClient(mockRestClient, successEnvelope(null));
+      datasource.stubResponse(successEnvelope(null));
       when(() => mockFirebaseAuth.signOut()).thenAnswer((_) async {});
       when(() => mockGoogleSignIn.signOut()).thenAnswer((_) async => null);
 
       final result = await datasource.signOut();
 
-      expect(result, isA<dynamic>());
+      expect(isSuccess(result), isTrue);
       verify(() => mockFirebaseAuth.signOut()).called(1);
       verify(() => mockGoogleSignIn.signOut()).called(1);
     });
 
     test('trả về unexpected khi Firebase ném exception khi signOut', () async {
-      stubRestClient(mockRestClient, successEnvelope(null));
+      datasource.stubResponse(successEnvelope(null));
       when(() => mockFirebaseAuth.signOut()).thenThrow(Exception('Firebase error'));
       when(() => mockGoogleSignIn.signOut()).thenAnswer((_) async => null);
 
@@ -354,6 +437,7 @@ void main() {
 
       result.when(
         success: (user) => expect(user, isNull),
+        unexpected: (_) => fail('Expected success'),
         badRequest: (_) => fail('Expected success'),
         unauthorized: (_) => fail('Expected success'),
         forbidden: (_) => fail('Expected success'),
@@ -365,7 +449,6 @@ void main() {
         gatewayTimeout: () => fail('Expected success'),
         canceled: () => fail('Expected success'),
         responseParsing: () => fail('Expected success'),
-        unexpected: (_) => fail('Expected success'),
       );
     });
 
@@ -375,11 +458,11 @@ void main() {
       when(() => mockFirebaseAuth.currentUser).thenReturn(mockUser);
       when(() => mockUser.getIdToken(any())).thenAnswer((_) async => 'token');
 
-      stubRestClient(mockRestClient, successEnvelope(fakeUserJson()));
+      datasource.stubResponse(successEnvelope(fakeUserJson()));
 
       final result = await datasource.getCurrentUser();
 
-      expect(result, isA<dynamic>());
+      expect(isSuccess(result), isTrue);
     });
   });
 
@@ -392,13 +475,13 @@ void main() {
 
       final result = await datasource.sendPasswordResetEmail('test@example.com');
 
-      expect(result, isA<dynamic>());
+      expect(isSuccess(result), isTrue);
     });
 
     test('trả về unexpected khi Firebase ném exception', () async {
       when(() => mockFirebaseAuth.sendPasswordResetEmail(
             email: any(named: 'email'),
-          )).thenThrow(MockFirebaseAuthException(
+          )).thenThrow(const MockFirebaseAuthException(
         code: 'user-not-found',
         message: 'User not found',
       ));
@@ -412,18 +495,16 @@ void main() {
   // ─── getMyVerificationDocuments ──────────────────────────────────────────────
   group('getMyVerificationDocuments', () {
     test('trả về list document khi thành công', () async {
-      stubRestClient(
-        mockRestClient,
-        successEnvelope({
-          'content': [fakeVerificationDocumentJson(), fakeVerificationDocumentJson(id: 2)],
-          'totalElements': 2,
-        }),
-      );
+      datasource.stubResponse(successEnvelope({
+        'content': [fakeVerificationDocumentJson(), fakeVerificationDocumentJson(id: 2)],
+        'totalElements': 2,
+      }));
 
       final result = await datasource.getMyVerificationDocuments();
 
       result.when(
         success: (docs) => expect(docs.length, equals(2)),
+        unexpected: (_) => fail('Expected success'),
         badRequest: (_) => fail('Expected success'),
         unauthorized: (_) => fail('Expected success'),
         forbidden: (_) => fail('Expected success'),
@@ -435,12 +516,11 @@ void main() {
         gatewayTimeout: () => fail('Expected success'),
         canceled: () => fail('Expected success'),
         responseParsing: () => fail('Expected success'),
-        unexpected: (_) => fail('Expected success'),
       );
     });
 
     test('trả về unauthorized khi backend 401', () async {
-      stubRestClient(mockRestClient, unauthorizedResponse());
+      datasource.stubResponse(unauthorizedResponse());
 
       final result = await datasource.getMyVerificationDocuments();
 

@@ -21,8 +21,9 @@ class _PackageListPageState extends State<PackageListPage>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     ctrl = Get.put(PackageListController());
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 3, vsync: this, initialIndex: 0);
     _tabController.addListener(_onTabChanged);
+    ctrl.onTabChanged(0);
   }
 
   @override
@@ -128,10 +129,10 @@ class _PackageListPageState extends State<PackageListPage>
   }
 
   Widget _buildMyPackagesTab() {
-    final activePackages =
-        ctrl.myPackages.where((p) => p.status == UserPackageStatus.active).toList();
-
     return Obx(() {
+      final activePackages =
+          ctrl.myPackages.where((p) => p.status == UserPackageStatus.active).toList();
+
       if (ctrl.isLoadingMyPackages.value && ctrl.myPackages.isEmpty) {
         return const Center(child: CircularProgressIndicator());
       }

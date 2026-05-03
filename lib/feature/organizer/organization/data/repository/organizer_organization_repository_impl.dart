@@ -24,8 +24,8 @@ class OrganizerOrganizationRepositoryImpl implements OrganizerOrganizationReposi
   }
 
   @override
-  Future<Either<FailureEntity, OrganizationDashboardEntity>> getDashboard() async {
-    final response = await _datasource.getDashboard();
+  Future<Either<FailureEntity, OrganizationDashboardEntity>> getDashboard(int organizationId) async {
+    final response = await _datasource.getDashboard(organizationId);
     return response.toEitherNullable().map((m) => m.toEntity());
   }
 }

@@ -195,6 +195,9 @@ class _OrganizerEventDetailPageState extends State<OrganizerEventDetailPage> {
     } else if (status == EventStatus.closed) {
       statusText = 'Đã đóng';
       statusBadge = OrganizerStatusBadge.closed();
+    } else if (status == EventStatus.locked) {
+      statusText = 'Bị khóa';
+      statusBadge = OrganizerStatusBadge.locked();
     }
 
     return Column(
@@ -468,9 +471,32 @@ class _OrganizerEventDetailPageState extends State<OrganizerEventDetailPage> {
   Widget _buildActionButtons(EventEntity event) {
     final isDraft = event.status == EventStatus.draft;
     final isPublished = event.status == EventStatus.published;
+    final isLocked = event.status == EventStatus.locked;
+    final isClosed = event.status == EventStatus.closed;
+    final isCancelled = event.status == EventStatus.cancelled;
 
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        if (isLocked)
+          _buildStatusWarningBanner(
+            icon: Icons.lock_outline,
+            message: 'Sự kiện bị khóa. Chỉ quản trị viên mới có thể mở khóa.',
+            color: const Color(0xFFEF4444),
+          ),
+        if (isClosed)
+          _buildStatusWarningBanner(
+            icon: Icons.event_busy,
+            message: 'Sự kiện đã đóng. Không thể nhận đăng ký mới.',
+            color: const Color(0xFFF59E0B),
+          ),
+        if (isCancelled)
+          _buildStatusWarningBanner(
+            icon: Icons.cancel_outlined,
+            message: 'Sự kiện đã bị hủy.',
+            color: const Color(0xFF6B7280),
+          ),
+        if (isLocked || isClosed || isCancelled) const SizedBox(height: 12),
         Row(
           children: [
             Expanded(
@@ -585,6 +611,34 @@ class _OrganizerEventDetailPageState extends State<OrganizerEventDetailPage> {
                   : () => _handleCancel(),
             )),
       ],
+    );
+  }
+
+  Widget _buildStatusWarningBanner({
+    required IconData icon,
+    required String message,
+    required Color color,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: color),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              message,
+              style: TextStyle(fontSize: 13, color: color, fontWeight: FontWeight.w500),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

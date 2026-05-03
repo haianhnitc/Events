@@ -6,13 +6,36 @@ import 'package:events_app/feature/feedback/domain/usecase/feedback_usecase.dart
 import 'package:events_app/feature/feedback/domain/usecase/feedback_usecase_params.dart';
 import 'package:events_app/feature/feedback/domain/usecase/submit_feedback_params.dart';
 import 'package:events_app/feature/common/domain/enum/app_enum.dart';
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 
 class FeedbackController extends GetxController {
-  final GetFeedbackQuestionsUsecase _getQuestionsUsecase =
-      networkGetIt<GetFeedbackQuestionsUsecase>();
-  final SubmitFeedbackUsecase _submitFeedbackUsecase =
-      networkGetIt<SubmitFeedbackUsecase>();
+  final GetFeedbackQuestionsUsecase _getQuestionsUsecase;
+  final SubmitFeedbackUsecase _submitFeedbackUsecase;
+
+  FeedbackController._({
+    required GetFeedbackQuestionsUsecase getQuestionsUsecase,
+    required SubmitFeedbackUsecase submitFeedbackUsecase,
+  })  : _getQuestionsUsecase = getQuestionsUsecase,
+        _submitFeedbackUsecase = submitFeedbackUsecase;
+
+  factory FeedbackController() {
+    return FeedbackController._(
+      getQuestionsUsecase: networkGetIt<GetFeedbackQuestionsUsecase>(),
+      submitFeedbackUsecase: networkGetIt<SubmitFeedbackUsecase>(),
+    );
+  }
+
+  @visibleForTesting
+  static FeedbackController internal({
+    required GetFeedbackQuestionsUsecase getQuestionsUsecase,
+    required SubmitFeedbackUsecase submitFeedbackUsecase,
+  }) {
+    return FeedbackController._(
+      getQuestionsUsecase: getQuestionsUsecase,
+      submitFeedbackUsecase: submitFeedbackUsecase,
+    );
+  }
 
   final RxList<FeedbackQuestionEntity> questions =
       <FeedbackQuestionEntity>[].obs;

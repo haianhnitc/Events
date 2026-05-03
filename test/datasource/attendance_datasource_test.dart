@@ -71,7 +71,7 @@ class TestAttendanceDatasource extends AttendanceDatasourceImpl {
           'errorCode': 0,
           'statusCode': 200,
           'message': 'OK',
-          'object': fakeScanResultJson(action: params.action.apiValue),
+          'object': fakeScanResultJson(action: 'CHECKIN'),
         });
     return forwardEnvelopeResponse<AttendanceScanResultModel>(
       envelope,
@@ -255,7 +255,7 @@ void main() {
 
       final params = ScanQrParams(
         qrContent: 'QR_CONTENT_ABC',
-        action: AttendanceAction.checkIn,
+        eventParticipantId: 42,
       );
 
       final result = await datasource.scanQr(params);
@@ -292,7 +292,7 @@ void main() {
 
       final params = ScanQrParams(
         qrContent: 'QR_CONTENT_ABC',
-        action: AttendanceAction.checkOut,
+        eventParticipantId: 42,
       );
 
       final result = await datasource.scanQr(params);
@@ -325,7 +325,7 @@ void main() {
 
       final params = ScanQrParams(
         qrContent: 'INVALID_QR',
-        action: AttendanceAction.checkIn,
+        eventParticipantId: 42,
       );
 
       final result = await datasource.scanQr(params);
@@ -359,7 +359,7 @@ void main() {
 
       final params = ScanQrParams(
         qrContent: 'QR_CONTENT_ABC',
-        action: AttendanceAction.checkIn,
+        eventParticipantId: 42,
       );
 
       final result = await datasource.scanQr(params);
@@ -393,7 +393,7 @@ void main() {
 
       final params = ScanQrParams(
         qrContent: 'QR_CONTENT_ABC',
-        action: AttendanceAction.checkIn,
+        eventParticipantId: 42,
       );
 
       final result = await datasource.scanQr(params);
@@ -430,7 +430,7 @@ void main() {
 
       final params = ScanQrParams(
         qrContent: 'QR_CONTENT_ABC',
-        action: AttendanceAction.checkIn,
+        eventParticipantId: 42,
       );
 
       final result = await datasource.scanQr(params);
@@ -462,7 +462,7 @@ void main() {
 
       final params = ScanQrParams(
         qrContent: 'QR_CONTENT_ABC',
-        action: AttendanceAction.checkIn,
+        eventParticipantId: 42,
       );
 
       final result = await datasource.scanQr(params);

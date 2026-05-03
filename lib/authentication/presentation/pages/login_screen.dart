@@ -5,7 +5,7 @@ import 'package:events_app/common/path/asset_path.dart';
 import 'package:events_app/authentication/presentation/controller/auth_controller.dart';
 import 'package:events_app/authentication/presentation/pages/forgot_password_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 
 class LoginScreen extends StatelessWidget {
@@ -44,14 +44,11 @@ class LoginScreen extends StatelessWidget {
             color: const Color(0xff06B6D4),
             borderRadius: BorderRadius.circular(16),
           ),
-          child: SvgPicture.asset(
-            AssetPath.logo,
-            width: 32,
-            height: 32,
-            colorFilter: const ColorFilter.mode(
-              Colors.white,
-              BlendMode.srcIn,
-            ),
+          child: Image.asset(
+            AssetPath.linkLogo,
+            width: 40,
+            height: 40,
+            color: Colors.white,
           ),
         ),
         const SizedBox(height: 20),
@@ -136,103 +133,106 @@ class _LoginFormState extends State<_LoginForm> {
     return Form(
       key: _formKey,
       child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              CustomTextField(
-                controller: authController.loginEmailController,
-                labelText: 'Email',
-                hintText: 'Nhập email của bạn',
-                keyboardType: TextInputType.emailAddress,
-                textInputAction: TextInputAction.next,
-                prefixIcon: const Icon(Icons.mail_outline, size: 20, color: Color(0xff94A3B8)),
-                validator: authController.validateEmail,
-              ),
-              const SizedBox(height: 16),
-              Obx(
-                () => CustomTextField(
-                  controller: authController.loginPasswordController,
-                  labelText: 'Mật khẩu',
-                  hintText: 'Nhập mật khẩu',
-                  obscureText: authController.loginObscurePassword.value,
-                  textInputAction: TextInputAction.done,
-                  prefixIcon: const Icon(Icons.lock_outline, size: 20, color: Color(0xff94A3B8)),
-                  suffixIcon: IconButton(
-                    onPressed: authController.toggleLoginPasswordVisibility,
-                    icon: Icon(
-                      authController.loginObscurePassword.value
-                          ? Icons.visibility_off_outlined
-                          : Icons.visibility_outlined,
-                      size: 20,
-                      color: const Color(0xff94A3B8),
-                    ),
-                  ),
-                  validator: authController.validateLoginPassword,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: () => Get.to(() => const ForgotPasswordScreen()),
-                  style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                  ),
-                  child: const Text(
-                    'Quên mật khẩu?',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Color(0xff64748B),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              _buildSubmitButton(authController),
-              const SizedBox(height: 16),
-              _buildDivider(),
-              const SizedBox(height: 16),
-              _buildGoogleButton(authController),
-            ],
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          CustomTextField(
+            controller: authController.loginEmailController,
+            labelText: 'Email',
+            hintText: 'Nhập email của bạn',
+            keyboardType: TextInputType.emailAddress,
+            textInputAction: TextInputAction.next,
+            prefixIcon: const Icon(Icons.mail_outline,
+                size: 20, color: Color(0xff94A3B8)),
+            validator: authController.validateEmail,
           ),
-        );
+          const SizedBox(height: 16),
+          Obx(
+            () => CustomTextField(
+              controller: authController.loginPasswordController,
+              labelText: 'Mật khẩu',
+              hintText: 'Nhập mật khẩu',
+              obscureText: authController.loginObscurePassword.value,
+              textInputAction: TextInputAction.done,
+              prefixIcon: const Icon(Icons.lock_outline,
+                  size: 20, color: Color(0xff94A3B8)),
+              suffixIcon: IconButton(
+                onPressed: authController.toggleLoginPasswordVisibility,
+                icon: Icon(
+                  authController.loginObscurePassword.value
+                      ? Icons.visibility_off_outlined
+                      : Icons.visibility_outlined,
+                  size: 20,
+                  color: const Color(0xff94A3B8),
+                ),
+              ),
+              validator: authController.validateLoginPassword,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(
+              onPressed: () => Get.to(() => const ForgotPasswordScreen()),
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+              ),
+              child: const Text(
+                'Quên mật khẩu?',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Color(0xff64748B),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          _buildSubmitButton(authController),
+          const SizedBox(height: 16),
+          _buildDivider(),
+          const SizedBox(height: 16),
+          _buildGoogleButton(authController),
+        ],
+      ),
+    );
   }
 
   Widget _buildSubmitButton(AuthController authController) {
     return SizedBox(
       height: 48,
       child: Obx(() => ElevatedButton(
-        onPressed: authController.isLoadingEmail.value
-            ? null
-            : authController.submitLogin,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xff06B6D4),
-          foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-          elevation: 0,
-        ),
-        child: authController.isLoadingEmail.value
-            ? const SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: Colors.white,
-                ),
-              )
-            : const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'Đăng nhập',
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-                  ),
-                  SizedBox(width: 4),
-                  Icon(Icons.arrow_forward, size: 18),
-                ],
+            onPressed: authController.isLoadingEmail.value
+                ? null
+                : authController.submitLogin,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xff06B6D4),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
               ),
-      )),
+              elevation: 0,
+            ),
+            child: authController.isLoadingEmail.value
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                : const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Đăng nhập',
+                        style: TextStyle(
+                            fontSize: 15, fontWeight: FontWeight.w600),
+                      ),
+                      SizedBox(width: 4),
+                      Icon(Icons.arrow_forward, size: 18),
+                    ],
+                  ),
+          )),
     );
   }
 
@@ -254,47 +254,47 @@ class _LoginFormState extends State<_LoginForm> {
 
   Widget _buildGoogleButton(AuthController authController) {
     return Obx(() => SizedBox(
-      height: 48,
-      child: OutlinedButton(
-        onPressed: authController.isLoadingEmail.value
-            ? null
-            : () async {
-                final result = await authController.signInWithGoogle();
-                if (result == AuthSignInResult.success) {
-                  Get.offAll(() => AppLayout());
-                }
-              },
-        style: OutlinedButton.styleFrom(
-          backgroundColor: Colors.white,
-          foregroundColor: Colors.black87,
-          disabledBackgroundColor: Colors.grey.shade100,
-          disabledForegroundColor: Colors.grey.shade400,
-          side: BorderSide(color: Colors.grey.shade300),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-          elevation: 0,
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (authController.isLoadingGoogle.value)
-              const SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
-            else ...[
-              SvgPicture.asset(AssetPath.googleIcon, height: 20),
-              const SizedBox(width: 10),
-              const Text(
-                'Google',
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+          height: 48,
+          child: OutlinedButton(
+            onPressed: authController.isLoadingEmail.value
+                ? null
+                : () async {
+                    final result = await authController.signInWithGoogle();
+                    if (result == AuthSignInResult.success) {
+                      Get.offAll(() => AppLayout());
+                    }
+                  },
+            style: OutlinedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: Colors.black87,
+              disabledBackgroundColor: Colors.grey.shade100,
+              disabledForegroundColor: Colors.grey.shade400,
+              side: BorderSide(color: Colors.grey.shade300),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
               ),
-            ],
-          ],
-        ),
-      ),
-    ));
+              elevation: 0,
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (authController.isLoadingGoogle.value)
+                  const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                else ...[
+                  SvgPicture.asset(AssetPath.googleIcon, height: 20),
+                  const SizedBox(width: 10),
+                  const Text(
+                    'Google',
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ));
   }
 }

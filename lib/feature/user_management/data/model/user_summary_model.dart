@@ -13,6 +13,8 @@ class UserSummaryModel with _$UserSummaryModel {
     String? email,
     String? avatarUrl,
     UserRole? role,
+    UserStatus? status,
+    DateTime? joinedAt,
   }) = _UserSummaryModel;
 
   factory UserSummaryModel.fromJson(Map<String, dynamic> json) =>
@@ -25,6 +27,8 @@ class UserSummaryModel with _$UserSummaryModel {
       email: entity.email,
       avatarUrl: entity.avatarUrl,
       role: entity.role,
+      status: entity.status,
+      joinedAt: entity.joinedAt,
     );
   }
 }
@@ -37,6 +41,8 @@ extension UserSummaryModelExtension on UserSummaryModel {
       email: email,
       avatarUrl: avatarUrl,
       role: role,
+      status: status,
+      joinedAt: joinedAt,
     );
   }
 }

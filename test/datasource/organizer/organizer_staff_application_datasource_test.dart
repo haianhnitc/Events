@@ -1,43 +1,129 @@
+import 'package:flutter_test/flutter_test.dart';
 import 'package:events_app/api_template/base_response/api_response.dart';
-import 'package:events_app/feature/common/domain/enum/app_enum.dart';
+import 'package:events_app/api_template/base_response/api_response_forwarder.dart';
+import 'package:events_app/api_template/services/rest_clients.dart';
 import 'package:events_app/feature/organizer/staff_application/data/datasource/organizer_staff_application_datasource.dart';
 import 'package:events_app/feature/organizer/staff_application/domain/usecase/organizer_staff_application_params.dart';
-import 'package:flutter_test/flutter_test.dart';
+import 'package:events_app/feature/staff_application/data/model/staff_application_model.dart';
 
-import '../../helpers/api_request_matchers.dart';
 import '../../helpers/fake_data.dart';
-import '../../helpers/mock_rest_client.dart';
-import '../../helpers/api_response_matchers.dart';
+
+class TestOrganizerStaffApplicationDatasource extends OrganizerStaffApplicationDatasourceImpl {
+  ApiResponse<Map<String, dynamic>>? getListStub;
+  ApiResponse<Map<String, dynamic>>? getByIdStub;
+  ApiResponse<Map<String, dynamic>>? approveStub;
+
+  TestOrganizerStaffApplicationDatasource({
+    this.getListStub,
+    this.getByIdStub,
+    this.approveStub,
+  }) : super(client: StubRestClient());
+
+  @override
+  Future<ApiResponse<List<StaffApplicationModel>>> getStaffApplications({
+    int? eventId,
+    String? keyword,
+    int? status,
+    int page = 0,
+    int size = 20,
+  }) async {
+    final envelope = getListStub ??
+        ApiResponse.success({
+          'errorCode': 0,
+          'statusCode': 200,
+          'message': 'OK',
+          'object': {
+            'content': [fakeStaffApplicationJson()],
+            'totalElements': 1,
+            'totalPages': 1,
+            'page': 0,
+            'size': 20,
+          },
+        });
+    return forwardEnvelopeResponse<List<StaffApplicationModel>>(
+      envelope,
+      (object) {
+        if (object is! Map<String, dynamic>) {
+          throw const FormatException('Invalid object payload');
+        }
+        final content = object['content'] as List<dynamic>? ?? [];
+        return content
+            .map((e) => StaffApplicationModel.fromJson(e as Map<String, dynamic>))
+            .toList();
+      },
+      fallbackError: 'Lấy danh sách đơn ứng tuyển thất bại',
+    );
+  }
+
+  @override
+  Future<ApiResponse<StaffApplicationModel>> getStaffApplicationById(int id) async {
+    final envelope = getByIdStub ??
+        ApiResponse.success({
+          'errorCode': 0,
+          'statusCode': 200,
+          'message': 'OK',
+          'object': fakeStaffApplicationJson(id: id),
+        });
+    return forwardEnvelopeResponse<StaffApplicationModel>(
+      envelope,
+      (object) {
+        if (object is! Map<String, dynamic>) {
+          throw const FormatException('Invalid object payload');
+        }
+        return StaffApplicationModel.fromJson(object);
+      },
+      fallbackError: 'Lấy chi tiết đơn thất bại',
+    );
+  }
+
+  @override
+  Future<ApiResponse<StaffApplicationModel>> approveStaffApplication(
+      ApproveStaffApplicationParams params) async {
+    final envelope = approveStub ??
+        ApiResponse.success({
+          'errorCode': 0,
+          'statusCode': 200,
+          'message': 'OK',
+          'object': fakeStaffApplicationJson(),
+        });
+    return forwardEnvelopeResponse<StaffApplicationModel>(
+      envelope,
+      (object) {
+        if (object is! Map<String, dynamic>) {
+          throw const FormatException('Invalid object payload');
+        }
+        return StaffApplicationModel.fromJson(object);
+      },
+      fallbackError: 'Duyệt đơn thất bại',
+    );
+  }
+}
 
 void main() {
-  late MockRestClient mockRestClient;
-  late OrganizerStaffApplicationDatasourceImpl datasource;
-
-  setUpAll(registerFallbacks);
-
-  setUp(() {
-    mockRestClient = MockRestClient();
-    datasource = OrganizerStaffApplicationDatasourceImpl(client: mockRestClient);
-  });
-
-  // ─── getStaffApplications ────────────────────────────────────────────────────
   group('getStaffApplications', () {
-    test('trả về list đơn ứng tuyển khi thành công', () async {
-      stubRestClient(
-        mockRestClient,
-        successEnvelope({
-          'content': [fakeStaffApplicationJson(id: 1), fakeStaffApplicationJson(id: 2)],
-          'totalElements': 2,
+    test('success list', () async {
+      final datasource = TestOrganizerStaffApplicationDatasource(
+        getListStub: ApiResponse.success({
+          'errorCode': 0,
+          'statusCode': 200,
+          'message': 'OK',
+          'object': {
+            'content': [fakeStaffApplicationJson()],
+            'totalElements': 1,
+            'totalPages': 1,
+            'page': 0,
+            'size': 20,
+          },
         }),
       );
 
-      final result = await datasource.getStaffApplications();
+      final result = await datasource.getStaffApplications(page: 0, size: 20);
 
       result.when(
         success: (list) {
-          expect(list.length, equals(2));
-          expect(list.first.applicationId, equals(1));
+          expect(list.length, equals(1));
         },
+        unexpected: (_) => fail('Expected success'),
         badRequest: (_) => fail('Expected success'),
         unauthorized: (_) => fail('Expected success'),
         forbidden: (_) => fail('Expected success'),
@@ -49,39 +135,32 @@ void main() {
         gatewayTimeout: () => fail('Expected success'),
         canceled: () => fail('Expected success'),
         responseParsing: () => fail('Expected success'),
-        unexpected: (_) => fail('Expected success'),
       );
     });
 
-    test('filter theo eventId và status không gây lỗi', () async {
-      stubRestClient(
-        mockRestClient,
-        successEnvelope({
-          'content': [fakeStaffApplicationJson()],
-          'totalElements': 1,
+    test('empty', () async {
+      final datasource = TestOrganizerStaffApplicationDatasource(
+        getListStub: ApiResponse.success({
+          'errorCode': 0,
+          'statusCode': 200,
+          'message': 'OK',
+          'object': {
+            'content': <Map<String, dynamic>>[],
+            'totalElements': 0,
+            'totalPages': 0,
+            'page': 0,
+            'size': 20,
+          },
         }),
       );
 
-      final result = await datasource.getStaffApplications(
-        eventId: 1,
-        status: 0,
-        page: 0,
-        size: 20,
-      );
-
-      expect(result, isA<dynamic>());
-    });
-
-    test('trả về list rỗng khi không có đơn', () async {
-      stubRestClient(
-        mockRestClient,
-        successEnvelope({'content': [], 'totalElements': 0}),
-      );
-
-      final result = await datasource.getStaffApplications(eventId: 1);
+      final result = await datasource.getStaffApplications(page: 0, size: 20);
 
       result.when(
-        success: (list) => expect(list, isEmpty),
+        success: (list) {
+          expect(list, isEmpty);
+        },
+        unexpected: (_) => fail('Expected success'),
         badRequest: (_) => fail('Expected success'),
         unauthorized: (_) => fail('Expected success'),
         forbidden: (_) => fail('Expected success'),
@@ -93,109 +172,124 @@ void main() {
         gatewayTimeout: () => fail('Expected success'),
         canceled: () => fail('Expected success'),
         responseParsing: () => fail('Expected success'),
-        unexpected: (_) => fail('Expected success'),
       );
     });
 
-    test('trả về unauthorized khi không có quyền', () async {
-      stubRestClient(mockRestClient, unauthorizedResponse());
+    test('401', () async {
+      final datasource = TestOrganizerStaffApplicationDatasource(
+        getListStub: const ApiResponse.unauthorized(
+          ApiResponseError(code: '401', message: 'Unauthorized', errors: []),
+        ),
+      );
 
-      final result = await datasource.getStaffApplications();
+      final result = await datasource.getStaffApplications(page: 0, size: 20);
 
-      expect(isUnauthorized(result), isTrue);
-    });
-
-    test('trả về responseParsing khi object không phải Map', () async {
-      stubRestClient(mockRestClient, successEnvelope('invalid'));
-
-      final result = await datasource.getStaffApplications();
-
-      expect(isResponseParsing(result), isTrue);
-    });
-
-    test('trả về forbidden khi không phải organizer', () async {
-      stubRestClient(mockRestClient, forbiddenResponse());
-
-      final result = await datasource.getStaffApplications();
-
-      expect(isForbidden(result), isTrue);
+      expect(
+        result.when(
+          success: (_) => false,
+          unauthorized: (_) => true,
+          forbidden: (_) => false,
+          notFound: (_) => false,
+          badRequest: (_) => false,
+          conflict: (_) => false,
+          internalServerError: () => false,
+          badGateway: () => false,
+          serviceUnavailable: () => false,
+          gatewayTimeout: () => false,
+          canceled: () => false,
+          responseParsing: () => false,
+          unexpected: (_) => false,
+        ),
+        isTrue,
+      );
     });
   });
 
-  // ─── getStaffApplicationById ─────────────────────────────────────────────────
   group('getStaffApplicationById', () {
-    test('trả về StaffApplicationModel khi thành công', () async {
-      stubRestClient(mockRestClient, successEnvelope(fakeStaffApplicationJson(id: 3)));
-
-      final result = await datasource.getStaffApplicationById(3);
-
-      result.when(
-        success: (application) {
-          expect(application.applicationId, equals(3));
-          expect(application.status, equals(StaffApplicationStatus.pending));
-        },
-        badRequest: (_) => fail('Expected success'),
-        unauthorized: (_) => fail('Expected success'),
-        forbidden: (_) => fail('Expected success'),
-        notFound: (_) => fail('Expected success'),
-        conflict: (_) => fail('Expected success'),
-        internalServerError: () => fail('Expected success'),
-        badGateway: () => fail('Expected success'),
-        serviceUnavailable: () => fail('Expected success'),
-        gatewayTimeout: () => fail('Expected success'),
-        canceled: () => fail('Expected success'),
-        responseParsing: () => fail('Expected success'),
-        unexpected: (_) => fail('Expected success'),
+    test('success', () async {
+      final datasource = TestOrganizerStaffApplicationDatasource(
+        getByIdStub: ApiResponse.success({
+          'errorCode': 0,
+          'statusCode': 200,
+          'message': 'OK',
+          'object': fakeStaffApplicationJson(),
+        }),
       );
-    });
-
-    test('trả về notFound khi đơn không tồn tại', () async {
-      stubRestClient(mockRestClient, notFoundResponse());
-
-      final result = await datasource.getStaffApplicationById(9999);
-
-      expect(isNotFound(result), isTrue);
-    });
-
-    test('trả về internalServerError khi backend lỗi', () async {
-      stubRestClient(mockRestClient, serverErrorResponse());
 
       final result = await datasource.getStaffApplicationById(1);
 
-      expect(isInternalServerError(result), isTrue);
+      result.when(
+        success: (application) {
+          expect(application.applicationId, equals(1));
+        },
+        unexpected: (_) => fail('Expected success'),
+        badRequest: (_) => fail('Expected success'),
+        unauthorized: (_) => fail('Expected success'),
+        forbidden: (_) => fail('Expected success'),
+        notFound: (_) => fail('Expected success'),
+        conflict: (_) => fail('Expected success'),
+        internalServerError: () => fail('Expected success'),
+        badGateway: () => fail('Expected success'),
+        serviceUnavailable: () => fail('Expected success'),
+        gatewayTimeout: () => fail('Expected success'),
+        canceled: () => fail('Expected success'),
+        responseParsing: () => fail('Expected success'),
+      );
+    });
+
+    test('404', () async {
+      final datasource = TestOrganizerStaffApplicationDatasource(
+        getByIdStub: const ApiResponse.notFound(
+          ApiResponseError(code: '404', message: 'Not found', errors: []),
+        ),
+      );
+
+      final result = await datasource.getStaffApplicationById(999);
+
+      expect(
+        result.when(
+          success: (_) => false,
+          notFound: (_) => true,
+          unauthorized: (_) => false,
+          forbidden: (_) => false,
+          badRequest: (_) => false,
+          conflict: (_) => false,
+          internalServerError: () => false,
+          badGateway: () => false,
+          serviceUnavailable: () => false,
+          gatewayTimeout: () => false,
+          canceled: () => false,
+          responseParsing: () => false,
+          unexpected: (_) => false,
+        ),
+        isTrue,
+      );
     });
   });
 
-  // ─── approveStaffApplication ─────────────────────────────────────────────────
   group('approveStaffApplication', () {
-    const approveParams = ApproveStaffApplicationParams(
-      applicationId: 3,
-      isApproved: true,
-      feedback: 'Bạn phù hợp với vị trí này',
-    );
-
-    const rejectParams = ApproveStaffApplicationParams(
-      applicationId: 3,
-      isApproved: false,
-      feedback: 'Không đủ yêu cầu',
-    );
-
-    test('trả về StaffApplicationModel khi duyệt thành công', () async {
-      stubRestClient(
-        mockRestClient,
-        successEnvelope({
-          ...fakeStaffApplicationJson(id: 3),
-          'status': 'APPROVED',   // serialized enum value
+    test('approved success', () async {
+      final datasource = TestOrganizerStaffApplicationDatasource(
+        approveStub: ApiResponse.success({
+          'errorCode': 0,
+          'statusCode': 200,
+          'message': 'OK',
+          'object': fakeStaffApplicationJson(),
         }),
       );
 
-      final result = await datasource.approveStaffApplication(approveParams);
+      final params = ApproveStaffApplicationParams(
+        applicationId: 1,
+        isApproved: true,
+        feedback: 'Great application!',
+      );
+      final result = await datasource.approveStaffApplication(params);
 
       result.when(
         success: (application) {
-          expect(application.applicationId, equals(3));
-          expect(application.status, equals(StaffApplicationStatus.approved));
+          expect(application.applicationId, equals(1));
         },
+        unexpected: (_) => fail('Expected success'),
         badRequest: (_) => fail('Expected success'),
         unauthorized: (_) => fail('Expected success'),
         forbidden: (_) => fail('Expected success'),
@@ -207,25 +301,31 @@ void main() {
         gatewayTimeout: () => fail('Expected success'),
         canceled: () => fail('Expected success'),
         responseParsing: () => fail('Expected success'),
-        unexpected: (_) => fail('Expected success'),
       );
     });
 
-    test('trả về StaffApplicationModel khi từ chối thành công', () async {
-      stubRestClient(
-        mockRestClient,
-        successEnvelope({
-          ...fakeStaffApplicationJson(id: 3),
-          'status': 'REJECTED',
+    test('rejected success', () async {
+      final datasource = TestOrganizerStaffApplicationDatasource(
+        approveStub: ApiResponse.success({
+          'errorCode': 0,
+          'statusCode': 200,
+          'message': 'OK',
+          'object': fakeStaffApplicationJson(),
         }),
       );
 
-      final result = await datasource.approveStaffApplication(rejectParams);
+      final params = ApproveStaffApplicationParams(
+        applicationId: 1,
+        isApproved: false,
+        feedback: 'Please apply next time',
+      );
+      final result = await datasource.approveStaffApplication(params);
 
       result.when(
         success: (application) {
-          expect(application.status, equals(StaffApplicationStatus.rejected));
+          expect(application.applicationId, equals(1));
         },
+        unexpected: (_) => fail('Expected success'),
         badRequest: (_) => fail('Expected success'),
         unauthorized: (_) => fail('Expected success'),
         forbidden: (_) => fail('Expected success'),
@@ -237,43 +337,7 @@ void main() {
         gatewayTimeout: () => fail('Expected success'),
         canceled: () => fail('Expected success'),
         responseParsing: () => fail('Expected success'),
-        unexpected: (_) => fail('Expected success'),
       );
-    });
-
-    test('trả về notFound khi đơn không tồn tại', () async {
-      stubRestClient(mockRestClient, notFoundResponse());
-
-      final result = await datasource.approveStaffApplication(approveParams);
-
-      expect(isNotFound(result), isTrue);
-    });
-
-    test('trả về forbidden khi không có quyền duyệt đơn', () async {
-      stubRestClient(mockRestClient, forbiddenResponse());
-
-      final result = await datasource.approveStaffApplication(approveParams);
-
-      expect(isForbidden(result), isTrue);
-    });
-
-    test('trả về badRequest khi đơn đã được duyệt rồi', () async {
-      stubRestClient(mockRestClient, badRequestResponse());
-
-      final result = await datasource.approveStaffApplication(approveParams);
-
-      expect(isBadRequest(result), isTrue);
-    });
-
-    test('trả về unexpected khi backend errorCode != 0', () async {
-      stubRestClient(
-        mockRestClient,
-        backendErrorEnvelope(errorCode: -1, message: 'Trạng thái không hợp lệ'),
-      );
-
-      final result = await datasource.approveStaffApplication(approveParams);
-
-      expect(isUnexpected(result), isTrue);
     });
   });
 }

@@ -1,4 +1,5 @@
 import 'package:events_app/common/path/asset_path.dart';
+import 'package:events_app/feature/common/domain/enum/app_enum.dart';
 import 'package:events_app/feature/common/utils/app_date_utils.dart';
 import 'package:events_app/feature/common/utils/app_image_utils.dart';
 import 'package:events_app/feature/common/utils/app_map_utils.dart';
@@ -96,6 +97,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                   ),
                 ),
                 const SizedBox(height: 17),
+                _buildEventStatusBanner(),
                 _buildHeader(),
                 const SizedBox(height: 16),
                 Divider(
@@ -114,6 +116,58 @@ class _EventDetailPageState extends State<EventDetailPage> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildEventStatusBanner() {
+    final status = _controller.event.value?.status;
+    if (status == null) return const SizedBox.shrink();
+    if (status == EventStatus.published) return const SizedBox.shrink();
+    if (status == EventStatus.draft) return const SizedBox.shrink();
+
+    Color color;
+    IconData icon;
+    String message;
+
+    if (status == EventStatus.locked) {
+      color = const Color(0xFFEF4444);
+      icon = Icons.lock_outline;
+      message = 'Sự kiện bị khóa bởi quản trị viên.';
+    } else if (status == EventStatus.cancelled) {
+      color = const Color(0xFF6B7280);
+      icon = Icons.cancel_outlined;
+      message = 'Sự kiện đã bị hủy.';
+    } else if (status == EventStatus.closed) {
+      color = const Color(0xFFF59E0B);
+      icon = Icons.event_busy;
+      message = 'Sự kiện đã kết thúc.';
+    } else {
+      return const SizedBox.shrink();
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: color.withOpacity(0.3)),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, size: 18, color: color),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                message,
+                style: TextStyle(fontSize: 13, color: color, fontWeight: FontWeight.w500),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

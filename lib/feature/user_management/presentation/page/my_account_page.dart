@@ -1,11 +1,8 @@
 import 'package:events_app/authentication/presentation/controller/auth_controller.dart';
-import 'package:events_app/common/path/asset_path.dart';
-import 'package:events_app/feature/user_management/presentation/page/edit_profile_page.dart';
 import 'package:events_app/feature/user_management/presentation/widget/my_portfolio_card.dart';
 import 'package:events_app/feature/user_management/presentation/widget/my_profile_card.dart';
 import 'package:events_app/feature/user_management/presentation/controller/my_profile_controller.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 
 class MyAccountPage extends StatefulWidget {
@@ -36,81 +33,73 @@ class _MyAccountPageState extends State<MyAccountPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xffF4F6F9),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xff273143)),
-          onPressed: () => Navigator.pop(context),
-        ),
-        leadingWidth: 56,
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
+      body: SafeArea(
+        child: Column(
           children: [
-            SvgPicture.asset(
-              AssetPath.logoText,
-              height: 28,
+            Container(
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFF5BC0FF), Color(0xFF4A90E2)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius:
+                    BorderRadius.vertical(bottom: Radius.circular(20)),
+              ),
+              padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+              child: const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(height: 4),
+                  Center(
+                    child: Text(
+                      'Tài khoản',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 22,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: Obx(() {
+                if (_profileController.isLoading.value) {
+                  return const Center(
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor:
+                          AlwaysStoppedAnimation<Color>(Color(0xff06B6D4)),
+                    ),
+                  );
+                }
+
+                return const SingleChildScrollView(
+                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  child: Column(
+                    children: [
+                      SizedBox(height: 16),
+                      MyProfileCard(
+                        onEditTap: null,
+                      ),
+                      SizedBox(height: 16),
+                      MyPortfolioCard(),
+                      SizedBox(height: 16),
+                      _MenuSection(),
+                      SizedBox(height: 16),
+                      _LogoutButton(),
+                      SizedBox(height: 24),
+                    ],
+                  ),
+                );
+              }),
             ),
           ],
         ),
-        centerTitle: true,
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: GestureDetector(
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const EditProfilePage(),
-                ),
-              ),
-              child: Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: const Color(0xffF1F5F9),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: const Color(0xffE2E8F0)),
-                ),
-                child: const Icon(
-                  Icons.edit_outlined,
-                  size: 18,
-                  color: Color(0xff64748B),
-                ),
-              ),
-            ),
-          ),
-        ],
       ),
-      body: Obx(() {
-        if (_profileController.isLoading.value) {
-          return const Center(
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              valueColor: AlwaysStoppedAnimation<Color>(Color(0xff06B6D4)),
-            ),
-          );
-        }
-
-        return SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Column(
-            children: [
-              const SizedBox(height: 16),
-              const MyProfileCard(
-                onEditTap: null,
-              ),
-              const SizedBox(height: 16),
-              const MyPortfolioCard(),
-              const SizedBox(height: 16),
-              const _MenuSection(),
-              const SizedBox(height: 16),
-              const _LogoutButton(),
-              const SizedBox(height: 24),
-            ],
-          ),
-        );
-      }),
     );
   }
 }
@@ -124,14 +113,8 @@ class _MenuSection extends StatelessWidget {
       children: [
         _MenuItem(
           icon: Icons.event_available_rounded,
-          label: 'Sự kiện đã tham gia',
-          onTap: () => Get.toNamed('/my-registration'),
-        ),
-        const SizedBox(height: 8),
-        _MenuItem(
-          icon: Icons.confirmation_number_outlined,
-          label: 'Vé & QR của tôi',
-          onTap: () => Get.toNamed('/my-ticket'),
+          label: 'Sự kiện của tôi',
+          onTap: () => Get.toNamed('/my-events'),
         ),
         const SizedBox(height: 8),
         _MenuItem(

@@ -9,6 +9,9 @@ import 'package:events_app/feature/organizer/event/domain/usecase/event_params.d
 import 'package:events_app/feature/organizer/event/domain/usecase/organizer_event_usecase.dart';
 import 'package:events_app/feature/organizer/event/domain/usecase/organizer_venue_usecase.dart';
 import 'package:events_app/feature/organizer/event/domain/usecase/venue_params.dart';
+import 'package:events_app/feature/organizer/feedback/domain/usecase/organizer_feedback_usecase.dart';
+import 'package:events_app/feature/organizer/presentation/page/events/organizer_event_list_page.dart';
+import 'package:events_app/feature/organizer/presentation/page/recruitment/organizer_recruitment_list_page.dart';
 import 'package:events_app/feature/organizer/presentation/widget/event/venue_picker_dialog.dart';
 import 'package:events_app/feature/venue/domain/entity/venue_entity.dart';
 import 'package:flutter/material.dart';
@@ -23,6 +26,8 @@ class OrganizerCreateEventController extends GetxController {
       networkGetIt<GetOrganizerEventByIdUsecase>();
   GetCategoriesUsecase get _getCategoriesUsecase =>
       networkGetIt<GetCategoriesUsecase>();
+  GetOrganizerFeedbackQuestionsUsecase get _getFeedbackQuestionsUsecase =>
+      networkGetIt<GetOrganizerFeedbackQuestionsUsecase>();
 
   final formKey = GlobalKey<FormState>();
 
@@ -130,24 +135,44 @@ class OrganizerCreateEventController extends GetxController {
   Future<void> loadEventForEdit(int eventId) async {
     isLoading.value = true;
     await Future.wait([loadCategories(), loadVenues()]);
-    final result = await _getEventByIdUsecase(eventId);
-    final eventOrFailure = result.fold(
-      (failure) => failure,
-      (event) => event,
+    final eventResult = await _getEventByIdUsecase(eventId);
+
+    await eventResult.fold(
+      (failure) async {
+        _handleFailure(failure);
+        isLoading.value = false;
+        Get.back();
+      },
+      (event) async {
+        final isNotDraft =
+            event.status != null && event.status != EventStatus.draft;
+        initForEdit(event, readOnly: isNotDraft);
+        isLoading.value = false;
+        await loadVenues();
+        await _loadFeedbackQuestions(eventId);
+      },
     );
+  }
 
-    if (eventOrFailure is FailureEntity) {
-      _handleFailure(eventOrFailure);
-      isLoading.value = false;
-      Get.back();
-      return;
-    }
-
-    final event = eventOrFailure as EventEntity;
-    final isNotDraft = event.status != null && event.status != EventStatus.draft;
-    initForEdit(event, readOnly: isNotDraft);
-    isLoading.value = false;
-    await loadVenues();
+  Future<void> _loadFeedbackQuestions(int eventId) async {
+    try {
+      final result = await _getFeedbackQuestionsUsecase(eventId);
+      result.fold(
+        (failure) {},
+        (questions) {
+          feedbackQuestions.assignAll(
+            questions.map((q) => FeedbackQuestionCreateParams(
+              questionContent: q.questionContent ?? '',
+              questionType: q.questionType ?? FeedbackQuestionType.text,
+              isRequired: q.isRequired ?? false,
+              options: q.options
+                  ?.map((o) => FeedbackOptionCreateParams(optionValue: o.optionValue ?? ''))
+                  .toList(),
+            )),
+          );
+        },
+      );
+    } catch (_) {}
   }
 
   Future<void> loadVenues() async {
@@ -319,8 +344,9 @@ class OrganizerCreateEventController extends GetxController {
             isEditMode
                 ? 'Cập nhật sự kiện thành công'
                 : 'Tạo sự kiện thành công');
+        Get.until((route) => route.isFirst);
+        Get.to(() => const OrganizerEventListPage());
         isSubmitting.value = false;
-        Get.back(result: event);
       },
     );
   }

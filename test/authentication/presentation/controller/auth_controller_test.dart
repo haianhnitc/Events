@@ -9,8 +9,12 @@ import 'package:events_app/authentication/domain/usecase/signout_usecase.dart';
 import 'package:events_app/authentication/domain/usecase/signup_with_email_and_password_usecase.dart';
 import 'package:events_app/authentication/domain/usecase/signup_params.dart';
 import 'package:events_app/authentication/domain/usecase/upload_verification_document_usecase.dart';
+import 'package:events_app/feature/common/usecase/upload_file_usecase.dart';
+import 'package:events_app/feature/common/usecase/upload_file_params.dart';
 import 'package:events_app/authentication/presentation/controller/auth_controller.dart';
 import 'package:events_app/authentication/presentation/pages/organizer_pending_approval_screen.dart';
+import 'package:events_app/authentication/domain/auth_constants.dart';
+import 'package:events_app/authentication/domain/usecase/signin_with_google_usecase.dart';
 import 'package:events_app/common/helpers/no_params.dart';
 import 'package:events_app/feature/common/domain/enum/app_enum.dart';
 import 'package:events_app/feature/user_management/domain/entity/user_profile_entity.dart';
@@ -40,8 +44,16 @@ class MockSendPasswordResetEmailUsecase extends Mock
 class MockSigninWithGoogleUsecase extends Mock
     implements SigninWithGoogleUsecase {}
 
+class MockSignInWithGoogleOnlyUsecase extends Mock
+    implements SignInWithGoogleOnlyUsecase {}
+
+class MockSignInWithGoogleExistingUserUsecase extends Mock
+    implements SignInWithGoogleExistingUserUsecase {}
+
 class MockUploadVerificationDocumentUsecase extends Mock
     implements UploadVerificationDocumentUsecase {}
+
+class MockUploadFileUsecase extends Mock implements UploadFileUsecase {}
 
 class MockRefreshCurrentUserUsecase extends Mock
     implements user_management.GetCurrentUserUsecase {}
@@ -55,7 +67,10 @@ void main() {
   late MockGetCurrentUserUsecase getCurrentUserUsecase;
   late MockSendPasswordResetEmailUsecase sendPasswordResetEmailUsecase;
   late MockSigninWithGoogleUsecase signinWithGoogleUsecase;
+  late MockSignInWithGoogleOnlyUsecase signInWithGoogleOnlyUsecase;
+  late MockSignInWithGoogleExistingUserUsecase signInWithGoogleExistingUserUsecase;
   late MockUploadVerificationDocumentUsecase uploadVerificationDocumentUsecase;
+  late MockUploadFileUsecase uploadFileUsecase;
   late MockRefreshCurrentUserUsecase refreshCurrentUserUsecase;
   late AuthController controller;
 
@@ -75,14 +90,7 @@ void main() {
     }
   }
 
-  setUpAll(() async {
-    TestWidgetsFlutterBinding.ensureInitialized();
-    try {
-      await Firebase.initializeApp();
-    } catch (_) {
-      // Firebase may already be initialized in some test environments.
-    }
-
+  setUpAll(() {
     registerFallbackValue(
       const SigninWithEmailAndPasswordParams(
         email: 'fallback@email.com',
@@ -104,6 +112,13 @@ void main() {
       const SendPasswordResetEmailParams(email: 'fallback@email.com'),
     );
     registerFallbackValue(const NoParams());
+    registerFallbackValue(
+      const UploadFileParams(
+        filePath: '/fallback/path',
+        fileType: FileType.avatar,
+      ),
+    );
+    registerFallbackValue('fallback-string');
   });
 
   setUp(() async {
@@ -115,11 +130,18 @@ void main() {
     getCurrentUserUsecase = MockGetCurrentUserUsecase();
     sendPasswordResetEmailUsecase = MockSendPasswordResetEmailUsecase();
     signinWithGoogleUsecase = MockSigninWithGoogleUsecase();
+    signInWithGoogleOnlyUsecase = MockSignInWithGoogleOnlyUsecase();
+    signInWithGoogleExistingUserUsecase = MockSignInWithGoogleExistingUserUsecase();
     uploadVerificationDocumentUsecase = MockUploadVerificationDocumentUsecase();
+    uploadFileUsecase = MockUploadFileUsecase();
     refreshCurrentUserUsecase = MockRefreshCurrentUserUsecase();
 
     final mockFirebaseAuth = MockFirebaseAuth();
+    AuthController.testFirebaseAuth = mockFirebaseAuth;
     networkGetIt.registerSingleton<FirebaseAuth>(mockFirebaseAuth);
+    when(() => mockFirebaseAuth.authStateChanges()).thenAnswer(
+      (_) => const Stream.empty(),
+    );
     networkGetIt.registerSingleton<SigninWithEmailAndPasswordUsecase>(
       signinUsecase,
     );
@@ -136,14 +158,24 @@ void main() {
     networkGetIt.registerSingleton<SigninWithGoogleUsecase>(
       signinWithGoogleUsecase,
     );
+    networkGetIt.registerSingleton<SignInWithGoogleOnlyUsecase>(
+      signInWithGoogleOnlyUsecase,
+    );
+    networkGetIt.registerSingleton<SignInWithGoogleExistingUserUsecase>(
+      signInWithGoogleExistingUserUsecase,
+    );
     networkGetIt.registerSingleton<UploadVerificationDocumentUsecase>(
       uploadVerificationDocumentUsecase,
     );
+    networkGetIt.registerSingleton<UploadFileUsecase>(uploadFileUsecase);
     networkGetIt.registerSingleton<user_management.GetCurrentUserUsecase>(
       refreshCurrentUserUsecase,
     );
+    // Stub immediately because onInit() -> bootstrapSession() calls this.
+    when(() => refreshCurrentUserUsecase(any()))
+        .thenAnswer((_) async => const Right(null));
 
-    controller = AuthController();
+    controller = AuthController.internal();
 
     Get.put<AuthController>(controller, permanent: true);
   });
@@ -151,6 +183,7 @@ void main() {
   tearDown(() async {
     Get.reset();
     await networkGetIt.reset();
+    AuthController.testFirebaseAuth = null;
   });
 
   testWidgets(
@@ -184,7 +217,7 @@ void main() {
     expect(captured.email, 'user@example.com');
     expect(captured.password, 'secret');
     expect(controller.loginPasswordController.text, '');
-    expect(controller.isLoading.value, false);
+    expect(controller.isLoadingEmail.value, false);
   });
 
   testWidgets('register thất bại: giữ nguyên form, tắt loading',
@@ -206,7 +239,7 @@ void main() {
 
     expect(controller.registerPasswordController.text, 'password123');
     expect(controller.registerConfirmPasswordController.text, 'password123');
-    expect(controller.isLoading.value, false);
+    expect(controller.isLoadingEmail.value, false);
   });
 
   testWidgets(
@@ -230,7 +263,7 @@ void main() {
         .single as SendPasswordResetEmailParams;
     expect(captured.email, 'reset@example.com');
     expect(controller.forgotPasswordEmailController.text, '');
-    expect(controller.isLoading.value, false);
+    expect(controller.isLoadingEmail.value, false);
   });
 
   test('bootstrapSession trả true khi usecase trả user', () async {
@@ -252,7 +285,7 @@ void main() {
     controller.bootstrapSession();
     await Future.delayed(const Duration(milliseconds: 100));
 
-    verify(() => getCurrentUserUsecase(any())).called(1);
+    verify(() => refreshCurrentUserUsecase(any())).called(1);
   });
 
   test('bootstrapSession trả false khi usecase lỗi', () async {
@@ -265,7 +298,7 @@ void main() {
     controller.bootstrapSession();
     await Future.delayed(const Duration(milliseconds: 100));
 
-    verify(() => getCurrentUserUsecase(any())).called(1);
+    verify(() => refreshCurrentUserUsecase(any())).called(1);
   });
 
   testWidgets('logout gọi signoutUsecase và tắt loading', (tester) async {
@@ -279,33 +312,30 @@ void main() {
     await drainOverlay(tester);
 
     verify(() => signoutUsecase(any())).called(1);
-    expect(controller.isLoading.value, false);
+    expect(controller.isLoadingEmail.value, false);
   });
 
-  testWidgets('login organizer pending: hiển thị dialog chờ duyệt',
-      (tester) async {
-    await pumpShell(tester);
-
+  test('login organizer pending: emit AuthEvent.organizerPending', () async {
     when(() => signinUsecase(any())).thenAnswer(
       (_) async => const Left(
         FailureEntity.serverFailure('ORG_PENDING', 'pending'),
       ),
     );
 
+    final events = <AuthEvent>[];
+    final sub = controller.authEvents.listen(events.add);
+
     controller.loginEmailController.text = 'org_pending@example.com';
     controller.loginPasswordController.text = 'password123';
-
     await controller.login();
-    await tester.pumpAndSettle();
+    await Future.delayed(const Duration(milliseconds: 100));
+    await sub.cancel();
 
-    expect(find.text('Tài khoản đang chờ duyệt'), findsOneWidget);
-    expect(controller.isLoading.value, false);
+    expect(events.contains(AuthEvent.organizerPending), isTrue,
+        reason: 'events: $events');
   });
 
-  testWidgets('register organizer pending: điều hướng sang màn hình chờ duyệt',
-      (tester) async {
-    await pumpShell(tester);
-
+  test('register organizer pending: emit AuthEvent.organizerPending', () async {
     when(() => signupUsecase(any())).thenAnswer(
       (_) async => const Left(
         FailureEntity.serverFailure('ORG_PENDING', 'pending'),
@@ -316,11 +346,18 @@ void main() {
     controller.registerEmailController.text = 'org_signup@example.com';
     controller.registerPasswordController.text = 'password123';
     controller.registerConfirmPasswordController.text = 'password123';
+    controller.organizationNameController.text = 'My Org';
+    controller.organizationType.value = OrganizationType.company;
+    controller.uploadedVerificationDocs.add({'id': 123});
+
+    final events = <AuthEvent>[];
+    final sub = controller.authEvents.listen(events.add);
 
     await controller.register();
-    await tester.pumpAndSettle();
+    await Future.delayed(const Duration(milliseconds: 100));
+    await sub.cancel();
 
-    expect(find.byType(OrganizerPendingApprovalScreen), findsOneWidget);
-    expect(controller.isLoading.value, false);
+    expect(events.contains(AuthEvent.organizerPending), isTrue,
+        reason: 'events: $events');
   });
 }

@@ -34,7 +34,8 @@ class OrganizerStatBar extends StatelessWidget {
         color: backgroundColor ?? Colors.white,
         borderRadius: BorderRadius.circular(10),
         boxShadow: const [
-          BoxShadow(color: Color(0x0F000000), offset: Offset(0, 2), blurRadius: 8),
+          BoxShadow(
+              color: Color(0x0F000000), offset: Offset(0, 2), blurRadius: 8),
         ],
       ),
       child: Row(
@@ -78,7 +79,8 @@ class OrganizerStatBar extends StatelessWidget {
         color: backgroundColor ?? Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: const [
-          BoxShadow(color: Color(0x0F000000), offset: Offset(0, 4), blurRadius: 12),
+          BoxShadow(
+              color: Color(0x0F000000), offset: Offset(0, 4), blurRadius: 12),
         ],
       ),
       child: Row(
@@ -114,10 +116,8 @@ class OrganizerStatBar extends StatelessWidget {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                if (index < stats.length - 1) ...[
-                  const SizedBox(height: 12),
-                  Container(width: 1, height: 24, color: Colors.grey.shade200),
-                ],
+                const SizedBox(height: 12),
+                Container(width: 1, height: 24, color: Colors.grey.shade200),
               ],
             ),
           );
@@ -130,35 +130,42 @@ class OrganizerStatBar extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: stats.asMap().entries.map((entry) {
           final index = entry.key;
           final stat = entry.value;
-          return Row(
-            children: [
-              if (index > 0) const SizedBox(width: 12),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                decoration: BoxDecoration(
-                  color: stat.color.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(stat.icon ?? Icons.circle, size: 12, color: stat.color),
-                    const SizedBox(width: 4),
-                    Text(
-                      '${stat.value} ${stat.label}',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: stat.color,
+          return Expanded(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: stat.color.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(stat.icon ?? Icons.circle,
+                          size: 12, color: stat.color),
+                      const SizedBox(width: 4),
+                      Text(
+                        '${stat.value} ${stat.label}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: stat.color,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
+                if (index < stats.length - 1) const SizedBox(width: 8),
+              ],
+            ),
           );
         }).toList(),
       ),

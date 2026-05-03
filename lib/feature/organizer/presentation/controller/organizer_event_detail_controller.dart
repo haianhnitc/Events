@@ -50,6 +50,12 @@ class OrganizerEventDetailController extends GetxController {
 
   Future<void> publishEvent() async {
     if (_eventId == null || isActionLoading.value) return;
+    final currentStatus = event.value?.status;
+    if (currentStatus != EventStatus.draft) {
+      AppSnackbarUtils.showError(
+          'Không hợp lệ', 'Chỉ sự kiện ở trạng thái nháp mới có thể xuất bản.');
+      return;
+    }
     isActionLoading.value = true;
     final result = await _publishEventUsecase(_eventId!);
     result.fold(
@@ -58,7 +64,8 @@ class OrganizerEventDetailController extends GetxController {
         isActionLoading.value = false;
       },
       (updatedEvent) {
-        AppSnackbarUtils.showSuccess('Thành công', 'Xuất bản sự kiện thành công');
+        AppSnackbarUtils.showSuccess(
+            'Thành công', 'Xuất bản sự kiện thành công');
         event.value = updatedEvent;
         isActionLoading.value = false;
       },
@@ -67,6 +74,12 @@ class OrganizerEventDetailController extends GetxController {
 
   Future<void> closeEvent() async {
     if (_eventId == null || isActionLoading.value) return;
+    final currentStatus = event.value?.status;
+    if (currentStatus != EventStatus.published) {
+      AppSnackbarUtils.showError(
+          'Không hợp lệ', 'Chỉ sự kiện đã xuất bản mới có thể đóng.');
+      return;
+    }
     isActionLoading.value = true;
     final params = EventUpdateParams(status: EventStatus.closed);
     final result = await _updateEventUsecase(UpdateOrganizerEventParams(
@@ -88,6 +101,13 @@ class OrganizerEventDetailController extends GetxController {
 
   Future<void> deleteEvent() async {
     if (_eventId == null || isActionLoading.value) return;
+    final currentStatus = event.value?.status;
+    if (currentStatus != EventStatus.draft &&
+        currentStatus != EventStatus.published) {
+      AppSnackbarUtils.showError(
+          'Không hợp lệ', 'Sự kiện ở trạng thái này không thể hủy.');
+      return;
+    }
     isActionLoading.value = true;
     final params = EventUpdateParams(status: EventStatus.cancelled);
     final result = await _updateEventUsecase(UpdateOrganizerEventParams(
@@ -109,10 +129,14 @@ class OrganizerEventDetailController extends GetxController {
 
   void _handleFailure(FailureEntity failure) {
     failure.when(
-      serverFailure: (_, message) => AppSnackbarUtils.showError('Lỗi', message ?? 'Thao tác thất bại'),
-      dataParsingFailure: () => AppSnackbarUtils.showError('Lỗi', 'Không đọc được dữ liệu'),
-      noConnectionFailure: () => AppSnackbarUtils.showError('Lỗi', 'Không có kết nối mạng'),
-      systemFailure: (_, message) => AppSnackbarUtils.showError('Lỗi', message ?? 'Lỗi hệ thống'),
+      serverFailure: (_, message) =>
+          AppSnackbarUtils.showError('Lỗi', message ?? 'Thao tác thất bại'),
+      dataParsingFailure: () =>
+          AppSnackbarUtils.showError('Lỗi', 'Không đọc được dữ liệu'),
+      noConnectionFailure: () =>
+          AppSnackbarUtils.showError('Lỗi', 'Không có kết nối mạng'),
+      systemFailure: (_, message) =>
+          AppSnackbarUtils.showError('Lỗi', message ?? 'Lỗi hệ thống'),
     );
   }
 }

@@ -1,8 +1,9 @@
 import 'package:events_app/feature/common/domain/enum/app_enum.dart';
+import 'package:events_app/feature/user_management/domain/entity/user_summary_entity.dart';
 
 class VerificationDocumentEntity {
   final int? verificationDocumentId;
-  final int? userId;
+  final UserSummaryEntity? userSummary;
   final DocumentType? documentType;
   final String? fileUrl;
   final String? originalFileName;
@@ -10,7 +11,7 @@ class VerificationDocumentEntity {
 
   VerificationDocumentEntity({
     this.verificationDocumentId,
-    this.userId,
+    this.userSummary,
     this.documentType,
     this.fileUrl,
     this.originalFileName,
@@ -19,7 +20,7 @@ class VerificationDocumentEntity {
 
   VerificationDocumentEntity copyWith({
     int? verificationDocumentId,
-    int? userId,
+    UserSummaryEntity? userSummary,
     DocumentType? documentType,
     String? fileUrl,
     String? originalFileName,
@@ -27,7 +28,7 @@ class VerificationDocumentEntity {
   }) {
     return VerificationDocumentEntity(
       verificationDocumentId: verificationDocumentId ?? this.verificationDocumentId,
-      userId: userId ?? this.userId,
+      userSummary: userSummary ?? this.userSummary,
       documentType: documentType ?? this.documentType,
       fileUrl: fileUrl ?? this.fileUrl,
       originalFileName: originalFileName ?? this.originalFileName,
@@ -38,7 +39,7 @@ class VerificationDocumentEntity {
   @override
   String toString() {
     return 'VerificationDocumentEntity(verificationDocumentId: $verificationDocumentId, '
-        'userId: $userId, documentType: $documentType, fileUrl: $fileUrl, '
+        'userSummary: $userSummary, documentType: $documentType, fileUrl: $fileUrl, '
         'originalFileName: $originalFileName, createdTime: $createdTime)';
   }
 
@@ -47,7 +48,7 @@ class VerificationDocumentEntity {
     if (identical(this, other)) return true;
     return other is VerificationDocumentEntity &&
         other.verificationDocumentId == verificationDocumentId &&
-        other.userId == userId &&
+        other.userSummary == userSummary &&
         other.documentType == documentType &&
         other.fileUrl == fileUrl &&
         other.originalFileName == originalFileName &&
@@ -58,7 +59,7 @@ class VerificationDocumentEntity {
   int get hashCode {
     return Object.hash(
       verificationDocumentId,
-      userId,
+      userSummary,
       documentType,
       fileUrl,
       originalFileName,

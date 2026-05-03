@@ -6,6 +6,8 @@ class UserSummaryEntity {
   final String? email;
   final String? avatarUrl;
   final UserRole? role;
+  final UserStatus? status;
+  final DateTime? joinedAt;
 
   UserSummaryEntity({
     this.userId,
@@ -13,6 +15,8 @@ class UserSummaryEntity {
     this.email,
     this.avatarUrl,
     this.role,
+    this.status,
+    this.joinedAt,
   });
 
   UserSummaryEntity copyWith({
@@ -21,6 +25,8 @@ class UserSummaryEntity {
     String? email,
     String? avatarUrl,
     UserRole? role,
+    UserStatus? status,
+    DateTime? joinedAt,
   }) {
     return UserSummaryEntity(
       userId: userId ?? this.userId,
@@ -28,6 +34,8 @@ class UserSummaryEntity {
       email: email ?? this.email,
       avatarUrl: avatarUrl ?? this.avatarUrl,
       role: role ?? this.role,
+      status: status ?? this.status,
+      joinedAt: joinedAt ?? this.joinedAt,
     );
   }
 

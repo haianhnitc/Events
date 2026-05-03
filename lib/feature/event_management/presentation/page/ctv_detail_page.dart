@@ -1,7 +1,11 @@
+import 'package:events_app/authentication/presentation/controller/auth_controller.dart';
 import 'package:events_app/common/path/asset_path.dart';
+import 'package:events_app/feature/common/domain/enum/app_enum.dart';
 import 'package:events_app/feature/common/utils/app_date_utils.dart';
 import 'package:events_app/feature/common/utils/app_image_utils.dart';
 import 'package:events_app/feature/common/utils/app_map_utils.dart';
+import 'package:events_app/feature/event_management/presentation/page/event_detail_page.dart';
+import 'package:events_app/feature/organizer/presentation/page/events/organizer_event_detail_page.dart';
 import 'package:events_app/feature/recruitment/presentation/controller/ctv_detail_page_controller.dart';
 import 'package:events_app/feature/recruitment/presentation/widget/ctv_apply_bottom_sheet.dart';
 import 'package:flutter/material.dart';
@@ -86,17 +90,16 @@ class _CtvDetailPageState extends State<CtvDetailPage> {
                 const SizedBox(height: 17),
                 _buildHeader(),
                 const SizedBox(height: 16),
-                Divider(height: 1, color: const Color(0xff273143).withOpacity(0.1))
+                Divider(
+                        height: 1,
+                        color: const Color(0xff273143).withOpacity(0.1))
                     .marginSymmetric(horizontal: 16),
                 const SizedBox(height: 16),
                 _buildctvDetail(context),
                 const SizedBox(height: 16),
-                if (_controller.hasRewardInfo) ...[
-                  _buildRewardInfo(),
-                  const SizedBox(height: 16),
-                ],
                 _buildBenefitCard(),
                 const SizedBox(height: 16),
+                _buildGoToEventButton(),
                 _buildRegisterButton(),
                 const SizedBox(height: 30)
               ],
@@ -546,132 +549,6 @@ class _CtvDetailPageState extends State<CtvDetailPage> {
     );
   }
 
-  Widget _buildRewardInfo() {
-    final item = _controller.recruitment.value;
-    final badges = <Widget>[];
-
-    if ((item?.rewardCoin ?? 0) > 0) {
-      badges.add(_rewardBadge(Icons.monetization_on_outlined, '${item?.rewardCoin} Xu'));
-    }
-    if ((item?.youthUnionPoint ?? 0) > 0) {
-      badges.add(_rewardBadge(Icons.stars_outlined, '${item?.youthUnionPoint} Điểm Đoàn'));
-    }
-    if ((item?.cashRewardAmount ?? 0) > 0) {
-      badges.add(_rewardBadge(Icons.attach_money, '${item?.cashRewardAmount} VNĐ'));
-    }
-    if (_controller.hasCertificate) {
-      badges.add(_rewardBadge(Icons.verified_outlined, item?.certificateName ?? ''));
-    }
-
-    if (badges.isEmpty) return const SizedBox.shrink();
-
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xffDB0025).withOpacity(0.06),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          width: 1.71,
-          color: const Color(0xffDB0025).withOpacity(0.2),
-        ),
-      ),
-      child: Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        children: badges,
-      ),
-    );
-  }
-
-  Widget _rewardBadge(IconData icon, String label) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: const Color(0xffDB0025).withOpacity(0.1),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xffDB0025).withOpacity(0.25)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14, color: const Color(0xffDB0025)),
-          const SizedBox(width: 6),
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: Color(0xffDB0025),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildViewStats() {
-    final event = _controller.recruitment.value;
-    final viewCount = event?.createdTime != null ? 1 : 0;
-
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          width: 1.71,
-          color: const Color(0xff273143).withOpacity(0.1),
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: const Color(0xffDB0025).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Icon(
-              Icons.visibility_outlined,
-              size: 20,
-              color: Color(0xffDB0025),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Đang tuyển dụng',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    height: 24 / 16,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xff273143),
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  'Cơ hội việc làm CTV',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    height: 16 / 12,
-                    fontWeight: FontWeight.w400,
-                    color: Color(0xff67688C),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildBenefitCard() {
     final benefits = _controller.benefits;
 
@@ -793,6 +670,50 @@ class _CtvDetailPageState extends State<CtvDetailPage> {
               ),
             )
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGoToEventButton() {
+    final eventId = _controller.recruitment.value?.eventId;
+    if (eventId == null) return const SizedBox.shrink();
+
+    final isOrganizer = AuthController.to.currentUser.value?.role ==
+        UserRole.organization;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+      child: GestureDetector(
+        onTap: () => Get.to(
+          () => isOrganizer
+              ? OrganizerEventDetailPage(eventId: eventId)
+              : EventDetailPage(eventId: eventId),
+        ),
+        child: Container(
+          height: 42,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: const Color(0xff06B6D4)),
+          ),
+          child: const Center(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.event, size: 16, color: Color(0xff06B6D4)),
+                SizedBox(width: 6),
+                Text(
+                  'Xem chi tiết sự kiện',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Color(0xff06B6D4),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );

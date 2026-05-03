@@ -1,4 +1,5 @@
 import 'package:events_app/authentication/presentation/widget/register/register_form.dart';
+import 'package:events_app/common/path/asset_path.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -53,6 +54,7 @@ class _RegisterScreenState extends State<RegisterScreen>
       body: SafeArea(
         child: Column(
           children: [
+            _buildHeader(),
             _buildTabBar(),
             Expanded(
               child: TabBarView(
@@ -85,6 +87,39 @@ class _RegisterScreenState extends State<RegisterScreen>
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(24, 8, 24, 0),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: const Color(0xff06B6D4),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Image.asset(
+              AssetPath.linkLogo,
+              width: 24,
+              height: 24,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(width: 10),
+          const Text(
+            'Tạo tài khoản',
+            style: TextStyle(
+              color: Color(0xff273143),
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
       ),
     );
   }

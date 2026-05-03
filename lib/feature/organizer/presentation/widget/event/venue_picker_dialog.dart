@@ -87,20 +87,37 @@ class _VenuePickerDialogState extends State<VenuePickerDialog> {
       final result = await usecase.call(const VenueListParams(page: 0, size: 100));
       result.fold(
         (failure) {
-          failure.when(
-            serverFailure: (_, message) {},
-            dataParsingFailure: () {},
-            noConnectionFailure: () {},
-            systemFailure: (_, message) {},
-          );
+          _showFailureSnackbar(failure);
         },
         (data) {
           _venues.clear();
           _venues.addAll(data.items);
         },
       );
-    } catch (_) {}
+    } catch (e) {
+      _showErrorSnackbar('Không thể tải danh sách địa điểm');
+    }
     setState(() => _isLoading = false);
+  }
+
+  void _showFailureSnackbar(FailureEntity failure) {
+    failure.when(
+      serverFailure: (_, message) => _showErrorSnackbar(message),
+      dataParsingFailure: () => _showErrorSnackbar('Không đọc được dữ liệu địa điểm'),
+      noConnectionFailure: () => _showErrorSnackbar('Không có kết nối mạng'),
+      systemFailure: (_, message) => _showErrorSnackbar(message),
+    );
+  }
+
+  void _showErrorSnackbar(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: const Color(0xFFE53935),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 
   Future<void> _createVenue() async {

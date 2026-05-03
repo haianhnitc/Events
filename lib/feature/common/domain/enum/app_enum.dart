@@ -80,8 +80,6 @@ enum CoinReferenceType {
   newsRead,
   @JsonValue('FEEDBACK')
   feedback,
-
-
 }
 
 extension CoinReferenceTypeApiValue on CoinReferenceType {
@@ -338,6 +336,8 @@ enum EventStatus {
   draft,
   @JsonValue('CANCELLED')
   cancelled,
+  @JsonValue('LOCKED')
+  locked
 }
 
 extension EventStatusApiValue on EventStatus {
@@ -351,6 +351,8 @@ extension EventStatusApiValue on EventStatus {
         return 'DRAFT';
       case EventStatus.cancelled:
         return 'CANCELLED';
+      case EventStatus.locked:
+        return 'LOCKED';
     }
   }
 
@@ -365,6 +367,8 @@ extension EventStatusApiValue on EventStatus {
         return EventStatus.draft;
       case 'CANCELLED':
         return EventStatus.cancelled;
+      case 'LOCKED':
+        return EventStatus.locked;
       default:
         return null;
     }

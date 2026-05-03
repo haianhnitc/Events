@@ -133,7 +133,7 @@ class MyQrController extends GetxController {
 
     AttendanceQrEntity? qr;
 
-    final resolvedEventId = participant.event?.eventId ?? participant.eventId;
+    final resolvedEventId = participant.eventId;
     if (resolvedEventId == null) return;
 
     if (participantType == ParticipantType.attendee && ticketId != null) {
