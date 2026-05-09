@@ -72,9 +72,20 @@ class OrganizerEventListController extends GetxController {
       },
       (data) {
         if (reset) {
-          events.assignAll(data.items);
+          final uniqueItems = <int, EventSummaryEntity>{};
+          for (final item in data.items) {
+            if (item.eventId != null) {
+              uniqueItems[item.eventId!] = item;
+            }
+          }
+          events.assignAll(uniqueItems.values.toList());
         } else {
-          events.addAll(data.items);
+          for (final item in data.items) {
+            if (item.eventId != null &&
+                !events.any((e) => e.eventId == item.eventId)) {
+              events.add(item);
+            }
+          }
         }
         _totalPages = data.totalPages;
       },
@@ -204,15 +215,6 @@ class OrganizerEventListController extends GetxController {
   }
 
   void _handleFailure(FailureEntity failure) {
-    failure.when(
-      serverFailure: (_, message) =>
-          AppSnackbarUtils.showError('Lỗi', message ?? 'Thao tác thất bại'),
-      dataParsingFailure: () =>
-          AppSnackbarUtils.showError('Lỗi', 'Không đọc được dữ liệu'),
-      noConnectionFailure: () =>
-          AppSnackbarUtils.showError('Lỗi', 'Không có kết nối mạng'),
-      systemFailure: (_, message) =>
-          AppSnackbarUtils.showError('Lỗi', message ?? 'Lỗi hệ thống'),
-    );
+    AuthController.handleFailure(failure);
   }
 }

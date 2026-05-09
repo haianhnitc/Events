@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:events_app/api_template/services/failure.dart';
+import 'package:events_app/authentication/presentation/controller/auth_controller.dart';
 import 'package:events_app/feature/common/domain/enum/app_enum.dart';
 import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
 import 'package:events_app/dependency_injection/injection.dart';
@@ -18,6 +19,7 @@ class OrganizerEventDetailController extends GetxController {
   final Rx<EventEntity?> event = Rx<EventEntity?>(null);
   final RxBool isLoading = true.obs;
   final RxBool isActionLoading = false.obs;
+  final RxBool isCancelling = false.obs;
 
   int? _eventId;
   void setEventId(int id) => _eventId = id;
@@ -100,7 +102,7 @@ class OrganizerEventDetailController extends GetxController {
   }
 
   Future<void> deleteEvent() async {
-    if (_eventId == null || isActionLoading.value) return;
+    if (_eventId == null || isCancelling.value) return;
     final currentStatus = event.value?.status;
     if (currentStatus != EventStatus.draft &&
         currentStatus != EventStatus.published) {
@@ -108,7 +110,7 @@ class OrganizerEventDetailController extends GetxController {
           'Không hợp lệ', 'Sự kiện ở trạng thái này không thể hủy.');
       return;
     }
-    isActionLoading.value = true;
+    isCancelling.value = true;
     final params = EventUpdateParams(status: EventStatus.cancelled);
     final result = await _updateEventUsecase(UpdateOrganizerEventParams(
       eventId: _eventId!,
@@ -117,26 +119,17 @@ class OrganizerEventDetailController extends GetxController {
     result.fold(
       (failure) {
         _handleFailure(failure);
-        isActionLoading.value = false;
+        isCancelling.value = false;
       },
       (updatedEvent) {
         AppSnackbarUtils.showSuccess('Thành công', 'Hủy sự kiện thành công');
         event.value = updatedEvent;
-        isActionLoading.value = false;
+        isCancelling.value = false;
       },
     );
   }
 
   void _handleFailure(FailureEntity failure) {
-    failure.when(
-      serverFailure: (_, message) =>
-          AppSnackbarUtils.showError('Lỗi', message ?? 'Thao tác thất bại'),
-      dataParsingFailure: () =>
-          AppSnackbarUtils.showError('Lỗi', 'Không đọc được dữ liệu'),
-      noConnectionFailure: () =>
-          AppSnackbarUtils.showError('Lỗi', 'Không có kết nối mạng'),
-      systemFailure: (_, message) =>
-          AppSnackbarUtils.showError('Lỗi', message ?? 'Lỗi hệ thống'),
-    );
+    AuthController.handleFailure(failure);
   }
 }

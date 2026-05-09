@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:events_app/feature/common/domain/enum/app_enum.dart';
+import 'package:events_app/feature/feedback/domain/entity/feedback_entity.dart';
 import 'package:events_app/feature/organizer/event/domain/usecase/event_params.dart';
 
-String _getQuestionTypeLabel(FeedbackQuestionType type) {
+String _getQuestionTypeLabel(FeedbackQuestionType? type) {
   switch (type) {
     case FeedbackQuestionType.text:
       return 'TEXT';
@@ -12,20 +13,18 @@ String _getQuestionTypeLabel(FeedbackQuestionType type) {
       return '1 CHỌN';
     case FeedbackQuestionType.multipleChoice:
       return 'NHIỀU CHỌN';
+    default:
+      return 'TEXT';
   }
 }
 
 class FeedbackQuestionCard extends StatelessWidget {
-  final FeedbackQuestionCreateParams question;
-  final int index;
-  final VoidCallback onEdit;
+  final FeedbackQuestionEntity question;
   final VoidCallback onRemove;
 
   const FeedbackQuestionCard({
     super.key,
     required this.question,
-    required this.index,
-    required this.onEdit,
     required this.onRemove,
   });
 
@@ -59,7 +58,7 @@ class FeedbackQuestionCard extends StatelessWidget {
                   ),
                 ),
               ),
-              if (question.isRequired) ...[
+              if (question.isRequired == true) ...[
                 const SizedBox(width: 6),
                 Container(
                   padding:
@@ -80,12 +79,6 @@ class FeedbackQuestionCard extends StatelessWidget {
               ],
               const Spacer(),
               GestureDetector(
-                onTap: onEdit,
-                child:
-                    const Icon(Icons.edit, size: 16, color: Color(0xff64748B)),
-              ),
-              const SizedBox(width: 8),
-              GestureDetector(
                 onTap: onRemove,
                 child: const Icon(Icons.delete_outline,
                     size: 16, color: Colors.red),
@@ -94,7 +87,7 @@ class FeedbackQuestionCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            question.questionContent,
+            question.questionContent ?? '',
             style: const TextStyle(
               fontSize: 13,
               color: Color(0xff273143),
@@ -115,7 +108,7 @@ class FeedbackQuestionCard extends StatelessWidget {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
-                          o.optionValue,
+                          o.optionValue ?? '',
                           style: const TextStyle(
                             fontSize: 11,
                             color: Color(0xff64748B),
@@ -134,8 +127,6 @@ class FeedbackQuestionCard extends StatelessWidget {
 class FeedbackQuestionSheet {
   static void show(
     BuildContext context, {
-    int? index,
-    FeedbackQuestionCreateParams? existing,
     required void Function(FeedbackQuestionCreateParams) onSave,
   }) {
     showModalBottomSheet(
@@ -143,8 +134,6 @@ class FeedbackQuestionSheet {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) => _FeedbackQuestionSheetBody(
-        index: index,
-        existing: existing,
         onSave: onSave,
       ),
     );
@@ -209,13 +198,9 @@ class _FeedbackTypeChip extends StatelessWidget {
 }
 
 class _FeedbackQuestionSheetBody extends StatefulWidget {
-  final int? index;
-  final FeedbackQuestionCreateParams? existing;
   final void Function(FeedbackQuestionCreateParams) onSave;
 
   const _FeedbackQuestionSheetBody({
-    this.index,
-    this.existing,
     required this.onSave,
   });
 
@@ -234,20 +219,13 @@ class _FeedbackQuestionSheetBodyState
   @override
   void initState() {
     super.initState();
-    _contentCtrl =
-        TextEditingController(text: widget.existing?.questionContent ?? '');
-    _selectedType = widget.existing?.questionType ?? FeedbackQuestionType.text;
-    _isRequired = widget.existing?.isRequired ?? false;
-    _optionCtrls = [];
-    if (widget.existing?.options != null) {
-      for (final o in widget.existing!.options!) {
-        _optionCtrls.add(TextEditingController(text: o.optionValue));
-      }
-    }
-    if (_optionCtrls.isEmpty) {
-      _optionCtrls.add(TextEditingController());
-      _optionCtrls.add(TextEditingController());
-    }
+    _contentCtrl = TextEditingController();
+    _selectedType = FeedbackQuestionType.text;
+    _isRequired = false;
+    _optionCtrls = [
+      TextEditingController(),
+      TextEditingController(),
+    ];
   }
 
   @override
@@ -294,7 +272,6 @@ class _FeedbackQuestionSheetBodyState
   @override
   Widget build(BuildContext context) {
     final bottomPadding = MediaQuery.of(context).viewInsets.bottom;
-    final isEdit = widget.index != null;
 
     return Container(
       decoration: const BoxDecoration(
@@ -332,10 +309,10 @@ class _FeedbackQuestionSheetBodyState
                         color: Color(0xFF06B6D4), size: 20),
                   ),
                   const SizedBox(width: 12),
-                  Expanded(
+                  const Expanded(
                     child: Text(
-                      isEdit ? 'Sửa câu hỏi' : 'Thêm câu hỏi',
-                      style: const TextStyle(
+                      'Thêm câu hỏi',
+                      style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
                         color: Color(0xff1E293B),
@@ -666,9 +643,9 @@ class _FeedbackQuestionSheetBodyState
                         ),
                         elevation: 0,
                       ),
-                      child: Text(
-                        isEdit ? 'Lưu thay đổi' : 'Thêm câu hỏi',
-                        style: const TextStyle(
+                      child: const Text(
+                        'Thêm câu hỏi',
+                        style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w600,
                         ),
@@ -686,34 +663,16 @@ class _FeedbackQuestionSheetBodyState
 }
 
 class FeedbackQuestionStep extends StatelessWidget {
-  final List<FeedbackQuestionCreateParams> questions;
+  final List<FeedbackQuestionEntity> questions;
   final void Function(FeedbackQuestionCreateParams) onSave;
-  final void Function(int, FeedbackQuestionCreateParams) onUpdate;
   final void Function(int) onRemoveQuestion;
 
   const FeedbackQuestionStep({
     super.key,
     required this.questions,
     required this.onSave,
-    required this.onUpdate,
     required this.onRemoveQuestion,
   });
-
-  void _showSheet(BuildContext context,
-      {int? index, FeedbackQuestionCreateParams? existing}) {
-    FeedbackQuestionSheet.show(
-      context,
-      index: index,
-      existing: existing,
-      onSave: (q) {
-        if (index != null) {
-          onUpdate(index, q);
-        } else {
-          onSave(q);
-        }
-      },
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -784,13 +743,6 @@ class FeedbackQuestionStep extends StatelessWidget {
           final q = questions[i];
           return FeedbackQuestionCard(
             question: q,
-            index: i,
-            onEdit: () => FeedbackQuestionSheet.show(
-              context,
-              index: i,
-              existing: q,
-              onSave: (updated) => onUpdate(i, updated),
-            ),
             onRemove: () => onRemoveQuestion(i),
           );
         }),

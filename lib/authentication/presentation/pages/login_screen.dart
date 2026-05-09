@@ -45,10 +45,9 @@ class LoginScreen extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
           ),
           child: Image.asset(
-            AssetPath.linkLogo,
+            AssetPath.logo,
             width: 40,
             height: 40,
-            color: Colors.white,
           ),
         ),
         const SizedBox(height: 20),

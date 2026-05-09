@@ -180,12 +180,8 @@ class _OrganizerRecruitmentListPageState
           borderRadius: BorderRadius.circular(14),
           onTap: () {
             if (item.ctvRecruitmentId == null) return;
-            if (item.isOpen != true) {
-              Get.to(() => OrganizerRecruitmentFormPage(
-                  recruitmentId: item.ctvRecruitmentId));
-            } else {
-              Get.to(() => OrganizerRecruitmentDetailPage(recruitment: item));
-            }
+            Get.to(() => OrganizerRecruitmentDetailPage(
+                recruitmentId: item.ctvRecruitmentId));
           },
           child: Padding(
             padding: const EdgeInsets.all(16),

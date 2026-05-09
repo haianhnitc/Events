@@ -1,17 +1,19 @@
 import 'package:events_app/api_template/services/failure.dart';
+import 'package:events_app/authentication/presentation/controller/auth_controller.dart';
 import 'package:events_app/dependency_injection/injection.dart';
 import 'package:events_app/feature/common/domain/entity/category_entity.dart';
 import 'package:events_app/feature/common/domain/enum/app_enum.dart';
 import 'package:events_app/feature/common/domain/usecase/category_usecase.dart';
 import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
 import 'package:events_app/feature/event_management/domain/entity/event_entity.dart';
+import 'package:events_app/feature/feedback/domain/entity/feedback_entity.dart';
 import 'package:events_app/feature/organizer/event/domain/usecase/event_params.dart';
 import 'package:events_app/feature/organizer/event/domain/usecase/organizer_event_usecase.dart';
 import 'package:events_app/feature/organizer/event/domain/usecase/organizer_venue_usecase.dart';
 import 'package:events_app/feature/organizer/event/domain/usecase/venue_params.dart';
+import 'package:events_app/feature/organizer/feedback/domain/usecase/organizer_feedback_params.dart';
 import 'package:events_app/feature/organizer/feedback/domain/usecase/organizer_feedback_usecase.dart';
 import 'package:events_app/feature/organizer/presentation/page/events/organizer_event_list_page.dart';
-import 'package:events_app/feature/organizer/presentation/page/recruitment/organizer_recruitment_list_page.dart';
 import 'package:events_app/feature/organizer/presentation/widget/event/venue_picker_dialog.dart';
 import 'package:events_app/feature/venue/domain/entity/venue_entity.dart';
 import 'package:flutter/material.dart';
@@ -28,6 +30,10 @@ class OrganizerCreateEventController extends GetxController {
       networkGetIt<GetCategoriesUsecase>();
   GetOrganizerFeedbackQuestionsUsecase get _getFeedbackQuestionsUsecase =>
       networkGetIt<GetOrganizerFeedbackQuestionsUsecase>();
+  CreateOrganizerFeedbackQuestionUsecase get _createFeedbackQuestionUsecase =>
+      networkGetIt<CreateOrganizerFeedbackQuestionUsecase>();
+  DeleteFeedbackQuestionsUsecase get _deleteFeedbackQuestionsUsecase =>
+      networkGetIt<DeleteFeedbackQuestionsUsecase>();
 
   final formKey = GlobalKey<FormState>();
 
@@ -56,8 +62,8 @@ class OrganizerCreateEventController extends GetxController {
   final RxBool isLoadingVenues = false.obs;
 
   final RxList<int> selectedCategoryOptionIds = <int>[].obs;
-  final RxList<FeedbackQuestionCreateParams> feedbackQuestions =
-      <FeedbackQuestionCreateParams>[].obs;
+  final RxList<FeedbackQuestionEntity> feedbackQuestions =
+      <FeedbackQuestionEntity>[].obs;
   final RxList<CategoryEntity> categories = <CategoryEntity>[].obs;
   final RxBool isLoadingCategories = false.obs;
 
@@ -94,6 +100,7 @@ class OrganizerCreateEventController extends GetxController {
     certificateNameController.text = event.certificateName ?? '';
 
     selectedCategoryOptionIds.clear();
+    feedbackQuestions.clear();
     if (event.categories != null) {
       for (final cat in event.categories!) {
         if (cat.options != null) {
@@ -159,18 +166,7 @@ class OrganizerCreateEventController extends GetxController {
       final result = await _getFeedbackQuestionsUsecase(eventId);
       result.fold(
         (failure) {},
-        (questions) {
-          feedbackQuestions.assignAll(
-            questions.map((q) => FeedbackQuestionCreateParams(
-              questionContent: q.questionContent ?? '',
-              questionType: q.questionType ?? FeedbackQuestionType.text,
-              isRequired: q.isRequired ?? false,
-              options: q.options
-                  ?.map((o) => FeedbackOptionCreateParams(optionValue: o.optionValue ?? ''))
-                  .toList(),
-            )),
-          );
-        },
+        (questions) => feedbackQuestions.assignAll(questions),
       );
     } catch (_) {}
   }
@@ -256,22 +252,51 @@ class OrganizerCreateEventController extends GetxController {
     }
   }
 
-  void addFeedbackQuestion(FeedbackQuestionCreateParams question) {
-    feedbackQuestions.add(question);
+  Future<void> addFeedbackQuestion({
+    required String questionContent,
+    required FeedbackQuestionType questionType,
+    bool isRequired = false,
+    List<String>? options,
+  }) async {
+    if (isEditMode && editingEvent.value?.eventId != null) {
+      final eventId = editingEvent.value!.eventId!;
+      final result = await _createFeedbackQuestionUsecase(CreateFeedbackQuestionParams(
+        eventId: eventId,
+        questionContent: questionContent,
+        questionType: questionType,
+        isRequired: isRequired,
+        options: options,
+      ));
+      result.fold(
+        (failure) => _handleFailure(failure),
+        (created) => feedbackQuestions.add(created),
+      );
+    } else {
+      feedbackQuestions.add(FeedbackQuestionEntity(
+        questionContent: questionContent,
+        questionType: questionType,
+        isRequired: isRequired,
+        options: options?.map((o) => FeedbackOptionEntity(optionValue: o)).toList(),
+      ));
+    }
   }
 
-  void removeFeedbackQuestion(int index) {
-    if (index >= 0 && index < feedbackQuestions.length) {
+  Future<void> removeFeedbackQuestion(int index) async {
+    if (index < 0 || index >= feedbackQuestions.length) return;
+    final question = feedbackQuestions[index];
+    if (isEditMode && question.feedbackQuestionId != null) {
+      final result = await _deleteFeedbackQuestionsUsecase(
+        DeleteFeedbackQuestionsParams(questionIds: [question.feedbackQuestionId!]),
+      );
+      result.fold(
+        (failure) => _handleFailure(failure),
+        (_) => feedbackQuestions.removeAt(index),
+      );
+    } else {
       feedbackQuestions.removeAt(index);
     }
   }
 
-  void updateFeedbackQuestion(
-      int index, FeedbackQuestionCreateParams question) {
-    if (index >= 0 && index < feedbackQuestions.length) {
-      feedbackQuestions[index] = question;
-    }
-  }
 
   Future<void> submit() async {
     if (isReadOnly.value) {
@@ -302,8 +327,18 @@ class OrganizerCreateEventController extends GetxController {
       categoryOptionIds: selectedCategoryOptionIds.isEmpty
           ? null
           : selectedCategoryOptionIds.toList(),
-      feedbackQuestions:
-          feedbackQuestions.isEmpty ? null : feedbackQuestions.toList(),
+      feedbackQuestions: feedbackQuestions.isEmpty
+          ? null
+          : feedbackQuestions
+              .map((q) => FeedbackQuestionCreateParams(
+                    questionContent: q.questionContent ?? '',
+                    questionType: q.questionType ?? FeedbackQuestionType.text,
+                    isRequired: q.isRequired ?? false,
+                    options: q.options
+                        ?.map((o) => FeedbackOptionCreateParams(optionValue: o.optionValue ?? ''))
+                        .toList(),
+                  ))
+              .toList(),
     );
 
     final result = isEditMode
@@ -338,7 +373,7 @@ class OrganizerCreateEventController extends GetxController {
         _handleFailure(failure);
         isSubmitting.value = false;
       },
-      (event) {
+      (event) async {
         AppSnackbarUtils.showSuccess(
             'Thành công',
             isEditMode
@@ -430,15 +465,6 @@ class OrganizerCreateEventController extends GetxController {
   }
 
   void _handleFailure(FailureEntity failure) {
-    failure.when(
-      serverFailure: (_, message) =>
-          AppSnackbarUtils.showError('Lỗi', message),
-      dataParsingFailure: () =>
-          AppSnackbarUtils.showError('Lỗi', 'Không đọc được dữ liệu'),
-      noConnectionFailure: () =>
-          AppSnackbarUtils.showError('Lỗi', 'Không có kết nối mạng'),
-      systemFailure: (_, message) =>
-          AppSnackbarUtils.showError('Lỗi', message),
-    );
+    AuthController.handleFailure(failure);
   }
 }

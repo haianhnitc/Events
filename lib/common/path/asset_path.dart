@@ -7,7 +7,7 @@ class AssetPath {
   static const notification = 'assets/icons/notification.svg';
   static const profile = 'assets/icons/profile.svg';
   static const logoText = 'assets/picture/logo_text.svg';
-  static const logo = 'assets/picture/logo.svg';
+  static const logo = 'assets/picture/logo.png';
   static const infoCard1 = 'assets/picture/info_card_1.svg';
   static const infoCard2 = 'assets/picture/info_card_2.svg';
   static const infoCard3 = 'assets/picture/info_card_3.svg';

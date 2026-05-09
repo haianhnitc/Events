@@ -207,50 +207,6 @@ class MyQrController extends GetxController {
   }
 
   void _handleFailure(FailureEntity failure) {
-    failure.when(
-      serverFailure: (_, message) => AppSnackbarUtils.showError('Lỗi', _mapBeErrorMessage(message)),
-      dataParsingFailure: () =>
-          AppSnackbarUtils.showError('Lỗi', 'Không đọc được dữ liệu'),
-      noConnectionFailure: () =>
-          AppSnackbarUtils.showError('Lỗi', 'Không có kết nối mạng'),
-      systemFailure: (_, message) => AppSnackbarUtils.showError('Lỗi', message ?? 'Lỗi hệ thống'),
-    );
-  }
-
-  String _mapBeErrorMessage(String? rawMessage) {
-    if (rawMessage == null || rawMessage.isEmpty) return 'Đã xảy ra lỗi';
-
-    final lower = rawMessage.toLowerCase();
-
-    if (lower.contains('not found') ||
-        lower.contains('không tồn tại')) {
-      return 'Không tìm thấy thông tin đăng ký của bạn.';
-    }
-    if (lower.contains('permission') ||
-        lower.contains('quyền')) {
-      return 'Bạn không có quyền lấy mã QR này.';
-    }
-    if (lower.contains('must check-in') ||
-        lower.contains('chưa check-in')) {
-      return 'Bạn cần check-in trước khi lấy mã QR check-out.';
-    }
-    if (lower.contains('already checked in') ||
-        lower.contains('đã check-in rồi')) {
-      return 'Bạn đã check-in rồi. Không thể lấy mã QR sự kiện.';
-    }
-    if (lower.contains('qr has expired') ||
-        lower.contains('hết hạn')) {
-      return 'Mã QR đã hết hạn. Vui lòng làm mới.';
-    }
-    if (lower.contains('invalid qr')) {
-      return 'Mã QR không hợp lệ.';
-    }
-    if (lower.contains('free attendee check-in') ||
-        lower.contains('do not require participant qr') ||
-        lower.contains('use event qr')) {
-      return 'Vé miễn phí không cần QR cá nhân. Hãy dùng QR sự kiện do ban tổ chức cung cấp.';
-    }
-
-    return rawMessage;
+    AuthController.handleFailure(failure);
   }
 }

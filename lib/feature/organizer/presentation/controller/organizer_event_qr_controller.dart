@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:events_app/feature/organizer/attendance/domain/usecase/organizer_attendance_params.dart';
 import 'package:get/get.dart';
 import 'package:events_app/api_template/services/failure.dart';
+import 'package:events_app/authentication/domain/auth_constants.dart';
+import 'package:events_app/authentication/presentation/controller/auth_controller.dart';
 import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
 import 'package:events_app/dependency_injection/injection.dart';
 import 'package:events_app/feature/attendance/domain/entity/attendance_entity.dart';
@@ -93,6 +95,10 @@ class OrganizerEventQrController extends GetxController {
   bool get isExpired => remaining == null || remaining!.inSeconds <= 0;
 
   void _handleFailure(FailureEntity failure) {
+    if (failure.errorCode() == AuthConstants.userDisabledCode) {
+      AuthController.handleFailure(failure);
+      return;
+    }
     String displayMessage = 'Thao tác thất bại';
     failure.when(
       serverFailure: (_, message) {

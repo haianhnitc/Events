@@ -233,12 +233,10 @@ class _OrganizerStaffApplicationListPageState
                         children: [
                           Icon(Icons.event,
                               size: 12, color: Colors.grey.shade600),
-                          Flexible(
-                            child: Text(event,
-                                style: TextStyle(
-                                    fontSize: 12, color: Colors.grey.shade600),
-                                overflow: TextOverflow.ellipsis),
-                          ),
+                          Text(event,
+                              style: TextStyle(
+                                  fontSize: 12, color: Colors.grey.shade600),
+                              overflow: TextOverflow.ellipsis),
                           const SizedBox(width: 6),
                           Icon(Icons.schedule,
                               size: 12, color: Colors.grey.shade600),

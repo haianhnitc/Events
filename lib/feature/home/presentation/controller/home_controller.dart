@@ -73,15 +73,6 @@ class HomeController extends GetxController {
   }
 
   void _handleFailure(FailureEntity failure) {
-    failure.when(
-      serverFailure: (_, message) =>
-          AppSnackbarUtils.showError('Lỗi', message),
-      dataParsingFailure: () =>
-          AppSnackbarUtils.showError('Lỗi', 'Không đọc được dữ liệu'),
-      noConnectionFailure: () =>
-          AppSnackbarUtils.showError('Lỗi', 'Không có kết nối mạng'),
-      systemFailure: (_, message) =>
-          AppSnackbarUtils.showError('Lỗi', message),
-    );
+    AuthController.handleFailure(failure);
   }
 }

@@ -207,7 +207,15 @@ class AuthDatasourceImpl extends ApiProvider implements AuthDatasource {
           ? const ApiResponse.success(null)
           : _missingIdTokenResponse();
     }
-    final idToken = await firebaseUser.getIdToken(true);
+    String? idToken;
+    try {
+      idToken = await firebaseUser.getIdToken(true);
+    } catch (e) {
+      if (e.toString().contains('network-request-failed')) {
+        return const ApiResponse.serviceUnavailable();
+      }
+      return _missingIdTokenResponse();
+    }
     if (idToken == null || idToken.isEmpty) {
       return returnNullWhenMissingUser
           ? const ApiResponse.success(null)

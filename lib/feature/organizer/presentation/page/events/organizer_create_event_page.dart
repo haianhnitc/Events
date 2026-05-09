@@ -4,6 +4,7 @@ import 'package:events_app/feature/common/presentation/widget/app_date_time_pick
 import 'package:events_app/feature/common/utils/app_date_utils.dart';
 import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
 import 'package:events_app/feature/event_management/domain/entity/event_entity.dart';
+import 'package:events_app/feature/organizer/event/domain/usecase/event_params.dart';
 import 'package:events_app/feature/organizer/presentation/controller/organizer_create_event_controller.dart';
 import 'package:events_app/feature/organizer/presentation/widget/event/form_widgets.dart';
 import 'package:events_app/feature/organizer/presentation/widget/event/category_picker.dart';
@@ -108,16 +109,18 @@ class _OrganizerCreateEventPageState extends State<OrganizerCreateEventPage> {
                       isLoading: _ctrl.isLoadingCategories,
                       onToggle: _ctrl.toggleCategoryOption,
                     ),
-                    FeedbackQuestionStep(
+                    Obx(() => FeedbackQuestionStep(
                       questions: _ctrl.feedbackQuestions,
                       onSave: (q) {
-                        _ctrl.addFeedbackQuestion(q);
-                      },
-                      onUpdate: (i, q) {
-                        _ctrl.updateFeedbackQuestion(i, q);
+                        _ctrl.addFeedbackQuestion(
+                          questionContent: q.questionContent ?? '',
+                          questionType: q.questionType ?? FeedbackQuestionType.text,
+                          isRequired: q.isRequired ?? false,
+                          options: q.options?.map((o) => o.optionValue ?? '').toList(),
+                        );
                       },
                       onRemoveQuestion: _ctrl.removeFeedbackQuestion,
-                    ),
+                    )),
                     _buildReviewStep(),
                   ],
                 ),

@@ -82,5 +82,5 @@ class EventSummaryEntity {
   }
 
   @override
-  int get hashCode => Object.hash(eventId, title);
+  int get hashCode => eventId.hashCode;
 }

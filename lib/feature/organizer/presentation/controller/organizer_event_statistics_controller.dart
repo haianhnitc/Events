@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:events_app/api_template/services/failure.dart';
+import 'package:events_app/authentication/presentation/controller/auth_controller.dart';
 import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
 import 'package:events_app/dependency_injection/injection.dart';
 import 'package:events_app/feature/event_management/domain/entity/event_statistic_entity.dart';
@@ -86,11 +87,6 @@ class OrganizerEventStatisticsController extends GetxController {
   }
 
   void _handleFailure(FailureEntity failure) {
-    failure.when(
-      serverFailure: (_, message) => AppSnackbarUtils.showError('Lỗi', message ?? 'Lấy thống kê thất bại'),
-      dataParsingFailure: () => AppSnackbarUtils.showError('Lỗi', 'Không đọc được dữ liệu thống kê'),
-      noConnectionFailure: () => AppSnackbarUtils.showError('Lỗi', 'Không có kết nối mạng'),
-      systemFailure: (_, message) => AppSnackbarUtils.showError('Lỗi', message ?? 'Lỗi hệ thống'),
-    );
+    AuthController.handleFailure(failure);
   }
 }

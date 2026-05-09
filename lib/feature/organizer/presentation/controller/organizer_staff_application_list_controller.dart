@@ -1,6 +1,7 @@
 import 'package:events_app/feature/common/domain/enum/app_enum.dart';
 import 'package:get/get.dart';
 import 'package:events_app/api_template/services/failure.dart';
+import 'package:events_app/authentication/presentation/controller/auth_controller.dart';
 import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
 import 'package:events_app/dependency_injection/injection.dart';
 import 'package:events_app/feature/staff_application/domain/entity/staff_application_entity.dart';
@@ -85,15 +86,6 @@ class OrganizerStaffApplicationListController extends GetxController {
       .length;
 
   void _handleFailure(FailureEntity failure) {
-    failure.when(
-      serverFailure: (_, message) => AppSnackbarUtils.showError(
-          'Lỗi', message ?? 'Lấy danh sách thất bại'),
-      dataParsingFailure: () =>
-          AppSnackbarUtils.showError('Lỗi', 'Không đọc được dữ liệu'),
-      noConnectionFailure: () =>
-          AppSnackbarUtils.showError('Lỗi', 'Không có kết nối mạng'),
-      systemFailure: (_, message) =>
-          AppSnackbarUtils.showError('Lỗi', message ?? 'Lỗi hệ thống'),
-    );
+    AuthController.handleFailure(failure);
   }
 }

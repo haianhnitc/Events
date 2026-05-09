@@ -35,7 +35,8 @@ class _RegisterScreenState extends State<RegisterScreen>
         elevation: 0,
         leading: IconButton(
           onPressed: () => Get.back(),
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xff273143)),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded,
+              color: Color(0xff273143)),
         ),
         title: const Text(
           'Tạo tài khoản',
@@ -104,10 +105,9 @@ class _RegisterScreenState extends State<RegisterScreen>
               borderRadius: BorderRadius.circular(10),
             ),
             child: Image.asset(
-              AssetPath.linkLogo,
+              AssetPath.logo,
               width: 24,
               height: 24,
-              color: Colors.white,
             ),
           ),
           const SizedBox(width: 10),
@@ -150,7 +150,8 @@ class _RegisterScreenState extends State<RegisterScreen>
         labelColor: const Color(0xff06B6D4),
         unselectedLabelColor: const Color(0xff64748B),
         labelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-        unselectedLabelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+        unselectedLabelStyle:
+            const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
         tabs: const [
           Tab(
             child: Row(

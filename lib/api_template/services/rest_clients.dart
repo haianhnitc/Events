@@ -225,8 +225,16 @@ class NRDRestClient extends RestClient {
         return const ApiResponse.unauthorized(
             ApiResponseError(code: '401', message: 'Unauthorized', errors: []));
       case 403:
-        return const ApiResponse.forbidden(
-            ApiResponseError(code: '403', message: 'Forbidden', errors: []));
+        {
+          String code = '403';
+          String message = 'Forbidden';
+          if (response.data is Map<String, dynamic>) {
+            code = response.data['errorCode']?.toString() ?? '403';
+            message = response.data['message']?.toString() ?? 'Tài khoản không có quyền truy cập.';
+          }
+          return ApiResponse.forbidden(
+              ApiResponseError(code: code, message: message, errors: []));
+        }
       case 404:
         return ApiResponse.notFound(ApiResponseError(
             code: '404', message: response.data.toString(), errors: []));

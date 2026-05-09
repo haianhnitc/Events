@@ -11,6 +11,7 @@ export 'organizer_manual_checkin_controller.dart';
 export 'organizer_participant_detail_controller.dart';
 export 'organizer_participant_list_controller.dart';
 export 'organizer_profile_controller.dart';
+export 'organizer_recruitment_detail_controller.dart';
 export 'organizer_recruitment_form_controller.dart';
 export 'organizer_recruitment_list_controller.dart';
 export 'organizer_staff_application_detail_controller.dart';

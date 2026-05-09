@@ -215,7 +215,7 @@ class _OrganizerStaffApplicationDetailPageState
                   '${index + 1}',
                   answer.questionText ?? 'Câu hỏi',
                   answer.answerValue ?? '',
-                  answer.questionType?.apiValue ?? 'TEXT',
+                  answer.questionType,
                 ),
               ],
             );
@@ -226,16 +226,16 @@ class _OrganizerStaffApplicationDetailPageState
   }
 
   Widget _buildAnswerItem(
-      String num, String question, String answer, String type) {
+      String num, String question, String answer, RequirementQuestionType? type) {
     IconData typeIcon;
     Color typeColor;
 
-    switch (type.toUpperCase()) {
-      case 'SINGLE_CHOICE':
+    switch (type) {
+      case RequirementQuestionType.singleChoice:
         typeIcon = Icons.radio_button_checked;
         typeColor = const Color(0xFF8B5CF6);
         break;
-      case 'MULTIPLE_CHOICE':
+      case RequirementQuestionType.multipleChoice:
         typeIcon = Icons.check_box;
         typeColor = const Color(0xFFF59E0B);
         break;

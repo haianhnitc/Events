@@ -602,11 +602,11 @@ class _OrganizerEventDetailPageState extends State<OrganizerEventDetailPage> {
         if (isDraft || isPublished) const SizedBox(height: 10),
         Obx(() => _buildActionBtn(
               icon: Icons.cancel_outlined,
-              label: _detailCtrl.isActionLoading.value
+              label: _detailCtrl.isCancelling.value
                   ? 'Đang hủy...'
                   : 'Hủy sự kiện',
               color: const Color(0xFFEF4444),
-              onTap: _detailCtrl.isActionLoading.value
+              onTap: _detailCtrl.isCancelling.value
                   ? () {}
                   : () => _handleCancel(),
             )),

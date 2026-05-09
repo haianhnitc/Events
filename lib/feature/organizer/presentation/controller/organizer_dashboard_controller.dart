@@ -48,15 +48,6 @@ class OrganizerDashboardController extends GetxController {
   }
 
   void _handleFailure(FailureEntity failure) {
-    failure.when(
-      serverFailure: (_, message) => AppSnackbarUtils.showError(
-          'Lỗi', message ?? 'Lấy dashboard thất bại'),
-      dataParsingFailure: () =>
-          AppSnackbarUtils.showError('Lỗi', 'Không đọc được dữ liệu dashboard'),
-      noConnectionFailure: () =>
-          AppSnackbarUtils.showError('Lỗi', 'Không có kết nối mạng'),
-      systemFailure: (_, message) =>
-          AppSnackbarUtils.showError('Lỗi', message ?? 'Lỗi hệ thống'),
-    );
+    AuthController.handleFailure(failure);
   }
 }

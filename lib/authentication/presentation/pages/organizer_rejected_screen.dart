@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:events_app/authentication/domain/auth_constants.dart';
 import 'package:events_app/authentication/presentation/controller/auth_controller.dart';
+import 'package:events_app/authentication/presentation/pages/login_screen.dart';
 import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -35,7 +36,7 @@ class _OrganizerRejectedScreenState extends State<OrganizerRejectedScreen> {
   void _handleAuthEvent(AuthEvent event) {
     if (event == AuthEvent.logoutComplete ||
         event == AuthEvent.sessionExpired) {
-      Get.offAllNamed('/login');
+      Get.offAll(() => const LoginScreen());
     }
   }
 

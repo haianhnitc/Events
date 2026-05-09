@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:events_app/api_template/services/failure.dart';
+import 'package:events_app/app_layout.dart';
 import 'package:events_app/authentication/data/datasource/auth_datasource.dart';
 import 'package:events_app/authentication/domain/auth_constants.dart';
 import 'package:events_app/authentication/domain/usecase/get_current_user_usecase.dart';
@@ -12,6 +13,10 @@ import 'package:events_app/authentication/domain/usecase/signup_params.dart';
 import 'package:events_app/authentication/domain/usecase/signup_with_email_and_password_usecase.dart';
 import 'package:events_app/authentication/domain/usecase/signup_with_google_usecase.dart';
 import 'package:events_app/authentication/domain/usecase/upload_verification_document_usecase.dart';
+import 'package:events_app/authentication/presentation/pages/login_screen.dart';
+import 'package:events_app/authentication/presentation/pages/organizer_pending_approval_screen.dart';
+import 'package:events_app/authentication/presentation/pages/organizer_rejected_screen.dart';
+import 'package:events_app/routes/organizer_app_layout.dart';
 import 'package:events_app/authentication/presentation/widget/dialog/google_account_type_dialog.dart';
 import 'package:events_app/common/helpers/no_params.dart';
 import 'package:events_app/common/utils/upload_helper.dart';
@@ -277,6 +282,21 @@ class AuthController extends GetxController {
 
   void emitAuthEvent(AuthEvent event) => _emitAuthEvent(event);
 
+  void _navigateAfterLoginSuccess(
+      UserRole? role, VerificationStatus? verificationStatus) {
+    if (role == UserRole.organization) {
+      if (verificationStatus == VerificationStatus.pending) {
+        Get.offAll(() => const OrganizerPendingApprovalScreen());
+      } else if (verificationStatus == VerificationStatus.rejected) {
+        Get.offAll(() => const OrganizerRejectedScreen());
+      } else {
+        Get.offAll(() => const OrganizerAppLayout());
+      }
+    } else {
+      Get.offAll(() => AppLayout());
+    }
+  }
+
   void resetUserFormFields() {
     registerFullNameController.clear();
     registerEmailController.clear();
@@ -497,27 +517,32 @@ class AuthController extends GetxController {
 
   Future<void> submitLogin() async {
     final formState = loginFormState;
-    if (formState == null || !formState.validate()) return;
+    if (formState == null) return;
+    if (!formState.mounted) return;
+    if (!formState.validate()) return;
     if (isClosed) return;
-    if (formState.mounted) await login();
+    await login();
   }
 
   Future<void> submitRegister({required bool isStudent}) async {
     final formState = isStudent
         ? registerStudentFormKey.currentState
         : registerOrganizerFormKey.currentState;
-    if (formState == null || !formState.validate()) return;
+    if (formState == null) return;
+    if (!formState.mounted) return;
+    if (!formState.validate()) return;
     if (isClosed) return;
-    if (formState.mounted) await register();
+    await register();
   }
 
   Future<void> submitGoogleRegister({required bool isStudent}) async {
     final formState = isStudent
         ? registerStudentFormKey.currentState
         : registerOrganizerFormKey.currentState;
-    if (formState == null || !formState.validate()) return;
-    if (isClosed) return;
+    if (formState == null) return;
     if (!formState.mounted) return;
+    if (!formState.validate()) return;
+    if (isClosed) return;
 
     final googleResult = googleAuthResult.value;
     if (googleResult.firebaseUid.isEmpty) {
@@ -594,6 +619,10 @@ class AuthController extends GetxController {
         (user) {
           if (user == null) {
             return _handleIncompleteGoogleRegistration(firebaseUid);
+          }
+          if (user.status == UserStatus.disabled) {
+            _emitAuthEvent(AuthEvent.accountDisabled);
+            return AuthSignInResult.failure;
           }
           _populateCurrentUser(user);
           AppSnackbarUtils.showSuccess('Thành công', 'Đăng nhập thành công.');
@@ -706,6 +735,10 @@ class AuthController extends GetxController {
             );
             return AuthSignInResult.failure;
           }
+          if (user.status == UserStatus.disabled) {
+            _emitAuthEvent(AuthEvent.accountDisabled);
+            return AuthSignInResult.failure;
+          }
           _populateCurrentUser(user);
           AppSnackbarUtils.showSuccess('Thành công', 'Đăng ký thành công.');
           _emitAuthEvent(AuthEvent.loginSuccess);
@@ -753,8 +786,14 @@ class AuthController extends GetxController {
         }
 
         loginPasswordController.clear();
+        if (user.status == UserStatus.disabled) {
+          _emitAuthEvent(AuthEvent.accountDisabled);
+          return;
+        }
         _populateCurrentUser(user);
         AppSnackbarUtils.showSuccess('Thành công', 'Đăng nhập thành công.');
+        _navigateAfterLoginSuccess(
+            user.role, user.organizationProfile?.verificationStatus);
         _emitAuthEvent(AuthEvent.loginSuccess);
       },
     );
@@ -790,7 +829,7 @@ class AuthController extends GetxController {
       );
       FirebaseAuth.instance.signOut();
       Future.delayed(const Duration(seconds: 1));
-      Get.offAllNamed('/login');
+      Get.offAll(() => const LoginScreen());
       return;
     }
 
@@ -905,6 +944,10 @@ class AuthController extends GetxController {
         }
 
         _clearRegisterSensitiveFields();
+        if (user.status == UserStatus.disabled) {
+          _emitAuthEvent(AuthEvent.accountDisabled);
+          return;
+        }
         _populateCurrentUser(user);
         AppSnackbarUtils.showSuccess('Thành công', 'Tạo tài khoản thành công.');
         _emitAuthEvent(AuthEvent.loginSuccess);
@@ -966,6 +1009,49 @@ class AuthController extends GetxController {
       dataParsingFailure: () => (null, dataParsingMessage),
       noConnectionFailure: () => (null, 'Không có kết nối mạng.'),
       systemFailure: (code, message) => (code, message),
+    );
+  }
+
+  static void handleAccountDisabled() {
+    AppSnackbarUtils.showError(
+      'Tài khoản bị khóa',
+      'Tài khoản của bạn đã bị khóa. Liên hệ Admin để được hỗ trợ.',
+    );
+    Get.offAll(() => const LoginScreen());
+  }
+
+  static void handleFailure(FailureEntity failure) {
+    final code = failure.errorCode();
+    if (code == AuthConstants.userDisabledCode) {
+      handleAccountDisabled();
+      return;
+    }
+
+    // Defensive: if backend returns generic 403 with "user disabled" message,
+    // treat as account disabled (fallback for older/unpatched backend)
+    if (code == '403') {
+      final message = failure.when(
+        serverFailure: (_, m) => m,
+        dataParsingFailure: () => null,
+        noConnectionFailure: () => null,
+        systemFailure: (_, m) => m,
+      );
+      if (message != null &&
+          message.toLowerCase().contains('user is disabled')) {
+        handleAccountDisabled();
+        return;
+      }
+    }
+
+    failure.when(
+      serverFailure: (_, message) =>
+          AppSnackbarUtils.showError('Lỗi', message ?? 'Có lỗi xảy ra'),
+      dataParsingFailure: () =>
+          AppSnackbarUtils.showError('Lỗi', 'Không đọc được dữ liệu'),
+      noConnectionFailure: () =>
+          AppSnackbarUtils.showError('Lỗi', 'Không có kết nối mạng'),
+      systemFailure: (_, message) =>
+          AppSnackbarUtils.showError('Lỗi', message ?? 'Lỗi hệ thống'),
     );
   }
 
@@ -1080,10 +1166,16 @@ class AuthController extends GetxController {
   }
 
   Future<void> logout() async {
-    if (isLoadingEmail.value || isLoadingGoogle.value) return;
+    if (isLoadingEmail.value) return;
 
     isLoadingEmail.value = true;
     _isLoggingOut = true;
+
+    Get.dialog(
+      const Center(child: CircularProgressIndicator()),
+      barrierDismissible: false,
+    );
+
     final result = await _signoutUsecase(const NoParams());
 
     result.fold(
@@ -1101,9 +1193,7 @@ class AuthController extends GetxController {
       (_) {
         _populateCurrentUser(null);
         resetAllRegisterFields();
-        loginFormState?.reset();
         loginFormState = null;
-        AppSnackbarUtils.showInfo('Đăng xuất', 'Bạn đã đăng xuất thành công.');
       },
     );
 
@@ -1114,6 +1204,10 @@ class AuthController extends GetxController {
     isLoadingEmail.value = false;
     isLoadingGoogle.value = false;
     _isLoggingOut = false;
-    _emitAuthEvent(AuthEvent.logoutComplete);
+
+    Get.back();
+    AppSnackbarUtils.showInfo('Đăng xuất', 'Bạn đã đăng xuất thành công.');
+    await Future.delayed(const Duration(milliseconds: 500));
+    Get.offAll(() => const LoginScreen());
   }
 }

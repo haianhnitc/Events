@@ -1,5 +1,7 @@
 import 'package:get/get.dart';
 import 'package:events_app/api_template/services/failure.dart';
+import 'package:events_app/authentication/domain/auth_constants.dart';
+import 'package:events_app/authentication/presentation/controller/auth_controller.dart';
 import 'package:events_app/feature/common/domain/enum/app_enum.dart';
 import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
 import 'package:events_app/dependency_injection/injection.dart';
@@ -144,6 +146,10 @@ class OrganizerManualCheckinController extends GetxController {
   }
 
   void _handleFailure(FailureEntity failure) {
+    if (failure.errorCode() == AuthConstants.userDisabledCode) {
+      AuthController.handleFailure(failure);
+      return;
+    }
     String displayMessage = 'Thao tác thất bại';
     failure.when(
       serverFailure: (_, message) {
@@ -164,7 +170,7 @@ class OrganizerManualCheckinController extends GetxController {
       systemFailure: (_, message) {
         displayMessage = message ?? 'Lỗi hệ thống';
         errorMessage.value = displayMessage;
-        AppSnackbarUtils.showError('Lỗi', message ?? 'Lỗi hệ thống');
+        AppSnackbarUtils.showError('Lỗi', displayMessage);
       },
     );
   }

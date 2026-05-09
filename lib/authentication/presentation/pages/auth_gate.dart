@@ -68,11 +68,6 @@ class _AuthGateState extends State<AuthGate> {
         Get.offAll(() => const LoginScreen());
 
       case AuthEvent.accountDisabled:
-        _authEventSubscription?.cancel();
-        _authController.currentUser.value = null;
-        try {
-          _authController.logout();
-        } catch (_) {}
         AppSnackbarUtils.showError(
           'Tài khoản bị khóa',
           'Tài khoản của bạn đã bị khóa. Liên hệ Admin để được hỗ trợ.',

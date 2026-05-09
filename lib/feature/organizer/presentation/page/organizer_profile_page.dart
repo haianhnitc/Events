@@ -176,41 +176,44 @@ class _OrganizerProfilePageState extends State<OrganizerProfilePage> {
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildSectionHeader('Thông tin có thể chỉnh sửa', Icons.edit_outlined),
-          const SizedBox(height: 12),
-          Container(height: 1, color: const Color(0x0F273143)),
-          const SizedBox(height: 16),
-          CustomTextField(
-            controller: _controller.addressController,
-            labelText: 'Địa chỉ trụ sở',
-            hintText: 'Nhập địa chỉ trụ sở tổ chức',
-            prefixIcon: const Icon(
-              Icons.location_on_outlined,
-              color: Color(0xff64748B),
-              size: 20,
+      child: Form(
+        key: _controller.formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildSectionHeader('Thông tin có thể chỉnh sửa', Icons.edit_outlined),
+            const SizedBox(height: 12),
+            Container(height: 1, color: const Color(0x0F273143)),
+            const SizedBox(height: 16),
+            CustomTextField(
+              controller: _controller.addressController,
+              labelText: 'Địa chỉ trụ sở',
+              hintText: 'Nhập địa chỉ trụ sở tổ chức',
+              prefixIcon: const Icon(
+                Icons.location_on_outlined,
+                color: Color(0xff64748B),
+                size: 20,
+              ),
+              validator: _controller.validateAddress,
+              textInputAction: TextInputAction.next,
+              maxLines: 2,
             ),
-            validator: _controller.validateAddress,
-            textInputAction: TextInputAction.next,
-            maxLines: 2,
-          ),
-          const SizedBox(height: 14),
-          CustomTextField(
-            controller: _controller.descriptionController,
-            labelText: 'Mô tả',
-            hintText: 'Mô tả về tổ chức của bạn',
-            prefixIcon: const Icon(
-              Icons.description_outlined,
-              color: Color(0xff64748B),
-              size: 20,
+            const SizedBox(height: 14),
+            CustomTextField(
+              controller: _controller.descriptionController,
+              labelText: 'Mô tả',
+              hintText: 'Mô tả về tổ chức của bạn',
+              prefixIcon: const Icon(
+                Icons.description_outlined,
+                color: Color(0xff64748B),
+                size: 20,
+              ),
+              validator: _controller.validateDescription,
+              textInputAction: TextInputAction.done,
+              maxLines: 4,
             ),
-            validator: _controller.validateDescription,
-            textInputAction: TextInputAction.done,
-            maxLines: 4,
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -256,18 +259,71 @@ class _OrganizerProfilePageState extends State<OrganizerProfilePage> {
             onTap: () async {
               final confirmed = await Get.dialog<bool>(
                 AlertDialog(
-                  title: const Text('Đăng xuất'),
-                  content: const Text('Bạn có chắc muốn đăng xuất không?'),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  title: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFEF4444).withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.logout,
+                          color: Color(0xFFEF4444),
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      const Text(
+                        'Đăng xuất',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 18,
+                        ),
+                      ),
+                    ],
+                  ),
+                  content: const Text(
+                    'Bạn có chắc muốn đăng xuất không?',
+                    style: TextStyle(fontSize: 15),
+                  ),
+                  actionsPadding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
                   actions: [
                     TextButton(
                       onPressed: () => Get.back(result: false),
-                      child: const Text('Hủy'),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 10,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      child: const Text(
+                        'Hủy',
+                        style: TextStyle(fontSize: 15),
+                      ),
                     ),
-                    TextButton(
+                    ElevatedButton(
                       onPressed: () => Get.back(result: true),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFEF4444),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 10,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
                       child: const Text(
                         'Đăng xuất',
-                        style: TextStyle(color: Color(0xFFEF4444)),
+                        style: TextStyle(fontSize: 15),
                       ),
                     ),
                   ],

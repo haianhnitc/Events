@@ -1,17 +1,41 @@
-import 'package:events_app/common/path/asset_path.dart';
 import 'package:events_app/feature/common/utils/app_date_utils.dart';
 import 'package:events_app/feature/common/utils/app_image_utils.dart';
 import 'package:events_app/feature/common/utils/app_map_utils.dart';
+import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
 import 'package:events_app/feature/event_management/presentation/page/event_detail_page.dart';
-import 'package:events_app/feature/recruitment/domain/entity/ctv_recruitment_entity.dart';
+import 'package:events_app/feature/organizer/presentation/controller/organizer_recruitment_detail_controller.dart';
+import 'package:events_app/feature/organizer/presentation/page/recruitment/organizer_recruitment_form_page.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 
-class OrganizerRecruitmentDetailPage extends StatelessWidget {
-  final CtvRecruitmentEntity recruitment;
+class OrganizerRecruitmentDetailPage extends StatefulWidget {
+  final int recruitmentId;
 
-  const OrganizerRecruitmentDetailPage({super.key, required this.recruitment});
+  const OrganizerRecruitmentDetailPage({
+    super.key,
+    required this.recruitmentId,
+  });
+
+  @override
+  State<OrganizerRecruitmentDetailPage> createState() =>
+      _OrganizerRecruitmentDetailPageState();
+}
+
+class _OrganizerRecruitmentDetailPageState
+    extends State<OrganizerRecruitmentDetailPage> {
+  late final OrganizerRecruitmentDetailController _ctrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = OrganizerRecruitmentDetailController.attach(widget.recruitmentId);
+  }
+
+  @override
+  void dispose() {
+    OrganizerRecruitmentDetailController.detach(widget.recruitmentId);
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,28 +57,57 @@ class OrganizerRecruitmentDetailPage extends StatelessWidget {
           ),
         ),
         centerTitle: true,
+        actions: [
+          Obx(() => _ctrl.isLoading.value
+              ? const SizedBox.shrink()
+              : IconButton(
+                  icon: const Icon(Icons.edit_outlined, color: Color(0xff64748B)),
+                  onPressed: () {
+                    final reason = _ctrl.getEditBlockReason();
+                    if (reason != null) {
+                      AppSnackbarUtils.showError('Không thể chỉnh sửa', reason);
+                      return;
+                    }
+                    Get.to(() => OrganizerRecruitmentFormPage(
+                        recruitmentId: _ctrl.recruitment.value!.ctvRecruitmentId));
+                  },
+                )),
+        ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildBanner(),
-            const SizedBox(height: 16),
-            _buildStatusBadge(),
-            const SizedBox(height: 16),
-            _buildInfoCard(context),
-            const SizedBox(height: 16),
-            if (_hasRewards) _buildRewardsSection(),
-            const SizedBox(height: 16),
-            if ((recruitment.description ?? '').isNotEmpty) _buildDescription(),
-          ],
-        ),
+      body: Obx(() {
+        if (_ctrl.isLoading.value) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (_ctrl.recruitment.value == null) {
+          return const Center(child: Text('Không tìm thấy dữ liệu'));
+        }
+        return _buildContent(_ctrl.recruitment.value!);
+      }),
+    );
+  }
+
+  Widget _buildContent(recruitment) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildBanner(recruitment),
+          const SizedBox(height: 16),
+          _buildStatusBadge(recruitment),
+          const SizedBox(height: 16),
+          _buildInfoCard(recruitment),
+          const SizedBox(height: 16),
+          if (_hasRewards(recruitment)) _buildRewardsSection(recruitment),
+          const SizedBox(height: 16),
+          if ((recruitment.description ?? '').isNotEmpty)
+            _buildDescription(recruitment),
+        ],
       ),
     );
   }
 
-  Widget _buildBanner() {
+  Widget _buildBanner(recruitment) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(12),
       child: SizedBox(
@@ -69,7 +122,7 @@ class OrganizerRecruitmentDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusBadge() {
+  Widget _buildStatusBadge(recruitment) {
     final isOpen = recruitment.isOpen ?? false;
     return Row(
       children: [
@@ -113,7 +166,7 @@ class OrganizerRecruitmentDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoCard(BuildContext context) {
+  Widget _buildInfoCard(recruitment) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -139,7 +192,8 @@ class OrganizerRecruitmentDetailPage extends StatelessWidget {
           _infoRow(Icons.calendar_today_outlined, 'Thời gian',
               AppDateUtils.formatDateTime(recruitment.startTime)),
           const SizedBox(height: 8),
-          _infoRow(Icons.work_outline, 'Vị trí', recruitment.roleName ?? 'N/A'),
+          _infoRow(
+              Icons.work_outline, 'Vị trí', recruitment.roleName ?? 'N/A'),
           const SizedBox(height: 8),
           _infoRow(
             Icons.location_on_outlined,
@@ -217,8 +271,7 @@ class OrganizerRecruitmentDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _infoRow(IconData icon, String label, String value,
-      {Widget? trailing}) {
+  Widget _infoRow(IconData icon, String label, String value, {Widget? trailing}) {
     return Row(
       children: [
         Icon(icon, size: 16, color: const Color(0xFF64748B)),
@@ -242,13 +295,13 @@ class OrganizerRecruitmentDetailPage extends StatelessWidget {
     );
   }
 
-  bool get _hasRewards =>
+  bool _hasRewards(recruitment) =>
       (recruitment.rewardCoin ?? 0) > 0 ||
       (recruitment.youthUnionPoint ?? 0) > 0 ||
       (recruitment.cashRewardAmount ?? 0) > 0 ||
       (recruitment.certificateName ?? '').trim().isNotEmpty;
 
-  Widget _buildRewardsSection() {
+  Widget _buildRewardsSection(recruitment) {
     final badges = <Widget>[];
 
     if ((recruitment.rewardCoin ?? 0) > 0) {
@@ -265,7 +318,7 @@ class OrganizerRecruitmentDetailPage extends StatelessWidget {
     }
     if ((recruitment.certificateName ?? '').trim().isNotEmpty) {
       badges.add(_rewardBadge(Icons.card_membership, const Color(0xFF06B6D4),
-          recruitment.certificateName!));
+          recruitment.certificateName));
     }
 
     return Wrap(
@@ -300,7 +353,7 @@ class OrganizerRecruitmentDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildDescription() {
+  Widget _buildDescription(recruitment) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),

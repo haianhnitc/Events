@@ -93,26 +93,26 @@ class _OrganizerStaffAnswerSummaryPageState
                 const Icon(Icons.summarize, size: 24, color: Color(0xFF06B6D4)),
           ),
           const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Obx(() => Text(
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
                       'Bai tuyen CTV',
                       style: const TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
                           color: Color(0xff273143)),
-                    )),
-                const SizedBox(height: 4),
-                Obx(() => Text(
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
                       '${_ctrl.applications.length} don ung tuyen',
                       style:
                           TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                    )),
-              ],
-            ),
-          ),
+                    ),
+                  ],
+                ),
+              ),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
