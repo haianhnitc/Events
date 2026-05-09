@@ -16,6 +16,7 @@ class EventOrCtvList extends StatelessWidget {
       required this.hasMore,
       required this.isLoadingMore,
       required this.onLoadMore,
+      this.isInitialLoading = false,
       this.onTap,
       this.onPrimaryActionTap,
       this.resolveActionState});
@@ -27,6 +28,7 @@ class EventOrCtvList extends StatelessWidget {
   final bool hasMore;
   final bool isLoadingMore;
   final VoidCallback onLoadMore;
+  final bool isInitialLoading;
   final Function? onTap;
   final Function(CtvRecruitmentEntity recruitment)? onPrimaryActionTap;
   final ActionButtonState Function(CtvRecruitmentEntity recruitment)?
@@ -58,7 +60,13 @@ class EventOrCtvList extends StatelessWidget {
                 ),
           const SizedBox(height: 16),
           Expanded(
-            child: isEvent ? _buildEventList(listEvent) : _buildCtvList(listCtv),
+            child: isInitialLoading
+                ? const Center(
+                    child: CircularProgressIndicator(color: Color(0xff06B6D4)),
+                  )
+                : isEvent
+                    ? _buildEventList(listEvent)
+                    : _buildCtvList(listCtv),
           ),
         ],
       ),
@@ -87,7 +95,7 @@ class EventOrCtvList extends StatelessWidget {
           crossAxisCount: 2,
           crossAxisSpacing: 12,
           mainAxisSpacing: 12,
-          childAspectRatio: 0.7),
+          childAspectRatio: 0.65),
       itemBuilder: (context, index) {
         if (index == listEvent.length && showLoader) {
           if (hasMore && !isLoadingMore) {
@@ -144,7 +152,7 @@ class EventOrCtvList extends StatelessWidget {
           crossAxisCount: 2,
           crossAxisSpacing: 12,
           mainAxisSpacing: 12,
-          childAspectRatio: 0.7),
+          childAspectRatio: 0.65),
       itemBuilder: (context, index) {
         if (index == listCtv.length && showLoader) {
           if (hasMore && !isLoadingMore) {

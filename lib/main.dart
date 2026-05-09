@@ -1,4 +1,5 @@
 import 'package:events_app/feature/event_management/presentation/page/event_detail_page.dart';
+import 'package:events_app/feature/user_management/presentation/page/edit_profile_page.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:events_app/dependency_injection/injection.dart';
@@ -84,6 +85,10 @@ class MyApp extends StatelessWidget {
             final args = Get.arguments as Map<String, dynamic>?;
             return EventDetailPage(eventId: args?['eventId'] as int?);
           },
+        ),
+        GetPage(
+          name: '/edit-profile',
+          page: () => const EditProfilePage(),
         ),
       ],
     );

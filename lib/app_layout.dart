@@ -20,9 +20,13 @@ class AppLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        appBar: AppBar(
+    return MediaQuery(
+      data: MediaQuery.of(context).copyWith(
+        viewInsets: MediaQuery.of(context).viewInsets.copyWith(bottom: 0),
+      ),
+      child: SafeArea(
+        child: Scaffold(
+          appBar: AppBar(
           toolbarHeight: 61,
           backgroundColor: Colors.white,
           title: Image.asset(
@@ -121,7 +125,6 @@ class AppLayout extends StatelessWidget {
           ],
         ),
         backgroundColor: Colors.white,
-        resizeToAvoidBottomInset: true,
         body: Obx(
           () => IndexedStack(
             index: appLayoutController.currentIndex,
@@ -181,6 +184,7 @@ class AppLayout extends StatelessWidget {
           ),
         ),
       ),
+    ),
     );
   }
 }

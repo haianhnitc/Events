@@ -6,7 +6,7 @@ class PaymentSummarySection extends StatelessWidget {
   final int coinUsed;
   final int finalAmount;
   final String currency;
-
+  final String coinError; 
   const PaymentSummarySection({
     super.key,
     required this.currentCoin,
@@ -14,6 +14,7 @@ class PaymentSummarySection extends StatelessWidget {
     required this.coinUsed,
     required this.finalAmount,
     this.currency = 'VND',
+    this.coinError = '',
   });
 
   @override

@@ -72,8 +72,8 @@ class MyProfileController extends GetxController {
 
     if (user.userId != null) {
       _fetchUserRank(user.userId!);
+      _fetchUserPackages();
     }
-    _fetchUserPackages();
   }
 
   Future<void> _fetchUserRank(int userId) async {
@@ -117,9 +117,13 @@ class MyProfileController extends GetxController {
     logoPreviewUrl.value = org?.logoUrl;
   }
 
-  void setGender(String? gender) { selectedGender.value = gender; }
+  void setGender(String? gender) {
+    selectedGender.value = gender;
+  }
 
-  void setBirthDate(DateTime? date) { selectedBirthDate.value = date; }
+  void setBirthDate(DateTime? date) {
+    selectedBirthDate.value = date;
+  }
 
   void onAvatarUploaded(int fileId, String url) {
     avatarFileId.value = fileId;
@@ -162,7 +166,8 @@ class MyProfileController extends GetxController {
         : _buildUserParams();
 
     if (params.isEmpty) {
-      AppSnackbarUtils.showInfo('Không có thay đổi', 'Bạn chưa thay đổi thông tin nào.');
+      AppSnackbarUtils.showInfo(
+          'Không có thay đổi', 'Bạn chưa thay đổi thông tin nào.');
       return;
     }
 
@@ -179,7 +184,8 @@ class MyProfileController extends GetxController {
         isSubmitting.value = false;
         if (updated != null) {
           AuthController.to.currentUser.value = updated;
-          AppSnackbarUtils.showSuccess('Thành công', 'Cập nhật thông tin thành công.');
+          AppSnackbarUtils.showSuccess(
+              'Thành công', 'Cập nhật thông tin thành công.');
           Future.delayed(const Duration(milliseconds: 800), () => Get.back());
         }
       },

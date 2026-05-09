@@ -8,7 +8,6 @@ import 'package:events_app/feature/user_management/presentation/page/package_lis
 import 'package:events_app/feature/user_management/presentation/page/rank_list_page.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
 
 class MyProfileCard extends StatelessWidget {
   final VoidCallback? onEditTap;
@@ -23,7 +22,9 @@ class MyProfileCard extends StatelessWidget {
       final user = AuthController.to.currentUser.value;
       final rank = profileController.userRank.value;
       final packages = profileController.userPackages;
-      final activePackage = packages.where((p) => p.status == UserPackageStatus.active).firstOrNull;
+      final activePackage = packages
+          .where((p) => p.status == UserPackageStatus.active)
+          .firstOrNull;
 
       return Container(
         decoration: BoxDecoration(
@@ -191,7 +192,8 @@ class MyProfileCard extends StatelessWidget {
     );
   }
 
-  Widget _buildStatsRowSection(UserEntity? user, RankEntity? rank, UserPackageEntity? activePackage) {
+  Widget _buildStatsRowSection(
+      UserEntity? user, RankEntity? rank, UserPackageEntity? activePackage) {
     return Builder(
       builder: (ctx) {
         return Column(
@@ -205,7 +207,8 @@ class MyProfileCard extends StatelessWidget {
     );
   }
 
-  Widget _buildStatsRow(UserEntity? user, RankEntity? rank, UserPackageEntity? activePackage) {
+  Widget _buildStatsRow(
+      UserEntity? user, RankEntity? rank, UserPackageEntity? activePackage) {
     final levelName = rank?.levelName;
     final ranking = rank?.ranking;
     final coin = user?.currentCoin ?? 0;
@@ -317,11 +320,16 @@ class MyProfileCard extends StatelessWidget {
 
   Color _getLevelColor(int level) {
     switch (level) {
-      case 5: return const Color(0xff7B2FBE);
-      case 4: return const Color(0xffFF6B35);
-      case 3: return const Color(0xff06B6D4);
-      case 2: return const Color(0xff00A63E);
-      default: return const Color(0xff94A3B8);
+      case 5:
+        return const Color(0xff7B2FBE);
+      case 4:
+        return const Color(0xffFF6B35);
+      case 3:
+        return const Color(0xff06B6D4);
+      case 2:
+        return const Color(0xff00A63E);
+      default:
+        return const Color(0xff94A3B8);
     }
   }
 

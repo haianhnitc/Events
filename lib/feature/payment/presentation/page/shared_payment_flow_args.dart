@@ -4,18 +4,21 @@ import 'package:events_app/feature/common/domain/enum/app_enum.dart';
 import 'package:events_app/feature/event_management/domain/entity/event_entity.dart';
 import 'package:events_app/feature/common/domain/entity/package_entity.dart';
 import 'package:events_app/feature/portfolio/domain/entity/portfolio_entity.dart';
+import 'package:events_app/feature/user_management/domain/entity/user_package_entity.dart';
 import 'package:events_app/feature/venue/domain/entity/venue_entity.dart';
 
 class PaymentItemInfo {
   final EventEntity? event;
   final PackageEntity? package;
   final PortfolioEntity? portfolio;
+  final UserPackageEntity? userPackage;
   final bool autoRenew;
 
   const PaymentItemInfo._({
     this.event,
     this.package,
     this.portfolio,
+    this.userPackage,
     this.autoRenew = false,
   });
 
@@ -29,6 +32,10 @@ class PaymentItemInfo {
 
   factory PaymentItemInfo.forPortfolio(PortfolioEntity portfolio) {
     return PaymentItemInfo._(portfolio: portfolio);
+  }
+
+  factory PaymentItemInfo.forUserPackage(UserPackageEntity userPackage) {
+    return PaymentItemInfo._(userPackage: userPackage);
   }
 
   factory PaymentItemInfo.fromJson(Map<String, dynamic> json) {
@@ -117,6 +124,7 @@ class PaymentItemInfo {
     if (event != null) return event!.title ?? 'Sự kiện';
     if (package != null) return package!.name ?? package!.packageName ?? 'Gói dịch vụ';
     if (portfolio != null) return portfolio!.title ?? 'Portfolio';
+    if (userPackage != null) return userPackage!.packageName ?? 'Gói dịch vụ';
     return '';
   }
 
@@ -124,6 +132,12 @@ class PaymentItemInfo {
     if (event != null) return event!.organizerName;
     if (package != null) return package!.description;
     if (portfolio != null) return portfolio!.description;
+    if (userPackage != null) {
+      final end = userPackage!.endTime;
+      if (end != null) {
+        return 'Hết hạn: ${_formatDate(end)}';
+      }
+    }
     return null;
   }
 
@@ -135,7 +149,12 @@ class PaymentItemInfo {
     if (event != null) return event!.price;
     if (package != null) return package!.price;
     if (portfolio != null) return portfolio!.price;
+    if (userPackage != null) return userPackage!.price?.toInt();
     return null;
+  }
+
+  String _formatDate(DateTime date) {
+    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
   }
 }
 
@@ -271,7 +290,7 @@ class SharedPaymentFlowArgs {
     String title = 'Thanh toán gia hạn gói',
     String subtitle = 'Thanh toán để gia hạn gói dịch vụ.',
     int initialCoinUsed = 0,
-    PackageEntity? package,
+    UserPackageEntity? userPackage,
   }) {
     return SharedPaymentFlowArgs(
       title: title,
@@ -280,7 +299,7 @@ class SharedPaymentFlowArgs {
       referenceId: userPackageId,
       originalAmount: originalAmount,
       initialCoinUsed: initialCoinUsed,
-      itemInfo: package != null ? PaymentItemInfo.forPackage(package, autoRenew: false) : null,
+      itemInfo: userPackage != null ? PaymentItemInfo.forUserPackage(userPackage) : null,
     );
   }
 

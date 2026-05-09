@@ -1210,4 +1210,17 @@ class AuthController extends GetxController {
     await Future.delayed(const Duration(milliseconds: 500));
     Get.offAll(() => const LoginScreen());
   }
+
+  Future<void> printAccessTokenForPostman() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      debugPrint('[TOKEN] No user logged in');
+      return;
+    }
+    final token = await user.getIdToken(true);
+    debugPrint('[TOKEN] =========================================');
+    debugPrint('[TOKEN] Access Token for Postman:');
+    debugPrint(token);
+    debugPrint('[TOKEN] =========================================');
+  }
 }

@@ -1,17 +1,16 @@
 import 'package:events_app/common/path/asset_path.dart';
-import 'package:events_app/feature/home/presentation/controller/home_controller.dart';
 import 'package:events_app/feature/user_management/domain/entity/rank_entity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 
 class RankingCard extends StatelessWidget {
-  final RankEntity? rank;
+  final Rx<RankEntity?>? userRank;
   final VoidCallback? onTap;
 
   const RankingCard({
     super.key,
-    this.rank,
+    this.userRank,
     this.onTap,
   });
 
@@ -75,15 +74,9 @@ class RankingCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 5.27),
                       Obx(() {
-                        final homeController =
-                            Get.isRegistered<HomeController>()
-                                ? Get.find<HomeController>()
-                                : null;
-                        final effectiveRank =
-                            rank ?? homeController?.userRank.value;
+                        final effectiveRank = userRank?.value;
                         final ranking = effectiveRank?.ranking;
-                        final levelName =
-                            effectiveRank?.levelName ?? 'Chưa có';
+                        final levelName = effectiveRank?.levelName ?? 'Chưa có';
                         final totalCoin = effectiveRank?.totalCoin ?? 0;
                         return Text(
                           ranking != null

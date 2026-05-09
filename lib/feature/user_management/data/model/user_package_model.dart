@@ -15,7 +15,7 @@ class UserPackageModel with _$UserPackageModel {
     UserPackageStatus? status,
     DateTime? startDate,
     DateTime? expiryDate,
-    String? notes,
+    num? price,
     DateTime? createdAt,
     @Default(false) bool? autoRenew,
   }) = _UserPackageModel;
@@ -32,7 +32,7 @@ class UserPackageModel with _$UserPackageModel {
       status: entity.status,
       startDate: entity.startTime,
       expiryDate: entity.endTime,
-      notes: entity.notes,
+      price: entity.price,
       createdAt: entity.createdTime,
       autoRenew: entity.autoRenew,
     );
@@ -49,7 +49,7 @@ extension UserPackageModelExtension on UserPackageModel {
       status: status,
       startTime: startDate,
       endTime: expiryDate,
-      notes: notes,
+      price: price,
       createdTime: createdAt,
       autoRenew: autoRenew,
     );

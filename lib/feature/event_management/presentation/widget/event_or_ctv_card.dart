@@ -79,7 +79,6 @@ class EventOrCtvCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 256,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -245,7 +244,8 @@ class EventOrCtvCard extends StatelessWidget {
             right: 8,
             child: Row(
               children: [
-                Expanded(
+                Flexible(
+                  flex: 2,
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     height: 23,
@@ -279,31 +279,36 @@ class EventOrCtvCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 8),
-                Container(
-                  padding: const EdgeInsets.only(left: 8, right: 8),
-                  height: 23,
-                  decoration: BoxDecoration(
-                    color: isEvent
-                        ? const Color(0xff06B6D4)
-                        : const Color(0xff00A63E),
-                    borderRadius: BorderRadius.circular(32),
-                    boxShadow: [
-                      BoxShadow(
-                        offset: const Offset(0, 4),
-                        spreadRadius: -1,
-                        blurRadius: 6,
-                        color: Colors.white.withOpacity(0.1),
-                      )
-                    ],
-                  ),
-                  child: const Center(
-                    child: Text(
-                      'Chứng nhận',
-                      style: TextStyle(
-                        fontSize: 10,
-                        height: 15 / 10,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.white,
+                Flexible(
+                  flex: 3,
+                  child: Container(
+                    padding: const EdgeInsets.only(left: 8, right: 8),
+                    height: 23,
+                    decoration: BoxDecoration(
+                      color: isEvent
+                          ? const Color(0xff06B6D4)
+                          : const Color(0xff00A63E),
+                      borderRadius: BorderRadius.circular(32),
+                      boxShadow: [
+                        BoxShadow(
+                          offset: const Offset(0, 4),
+                          spreadRadius: -1,
+                          blurRadius: 6,
+                          color: Colors.white.withOpacity(0.1),
+                        )
+                      ],
+                    ),
+                    child: const Center(
+                      child: Text(
+                        'Chứng nhận',
+                        style: TextStyle(
+                          fontSize: 10,
+                          height: 15 / 10,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
                       ),
                     ),
                   ),

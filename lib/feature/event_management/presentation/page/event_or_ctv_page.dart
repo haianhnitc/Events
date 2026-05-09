@@ -104,6 +104,17 @@ class _EventOrCtvPageState extends State<EventOrCtvPage> {
   Widget _buildContent(BuildContext context) {
     final selectedEvent = eventController.selectedEvent.value;
     final selectedCtvRecruitment = ctvController.selectedRecruitment.value;
+    final isLoading = widget.isEvent
+        ? eventController.isLoading.value
+        : ctvController.isLoading.value;
+    final isLoadingMore = widget.isEvent
+        ? eventController.isLoadingMore.value
+        : ctvController.isLoadingMore.value;
+    final hasMore = widget.isEvent
+        ? eventController.hasMore.value
+        : ctvController.hasMore.value;
+    final eventItems = eventController.events.toList();
+    final ctvItems = ctvController.recruitments.toList();
 
     if (widget.isEvent && selectedEvent != null) {
       return EventDetailPage(
@@ -123,14 +134,6 @@ class _EventOrCtvPageState extends State<EventOrCtvPage> {
       );
     }
 
-    return _buildListContent(context);
-  }
-
-  Widget _buildListContent(BuildContext context) {
-    final hasActiveFilter = widget.isEvent
-        ? _hasActiveFilters(eventController.selectedFilters)
-        : _hasActiveFilters(ctvController.selectedFilters);
-
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F8),
       body: SafeArea(
@@ -139,42 +142,31 @@ class _EventOrCtvPageState extends State<EventOrCtvPage> {
             HeaderEventOrCtvPage(
               isEvent: widget.isEvent,
               onFilterTap: () => _showFilterBottomSheet(context),
-              hasActiveFilter: hasActiveFilter,
+              hasActiveFilter: _hasActiveFilters(widget.isEvent
+                  ? eventController.selectedFilters
+                  : ctvController.selectedFilters),
               onSearchChanged: _handleSearchChanged,
               searchController: _effectiveSearchController,
             ),
             Expanded(
-              child: Obx(
-                () {
-                  final eventItems = eventController.events.toList();
-                  final ctvItems = ctvController.recruitments.toList();
-                  final isLoadingMore = widget.isEvent
-                      ? eventController.isLoadingMore.value
-                      : ctvController.isLoadingMore.value;
-                  final hasMore = widget.isEvent
-                      ? eventController.hasMore.value
-                      : ctvController.hasMore.value;
-
-                  return EventOrCtvList(
-                    isEvent: widget.isEvent,
-                    listEvent: eventItems,
-                    listCtv: ctvItems,
-                    scrollController: _scrollController,
-                    hasMore: hasMore,
-                    isLoadingMore: isLoadingMore,
-                    onLoadMore: widget.isEvent
-                        ? eventController.loadMore
-                        : ctvController.loadMore,
-                    onTap: widget.isEvent
-                        ? eventController.openEventDetail
-                        : ctvController.openCtvDetail,
-                    onPrimaryActionTap:
-                        widget.isEvent ? null : _openCtvApplyBottomSheet,
-                    resolveActionState: widget.isEvent
-                        ? null
-                        : ctvController.getApplyActionState,
-                  );
-                },
+              child: EventOrCtvList(
+                isEvent: widget.isEvent,
+                listEvent: eventItems,
+                listCtv: ctvItems,
+                scrollController: _scrollController,
+                hasMore: hasMore,
+                isLoadingMore: isLoadingMore,
+                isInitialLoading: isLoading,
+                onLoadMore: widget.isEvent
+                    ? eventController.loadMore
+                    : ctvController.loadMore,
+                onTap: widget.isEvent
+                    ? eventController.openEventDetail
+                    : ctvController.openCtvDetail,
+                onPrimaryActionTap:
+                    widget.isEvent ? null : _openCtvApplyBottomSheet,
+                resolveActionState:
+                    widget.isEvent ? null : ctvController.getApplyActionState,
               ),
             ),
           ],

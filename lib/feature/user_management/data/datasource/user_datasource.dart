@@ -1,5 +1,6 @@
 import 'package:events_app/api_template/api_path.dart';
 import 'package:events_app/api_template/api_provider.dart';
+import 'package:flutter/foundation.dart';
 import 'package:events_app/api_template/base_request/api_request.dart';
 import 'package:events_app/api_template/base_response/api_response.dart';
 import 'package:events_app/api_template/base_response/api_response_forwarder.dart';
@@ -40,11 +41,7 @@ abstract class UserDatasource {
   Future<ApiResponse<Map<String, dynamic>>> getUserPackages({
     int page = 0,
     int size = 20,
-  });
-
-  Future<ApiResponse<Map<String, dynamic>>> getExpiredPackages({
-    int page = 0,
-    int size = 20,
+    String? status,
   });
 
   Future<ApiResponse<RankModel?>> getUserRank(int userId);
@@ -207,12 +204,16 @@ class UserDatasourceImpl extends ApiProvider implements UserDatasource {
   Future<ApiResponse<Map<String, dynamic>>> getUserPackages({
     int page = 0,
     int size = 20,
+    String? status,
   }) async {
     try {
+      final queryParams = <String, dynamic>{'page': page, 'size': size};
+      if (status != null) queryParams['status'] = status;
+
       final response = await get<Map<String, dynamic>>(
         ApiPath.userPackages,
         (data) => Map<String, dynamic>.from(data as Map),
-        queryParameters: {'page': page, 'size': size},
+        queryParameters: queryParams,
         requireAuth: true,
       );
 
@@ -220,29 +221,6 @@ class UserDatasourceImpl extends ApiProvider implements UserDatasource {
         response,
         (object) => object as Map<String, dynamic>,
         fallbackError: 'Lấy gói đã mua thất bại',
-      );
-    } catch (e) {
-      return mapExceptionToApiResponse(e);
-    }
-  }
-
-  @override
-  Future<ApiResponse<Map<String, dynamic>>> getExpiredPackages({
-    int page = 0,
-    int size = 20,
-  }) async {
-    try {
-      final response = await get<Map<String, dynamic>>(
-        ApiPath.userPackagesCheckExpiry,
-        (data) => Map<String, dynamic>.from(data as Map),
-        queryParameters: {'page': page, 'size': size},
-        requireAuth: true,
-      );
-
-      return forwardEnvelopeResponse<Map<String, dynamic>>(
-        response,
-        (object) => object as Map<String, dynamic>,
-        fallbackError: 'Lấy gói hết hạn thất bại',
       );
     } catch (e) {
       return mapExceptionToApiResponse(e);

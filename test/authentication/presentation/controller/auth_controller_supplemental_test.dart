@@ -8,6 +8,7 @@ import 'package:events_app/authentication/domain/usecase/signin_with_google_usec
 import 'package:events_app/authentication/domain/usecase/signout_usecase.dart';
 import 'package:events_app/authentication/domain/usecase/signup_params.dart';
 import 'package:events_app/authentication/domain/usecase/signup_with_email_and_password_usecase.dart';
+import 'package:events_app/authentication/domain/usecase/signup_with_google_usecase.dart';
 import 'package:events_app/authentication/domain/usecase/upload_verification_document_usecase.dart';
 import 'package:events_app/authentication/presentation/controller/auth_controller.dart';
 import 'package:events_app/common/helpers/no_params.dart';
@@ -75,8 +76,8 @@ void main() {
         email: 'test@example.com',
       ),
     ));
-    registerFallbackValue(const SendPasswordResetEmailParams(
-        email: 'test@example.com'));
+    registerFallbackValue(
+        const SendPasswordResetEmailParams(email: 'test@example.com'));
     registerFallbackValue(FirebaseAuth.instance);
   });
 
@@ -97,8 +98,8 @@ void main() {
     when(() => mockFirebaseAuth.authStateChanges())
         .thenAnswer((_) => const Stream.empty());
 
-    networkGetIt.registerSingleton<SigninWithEmailAndPasswordUsecase>(
-        signinUsecase);
+    networkGetIt
+        .registerSingleton<SigninWithEmailAndPasswordUsecase>(signinUsecase);
     networkGetIt
         .registerSingleton<SignupWithEmailAndPasswordUsecase>(signupUsecase);
     networkGetIt.registerSingleton<SignoutUsecase>(signoutUsecase);
@@ -151,7 +152,8 @@ void main() {
       expect(result, isNull);
     });
 
-    test('validateRegisterConfirmPassword - mat khau khong khop tra ve error', () {
+    test('validateRegisterConfirmPassword - mat khau khong khop tra ve error',
+        () {
       controller.registerPasswordController.text = 'password123';
       final result =
           controller.validateRegisterConfirmPassword('differentpassword');
@@ -297,8 +299,7 @@ void main() {
   });
 
   group('AuthController - Avatar Upload Callback', () {
-    test('onAvatarUploadedInRegister sets avatar file id and preview URL',
-        () {
+    test('onAvatarUploadedInRegister sets avatar file id and preview URL', () {
       expect(controller.registerAvatarFileId.value, isNull);
       expect(controller.registerAvatarPreviewUrl.value, isNull);
 
@@ -312,8 +313,7 @@ void main() {
   });
 
   group('AuthController - Google Sign In', () {
-    test(
-        'signInWithGoogleOnly goi usecase va tra ve GoogleAuthSession.success',
+    test('signInWithGoogleOnly goi usecase va tra ve GoogleAuthSession.success',
         () async {
       final googleResult = GoogleSignInResult.success(
         firebaseUid: 'google-uid-123',

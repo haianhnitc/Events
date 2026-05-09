@@ -1,3 +1,4 @@
+import 'package:events_app/feature/common/domain/enum/app_enum.dart';
 import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
@@ -108,6 +109,7 @@ class PackageListController extends GetxController {
     final result = await _userRepo.getUserPackages(
       page: _myPackagesPage,
       size: pageSize,
+      status: 'ACTIVE',
     );
 
     result.fold(
@@ -145,9 +147,10 @@ class PackageListController extends GetxController {
 
     isLoadingExpired.value = true;
 
-    final result = await _userRepo.getExpiredPackages(
+    final result = await _userRepo.getUserPackages(
       page: _expiredPage,
       size: pageSize,
+      status: 'EXPIRED',
     );
 
     result.fold(
@@ -175,7 +178,8 @@ class PackageListController extends GetxController {
   }
 
   bool hasPackage(int packageId) {
-    return myPackages.any((p) => p.packageId == packageId);
+    return myPackages.any((p) =>
+        p.packageId == packageId && p.status == UserPackageStatus.active);
   }
 
   void onPurchasePackage(PackageEntity package) {
@@ -196,11 +200,13 @@ class PackageListController extends GetxController {
 
   void onRenewPackage(UserPackageEntity userPackage) {
     final userPkgId = userPackage.userPackageId;
+    final price = userPackage.price ?? 0;
     if (userPkgId == null) return;
 
     final args = SharedPaymentFlowArgs.forPackageRenewal(
       userPackageId: userPkgId,
-      originalAmount: 0,
+      originalAmount: price.toInt(),
+      userPackage: userPackage,
     );
 
     Get.to(() => SharedPaymentCheckoutPage(args: args));

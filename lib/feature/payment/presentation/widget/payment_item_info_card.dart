@@ -4,6 +4,7 @@ import 'package:events_app/feature/common/utils/app_image_utils.dart';
 import 'package:events_app/feature/event_management/domain/entity/event_entity.dart';
 import 'package:events_app/feature/portfolio/domain/entity/portfolio_entity.dart';
 import 'package:events_app/feature/payment/presentation/page/shared_payment_flow_args.dart';
+import 'package:events_app/feature/user_management/domain/entity/user_package_entity.dart';
 import 'package:flutter/material.dart';
 
 class PaymentItemInfoCard extends StatelessWidget {
@@ -114,6 +115,8 @@ class _ItemDetails extends StatelessWidget {
       );
     } else if (itemInfo.portfolio != null) {
       return _PortfolioPaymentDetails(portfolio: itemInfo.portfolio!);
+    } else if (itemInfo.userPackage != null) {
+      return _UserPackagePaymentDetails(userPackage: itemInfo.userPackage!);
     }
     return const SizedBox.shrink();
   }
@@ -421,6 +424,108 @@ class _PortfolioPaymentDetails extends StatelessWidget {
         _buildPriceBadge(portfolio.price),
       ],
     );
+  }
+}
+
+class _UserPackagePaymentDetails extends StatelessWidget {
+  final UserPackageEntity userPackage;
+
+  const _UserPackagePaymentDetails({required this.userPackage});
+
+  @override
+  Widget build(BuildContext context) {
+    final name = userPackage.packageName ?? 'Gói dịch vụ';
+    final endTime = userPackage.endTime;
+    final price = userPackage.price?.toInt();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: const Color(0xffD1FAE5),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.inventory_2_outlined,
+                    size: 14,
+                    color: Color(0xff10B981),
+                  ),
+                  SizedBox(width: 4),
+                  Text(
+                    'GÓI DỊCH VỤ',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xff10B981),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: const Color(0xffFEE2E2),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: const Text(
+                'HẾT HẠN',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xffEF4444),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Text(
+          name,
+          style: const TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+            color: Color(0xff273143),
+          ),
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
+        if (endTime != null) ...[
+          const SizedBox(height: 4),
+          Row(
+            children: [
+              const Icon(
+                Icons.event_busy_outlined,
+                size: 14,
+                color: Color(0xffEF4444),
+              ),
+              const SizedBox(width: 4),
+              Text(
+                'Hết hạn: ${_formatDate(endTime)}',
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: Color(0xffEF4444),
+                ),
+              ),
+            ],
+          ),
+        ],
+        const SizedBox(height: 8),
+        _buildPriceBadge(price),
+      ],
+    );
+  }
+
+  String _formatDate(DateTime date) {
+    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
   }
 }
 

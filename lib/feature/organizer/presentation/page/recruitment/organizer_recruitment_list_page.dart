@@ -76,7 +76,8 @@ class _OrganizerRecruitmentListPageState
                       child: DropdownButton<EventSummaryEntity>(
                         value: _selectedEvent,
                         hint: Text('Tất cả sự kiện',
-                            style: TextStyle(color: Colors.grey.shade400, fontSize: 14)),
+                            style: TextStyle(
+                                color: Colors.grey.shade400, fontSize: 14)),
                         isExpanded: true,
                         items: [
                           const DropdownMenuItem<EventSummaryEntity>(
@@ -126,7 +127,8 @@ class _OrganizerRecruitmentListPageState
                   description: 'Tạo bài tuyển CTV để thu hút ứng viên',
                   icon: Icons.work_outline,
                   actionLabel: 'Tạo bài tuyển',
-                  onAction: () => Get.to(() => const OrganizerRecruitmentFormPage()),
+                  onAction: () =>
+                      Get.to(() => const OrganizerRecruitmentFormPage()),
                 );
               }
               return RefreshIndicator(
@@ -236,11 +238,11 @@ class _OrganizerRecruitmentListPageState
                 const SizedBox(height: 12),
                 Row(
                   children: [
-                    _buildMetaItem(
-                        Icons.group_outlined, '${item.appliedCount ?? 0} ứng tuyển'),
+                    _buildMetaItem(Icons.group_outlined,
+                        '${item.appliedCount ?? 0} ứng tuyển'),
                     const SizedBox(width: 16),
-                    _buildMetaItem(
-                        Icons.person_outline, '${item.quantity ?? 0} cần tuyển'),
+                    _buildMetaItem(Icons.person_outline,
+                        '${item.quantity ?? 0} cần tuyển'),
                     const Spacer(),
                     if (item.startTime != null)
                       _buildMetaItem(Icons.schedule,
@@ -251,7 +253,8 @@ class _OrganizerRecruitmentListPageState
                 Row(
                   children: [
                     Expanded(
-                        child: _buildActionBtn('Xem đơn', Icons.list_alt_outlined, () {
+                        child: _buildActionBtn(
+                            'Xem đơn', Icons.list_alt_outlined, () {
                       if (item.ctvRecruitmentId != null) {
                         Get.to(() => OrganizerStaffApplicationListPage(
                             recruitmentId: item.ctvRecruitmentId));
@@ -267,15 +270,17 @@ class _OrganizerRecruitmentListPageState
                     }, enabled: item.isOpen != true)),
                     const SizedBox(width: 8),
                     Expanded(
-                      child:                     item.isOpen == true
+                      child: item.isOpen == true
                           ? _buildActionBtn(
-                              'Đóng tuyển', Icons.stop_circle_outlined,
-                              () => _showCloseRecruitmentDialog(item, item.ctvRecruitmentId!))
+                              'Đóng tuyển',
+                              Icons.stop_circle_outlined,
+                              () => _showCloseRecruitmentDialog(
+                                  item, item.ctvRecruitmentId!))
                           : _buildActionBtn('Mở lại', Icons.play_arrow, () {
-                          if (item.ctvRecruitmentId != null) {
-                            _ctrl.reopenRecruitment(item.ctvRecruitmentId!);
-                          }
-                        }),
+                              if (item.ctvRecruitmentId != null) {
+                                _ctrl.reopenRecruitment(item.ctvRecruitmentId!);
+                              }
+                            }),
                     ),
                   ],
                 ),
@@ -305,7 +310,8 @@ class _OrganizerRecruitmentListPageState
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFEF4444),
             ),
-            child: const Text('Đóng tuyển', style: TextStyle(color: Colors.white)),
+            child:
+                const Text('Đóng tuyển', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -321,12 +327,18 @@ class _OrganizerRecruitmentListPageState
       children: [
         Icon(icon, size: 14, color: Colors.grey.shade600),
         const SizedBox(width: 4),
-        Text(text, style: TextStyle(fontSize: 12, color: Colors.grey.shade700)),
+        Text(
+          text,
+          style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+          overflow: TextOverflow.ellipsis,
+          maxLines: 1,
+        ),
       ],
     );
   }
 
-  Widget _buildActionBtn(String label, IconData icon, VoidCallback onTap, {bool enabled = true}) {
+  Widget _buildActionBtn(String label, IconData icon, VoidCallback onTap,
+      {bool enabled = true}) {
     return GestureDetector(
       onTap: enabled ? onTap : null,
       child: Container(
@@ -338,11 +350,17 @@ class _OrganizerRecruitmentListPageState
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 14, color: enabled ? const Color(0xff64748B) : Colors.grey.shade400),
+            Icon(icon,
+                size: 14,
+                color:
+                    enabled ? const Color(0xff64748B) : Colors.grey.shade400),
             const SizedBox(width: 4),
             Text(label,
-                style:
-                    TextStyle(fontSize: 12, color: enabled ? const Color(0xff64748B) : Colors.grey.shade400)),
+                style: TextStyle(
+                    fontSize: 12,
+                    color: enabled
+                        ? const Color(0xff64748B)
+                        : Colors.grey.shade400)),
           ],
         ),
       ),

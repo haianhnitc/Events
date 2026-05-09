@@ -95,59 +95,69 @@ class ItemFeaturedEvent extends StatelessWidget {
               right: 8,
               child: Row(
                 children: [
-                  Container(
-                    padding: const EdgeInsets.only(left: 8, right: 8),
-                    height: 23,
-                    decoration: BoxDecoration(
-                      color: const Color(0xff00A63E),
-                      borderRadius: BorderRadius.circular(32),
-                      boxShadow: [
-                        BoxShadow(
-                          offset: const Offset(0, 4),
-                          spreadRadius: -1,
-                          blurRadius: 6,
-                          color: Colors.white.withOpacity(0.1),
-                        )
-                      ],
-                    ),
-                    child: Center(
-                      child: Text(
-                        eventFeatured.price == null
-                            ? 'Miễn phí'
-                            : '${eventFeatured.price} VNĐ',
-                        style: const TextStyle(
-                          fontSize: 10,
-                          height: 15 / 10,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.white,
+                  Flexible(
+                    flex: 2,
+                    child: Container(
+                      padding: const EdgeInsets.only(left: 8, right: 8),
+                      height: 23,
+                      decoration: BoxDecoration(
+                        color: const Color(0xff00A63E),
+                        borderRadius: BorderRadius.circular(32),
+                        boxShadow: [
+                          BoxShadow(
+                            offset: const Offset(0, 4),
+                            spreadRadius: -1,
+                            blurRadius: 6,
+                            color: Colors.white.withOpacity(0.1),
+                          )
+                        ],
+                      ),
+                      child: Center(
+                        child: Text(
+                          eventFeatured.price == null
+                              ? 'Miễn phí'
+                              : '${eventFeatured.price} VNĐ',
+                          style: const TextStyle(
+                            fontSize: 10,
+                            height: 15 / 10,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
                         ),
                       ),
                     ),
                   ),
-                  const Spacer(),
-                  Container(
-                    padding: const EdgeInsets.only(left: 8, right: 8),
-                    height: 23,
-                    decoration: BoxDecoration(
-                      color: const Color(0xff06B6D4),
-                      borderRadius: BorderRadius.circular(32),
-                      boxShadow: [
-                        BoxShadow(
-                          offset: const Offset(0, 4),
-                          spreadRadius: -1,
-                          blurRadius: 6,
-                          color: Colors.white.withOpacity(0.1),
-                        )
-                      ],
-                    ),
-                    child: const Center(
-                      child: Text(
-                        'Chứng nhận',
-                        style: TextStyle(
-                          fontSize: 10,
-                          height: 15 / 10,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.white,
+                  const SizedBox(width: 8),
+                  Flexible(
+                    flex: 3,
+                    child: Container(
+                      padding: const EdgeInsets.only(left: 8, right: 8),
+                      height: 23,
+                      decoration: BoxDecoration(
+                        color: const Color(0xff06B6D4),
+                        borderRadius: BorderRadius.circular(32),
+                        boxShadow: [
+                          BoxShadow(
+                            offset: const Offset(0, 4),
+                            spreadRadius: -1,
+                            blurRadius: 6,
+                            color: Colors.white.withOpacity(0.1),
+                          )
+                        ],
+                      ),
+                      child: const Center(
+                        child: Text(
+                          'Chứng nhận',
+                          style: TextStyle(
+                            fontSize: 10,
+                            height: 15 / 10,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
                         ),
                       ),
                     ),

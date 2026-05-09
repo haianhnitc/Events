@@ -77,21 +77,21 @@ class _MyAccountPageState extends State<MyAccountPage> {
                   );
                 }
 
-                return const SingleChildScrollView(
-                  padding: EdgeInsets.symmetric(horizontal: 16),
+                return SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Column(
                     children: [
-                      SizedBox(height: 16),
+                      const SizedBox(height: 16),
                       MyProfileCard(
-                        onEditTap: null,
+                        onEditTap: () => Get.toNamed('/edit-profile'),
                       ),
-                      SizedBox(height: 16),
-                      MyPortfolioCard(),
-                      SizedBox(height: 16),
-                      _MenuSection(),
-                      SizedBox(height: 16),
-                      _LogoutButton(),
-                      SizedBox(height: 24),
+                      const SizedBox(height: 16),
+                      const MyPortfolioCard(),
+                      const SizedBox(height: 16),
+                      const _MenuSection(),
+                      const SizedBox(height: 16),
+                      const _LogoutButton(),
+                      const SizedBox(height: 24),
                     ],
                   ),
                 );
@@ -121,6 +121,12 @@ class _MenuSection extends StatelessWidget {
           icon: Icons.account_balance_wallet_outlined,
           label: 'Lịch sử giao dịch',
           onTap: () => Get.toNamed('/transaction-history'),
+        ),
+        const SizedBox(height: 8),
+        _DebugMenuItem(
+          icon: Icons.key_rounded,
+          label: '[DEV] Copy Token cho Postman',
+          onTap: () => AuthController.to.printAccessTokenForPostman(),
         ),
       ],
     );
@@ -166,6 +172,54 @@ class _MenuItem extends StatelessWidget {
                 Icons.chevron_right_rounded,
                 color: Color(0xff9CA3AF),
                 size: 22,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DebugMenuItem extends StatelessWidget {
+  const _DebugMenuItem({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: const Color(0xffFEF3C7),
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          child: Row(
+            children: [
+              Icon(icon, color: const Color(0xffB45309), size: 22),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                    color: Color(0xffB45309),
+                  ),
+                ),
+              ),
+              const Icon(
+                Icons.copy_rounded,
+                color: Color(0xffB45309),
+                size: 20,
               ),
             ],
           ),

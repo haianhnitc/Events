@@ -252,6 +252,14 @@ class _OrganizerProfilePageState extends State<OrganizerProfilePage> {
           ),
           const Divider(height: 1),
           _buildMenuItem(
+            icon: Icons.key_rounded,
+            label: '[DEV] Copy Token cho Postman',
+            iconColor: const Color(0xFFB45309),
+            textColor: const Color(0xFFB45309),
+            onTap: () => AuthController.to.printAccessTokenForPostman(),
+          ),
+          const Divider(height: 1),
+          _buildMenuItem(
             icon: Icons.logout,
             label: 'Đăng xuất',
             iconColor: const Color(0xFFEF4444),

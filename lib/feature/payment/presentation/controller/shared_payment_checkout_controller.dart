@@ -16,6 +16,7 @@ class SharedPaymentCheckoutController extends GetxController {
 
   final RxBool isLoading = false.obs;
   final RxString coinError = ''.obs;
+  final RxInt coinUsedTrigger = 0.obs;
 
   int get currentCoin => AuthController.to.currentUser.value?.currentCoin ?? 0;
 
@@ -51,11 +52,14 @@ class SharedPaymentCheckoutController extends GetxController {
     _paymentController = Get.find<SePayPaymentController>();
     coinController = TextEditingController(
         text: args.initialCoinUsed > 0 ? '${args.initialCoinUsed}' : '');
+    update();
     return this;
   }
 
   void onCoinChanged() {
     coinError.value = '';
+    coinUsedTrigger.value++;
+    update();
     if (coinUsedRaw > currentCoin) {
       coinError.value = 'Số coin vượt quá số dư';
     } else if (coinUsedRaw > args.originalAmount) {

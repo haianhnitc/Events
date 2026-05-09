@@ -8,7 +8,7 @@ class UserPackageEntity {
   final UserPackageStatus? status;
   final DateTime? startTime;
   final DateTime? endTime;
-  final String? notes;
+  final num? price;
   final DateTime? createdTime;
   final bool? autoRenew;
 
@@ -20,7 +20,7 @@ class UserPackageEntity {
     this.status,
     this.startTime,
     this.endTime,
-    this.notes,
+    this.price,
     this.createdTime,
     this.autoRenew,
   });

@@ -114,7 +114,7 @@ class HeaderHomePage extends StatelessWidget {
           _buildItemDetail('500+', 'Sự kiện'),
           _buildItemDetail('10K+', 'Sinh viên'),
           _buildItemDetail('50+', 'Trường ĐH'),
-          _buildItemDetail('95%+', 'Hài lòng')
+          _buildItemDetail('95%', 'Hài lòng')
         ],
       );
 

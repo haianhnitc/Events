@@ -162,7 +162,8 @@ class _EventDetailPageState extends State<EventDetailPage> {
             Expanded(
               child: Text(
                 message,
-                style: TextStyle(fontSize: 13, color: color, fontWeight: FontWeight.w500),
+                style: TextStyle(
+                    fontSize: 13, color: color, fontWeight: FontWeight.w500),
               ),
             ),
           ],
@@ -365,56 +366,56 @@ class _EventDetailPageState extends State<EventDetailPage> {
             ),
           ),
           const SizedBox(height: 16),
-          Center(
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _buildItemButton(1),
-                const SizedBox(width: 15),
-                _buildItemButton(2),
-              ],
-            ),
-          )
+          // Center(
+          //   child: Row(
+          //     mainAxisSize: MainAxisSize.min,
+          //     children: [
+          //       _buildItemButton(1),
+          //       const SizedBox(width: 15),
+          //       _buildItemButton(2),
+          //     ],
+          //   ),
+          // )
         ],
       ),
     );
   }
 
-  Widget _buildItemButton(int position) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 19, vertical: 7),
-      height: 36,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          width: 1.71,
-          color: const Color(0xff273143).withOpacity(0.1),
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          SvgPicture.asset(
-            position == 1 ? AssetPath.calendarIcon : AssetPath.notification,
-            height: 16,
-            width: 16,
-            color: Colors.black,
-          ),
-          const SizedBox(width: 17),
-          Text(
-            position == 1 ? 'Thêm vào lịch' : 'Đặt Nhắc nhở',
-            style: const TextStyle(
-              fontSize: 14,
-              height: 20 / 14,
-              fontWeight: FontWeight.w500,
-              color: Color(0xff273143),
-            ),
-          )
-        ],
-      ),
-    );
-  }
+  // Widget _buildItemButton(int position) {
+  //   return Container(
+  //     padding: const EdgeInsets.symmetric(horizontal: 19, vertical: 7),
+  //     height: 36,
+  //     decoration: BoxDecoration(
+  //       color: Colors.white,
+  //       borderRadius: BorderRadius.circular(10),
+  //       border: Border.all(
+  //         width: 1.71,
+  //         color: const Color(0xff273143).withOpacity(0.1),
+  //       ),
+  //     ),
+  //     child: Row(
+  //       mainAxisAlignment: MainAxisAlignment.center,
+  //       children: [
+  //         SvgPicture.asset(
+  //           position == 1 ? AssetPath.calendarIcon : AssetPath.notification,
+  //           height: 16,
+  //           width: 16,
+  //           color: Colors.black,
+  //         ),
+  //         const SizedBox(width: 17),
+  //         Text(
+  //           position == 1 ? 'Thêm vào lịch' : 'Đặt Nhắc nhở',
+  //           style: const TextStyle(
+  //             fontSize: 14,
+  //             height: 20 / 14,
+  //             fontWeight: FontWeight.w500,
+  //             color: Color(0xff273143),
+  //           ),
+  //         )
+  //       ],
+  //     ),
+  //   );
+  // }
 
   Widget _buildEventDetail(BuildContext context) {
     return Container(

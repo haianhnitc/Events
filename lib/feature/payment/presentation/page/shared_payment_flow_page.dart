@@ -47,49 +47,60 @@ class _CheckoutView extends StatelessWidget {
         surfaceTintColor: Colors.transparent,
       ),
       backgroundColor: const Color(0xffF3F4F6),
-      body: Obx(
-        () => ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          Text(
+            controller.args.title,
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: Color(0xff273143),
+            ),
+          ),
+          if ((controller.args.subtitle ?? '').trim().isNotEmpty) ...[
+            const SizedBox(height: 6),
             Text(
-              controller.args.title,
+              controller.args.subtitle!,
               style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-                color: Color(0xff273143),
+                fontSize: 14,
+                color: Color(0xff67688C),
               ),
             ),
-            if ((controller.args.subtitle ?? '').trim().isNotEmpty) ...[
-              const SizedBox(height: 6),
-              Text(
-                controller.args.subtitle!,
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: Color(0xff67688C),
-                ),
-              ),
-            ],
-            if (itemInfo != null) ...[
-              const SizedBox(height: 16),
-              PaymentItemInfoCard(itemInfo: itemInfo),
-            ],
+          ],
+          if (itemInfo != null) ...[
             const SizedBox(height: 16),
-            CoinInputSection(
-              controller: controller.coinController,
-              currentCoin: controller.currentCoin,
-              originalAmount: controller.args.originalAmount,
-              errorText: controller.coinError.value,
-              onChanged: (_) => controller.onCoinChanged(),
-            ),
-            const SizedBox(height: 16),
-            PaymentSummarySection(
-              currentCoin: controller.currentCoin,
-              originalAmount: controller.args.originalAmount,
-              coinUsed: controller.coinUsed,
-              finalAmount: controller.finalAmount,
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
+            PaymentItemInfoCard(itemInfo: itemInfo),
+          ],
+          const SizedBox(height: 16),
+          Obx(
+            () {
+              controller.coinUsedTrigger.value; 
+              return CoinInputSection(
+                controller: controller.coinController,
+                currentCoin: controller.currentCoin,
+                originalAmount: controller.args.originalAmount,
+                errorText: controller.coinError.value,
+                onChanged: (_) => controller.onCoinChanged(),
+              );
+            },
+          ),
+          const SizedBox(height: 16),
+          Obx(
+            () {
+              controller.coinUsedTrigger.value;
+              return PaymentSummarySection(
+                currentCoin: controller.currentCoin,
+                originalAmount: controller.args.originalAmount,
+                coinUsed: controller.coinUsed,
+                finalAmount: controller.finalAmount,
+                coinError: controller.coinError.value,
+              );
+            },
+          ),
+          const SizedBox(height: 24),
+          Obx(
+            () => SizedBox(
               height: 52,
               child: ElevatedButton(
                 onPressed: controller.isCreatingPayment
@@ -122,9 +133,9 @@ class _CheckoutView extends StatelessWidget {
                       ),
               ),
             ),
-            const SizedBox(height: 12),
-          ],
-        ),
+          ),
+          const SizedBox(height: 12),
+        ],
       ),
     );
   }
@@ -138,7 +149,7 @@ class _CheckoutView extends StatelessWidget {
     }
     final payment = await controller.createPayment();
     if (payment == null) return;
-    Get.to(
+    Get.off(
       () => SharedPaymentQrPage(
         args: controller.args,
         payment: payment,

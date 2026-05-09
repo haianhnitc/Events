@@ -34,8 +34,7 @@ abstract class UserRepository {
   Future<Either<FailureEntity, RankEntity?>> getUserRank(int userId);
   Future<Either<FailureEntity, List<RankEntity>>> getRanks({String? levelName, int page = 0, int size = 20});
   Future<Either<FailureEntity, List<PackageEntity>>> getPackages({int page, int size, String sort});
-  Future<Either<FailureEntity, List<UserPackageEntity>>> getUserPackages({int page = 0, int size = 20});
-  Future<Either<FailureEntity, List<UserPackageEntity>>> getExpiredPackages({int page = 0, int size = 20});
+  Future<Either<FailureEntity, List<UserPackageEntity>>> getUserPackages({int page = 0, int size = 20, String? status});
   Future<Either<FailureEntity, List<PortfolioEntity>>> getPortfolios({int? userId, bool? isPublished, int page = 0, int size = 20});
   Future<Either<FailureEntity, PortfolioDetailEntity?>> getPortfolioDetail(int id);
   Future<Either<FailureEntity, TransactionEntity?>> createPortfolio(Map<String, dynamic> body);

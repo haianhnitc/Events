@@ -134,28 +134,9 @@ class UserRepositoryImpl implements UserRepository {
   Future<Either<FailureEntity, List<UserPackageEntity>>> getUserPackages({
     int page = 0,
     int size = 20,
+    String? status,
   }) async {
-    final response = await _datasource.getUserPackages(page: page, size: size);
-    return response.toEither().fold(
-      (failure) => Left(failure),
-      (data) {
-        if (data is! Map<String, dynamic>) return const Right([]);
-        final content = data['content'] as List<dynamic>? ?? [];
-        return Right(content
-            .map((e) =>
-                UserPackageModel.fromJson(e as Map<String, dynamic>).toEntity())
-            .toList());
-      },
-    );
-  }
-
-  @override
-  Future<Either<FailureEntity, List<UserPackageEntity>>> getExpiredPackages({
-    int page = 0,
-    int size = 20,
-  }) async {
-    final response =
-        await _datasource.getExpiredPackages(page: page, size: size);
+    final response = await _datasource.getUserPackages(page: page, size: size, status: status);
     return response.toEither().fold(
       (failure) => Left(failure),
       (data) {

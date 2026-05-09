@@ -39,16 +39,19 @@ class HomePage extends StatelessWidget {
                       const SizedBox(height: 24),
                       _buildTwoItemSubHeader(),
                       const SizedBox(height: 24),
-                      Obx(() => RankingCard(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (_) => const RankListPage()),
-                              );
-                            },
-                            rank: controller.userRank.value,
-                          )),
+                      Obx(() {
+                        controller.userRank?.value;
+                        return RankingCard(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) => const RankListPage()),
+                            );
+                          },
+                          userRank: controller.userRank,
+                        );
+                      }),
                       const SizedBox(height: 24),
                       _buildFeaturedEventHeader(),
                       const SizedBox(height: 16),
