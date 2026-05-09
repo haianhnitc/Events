@@ -770,6 +770,7 @@ class AuthController extends GetxController {
 
     result.fold(
       (failure) {
+        _isLoggingOut = true;
         final failureTuple = _extractFailureInfo(
           failure,
           dataParsingMessage: 'Không đọc được dữ liệu người dùng từ hệ thống.',
@@ -786,7 +787,7 @@ class AuthController extends GetxController {
         }
 
         loginPasswordController.clear();
-        if (user.status == UserStatus.disabled) {
+        if (user.status == UserStatus.disabled || user.status == null) {
           _emitAuthEvent(AuthEvent.accountDisabled);
           return;
         }
@@ -834,8 +835,8 @@ class AuthController extends GetxController {
     }
 
     AppSnackbarUtils.showError(
-      'Đăng nhập thất bại',
-      'Email hoặc mật khẩu không đúng. Vui lòng thử lại.',
+      failureTuple.$1 ?? 'Đăng nhập thất bại',
+      failureTuple.$2,
     );
   }
 
@@ -1027,8 +1028,6 @@ class AuthController extends GetxController {
       return;
     }
 
-    // Defensive: if backend returns generic 403 with "user disabled" message,
-    // treat as account disabled (fallback for older/unpatched backend)
     if (code == '403') {
       final message = failure.when(
         serverFailure: (_, m) => m,
@@ -1072,6 +1071,18 @@ class AuthController extends GetxController {
 
   void _populateCurrentUser(UserEntity? user) {
     currentUser.value = user;
+  }
+
+  void clearSessionData() {
+    _populateCurrentUser(null);
+    resetAllRegisterFields();
+    loginFormState = null;
+    isLoadingEmail.value = false;
+    isLoadingGoogle.value = false;
+    _isLoggingOut = true;
+    try {
+      FirebaseAuth.instance.signOut();
+    } catch (_) {}
   }
 
   String? _nullableTrim(TextEditingController controller) {

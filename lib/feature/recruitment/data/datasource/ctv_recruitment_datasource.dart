@@ -38,7 +38,6 @@ class CtvRecruitmentDatasourceImpl extends ApiProvider
         ApiPath.recruitments,
         (data) => Map<String, dynamic>.from(data as Map),
         queryParameters: queryParams,
-        requireAuth: false,
       );
 
       return forwardEnvelopeResponse<List<CtvRecruitmentModel>>(
@@ -65,7 +64,6 @@ class CtvRecruitmentDatasourceImpl extends ApiProvider
       final response = await get<Map<String, dynamic>>(
         ApiPath.recruitmentDetail(id),
         (data) => Map<String, dynamic>.from(data as Map),
-        requireAuth: false,
       );
 
       return forwardEnvelopeResponse<CtvRecruitmentModel>(

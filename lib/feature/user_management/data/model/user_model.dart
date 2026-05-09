@@ -16,7 +16,7 @@ class UserModel with _$UserModel {
     required String email,
     String? phoneNumber,
     @Default(UserRole.user) UserRole? role,
-    @Default(UserStatus.active) UserStatus? status,
+    UserStatus? status,
     @Default(0) int currentCoin,
     DateTime? createdTime,
     UserProfileModel? userProfile,

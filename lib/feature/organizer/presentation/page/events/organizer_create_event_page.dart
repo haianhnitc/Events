@@ -109,7 +109,7 @@ class _OrganizerCreateEventPageState extends State<OrganizerCreateEventPage> {
                       isLoading: _ctrl.isLoadingCategories,
                       onToggle: _ctrl.toggleCategoryOption,
                     ),
-                    Obx(() => FeedbackQuestionStep(
+                    FeedbackQuestionStep(
                       questions: _ctrl.feedbackQuestions,
                       onSave: (q) {
                         _ctrl.addFeedbackQuestion(
@@ -120,7 +120,7 @@ class _OrganizerCreateEventPageState extends State<OrganizerCreateEventPage> {
                         );
                       },
                       onRemoveQuestion: _ctrl.removeFeedbackQuestion,
-                    )),
+                    ),
                     _buildReviewStep(),
                   ],
                 ),

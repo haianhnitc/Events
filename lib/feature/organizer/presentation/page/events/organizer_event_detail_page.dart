@@ -4,6 +4,7 @@ import 'package:events_app/feature/common/utils/app_date_utils.dart';
 import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
 import 'package:events_app/feature/event_management/domain/entity/event_entity.dart';
 import 'package:events_app/feature/organizer/presentation/controller/organizer_event_detail_controller.dart';
+import 'package:events_app/feature/organizer/presentation/controller/organizer_event_list_controller.dart';
 import 'package:events_app/feature/organizer/presentation/controller/organizer_event_statistics_controller.dart';
 import 'package:events_app/feature/organizer/presentation/page/attendance/organizer_event_qr_fullscreen_page.dart';
 import 'package:events_app/feature/organizer/presentation/page/events/organizer_create_event_page.dart';
@@ -83,10 +84,11 @@ class _OrganizerEventDetailPageState extends State<OrganizerEventDetailPage> {
             onPressed: () {
               final ev = _detailCtrl.event.value;
               if (ev == null) return;
-              if (ev.status != EventStatus.draft) {
+              if (ev.status != EventStatus.draft &&
+                  ev.status != EventStatus.cancelled) {
                 AppSnackbarUtils.showError(
                   'Không thể chỉnh sửa',
-                  'Sự kiện đã xuất bản, không thể chỉnh sửa.',
+                  'Sự kiện đã xuất bản và đang diễn ra, không thể chỉnh sửa thông tin.',
                 );
                 return;
               }
@@ -487,13 +489,13 @@ class _OrganizerEventDetailPageState extends State<OrganizerEventDetailPage> {
         if (isClosed)
           _buildStatusWarningBanner(
             icon: Icons.event_busy,
-            message: 'Sự kiện đã đóng. Không thể nhận đăng ký mới.',
+            message: 'Sự kiện đã đóng hoàn toàn. Không thể chỉnh sửa hay thay đổi trạng thái.',
             color: const Color(0xFFF59E0B),
           ),
         if (isCancelled)
           _buildStatusWarningBanner(
             icon: Icons.cancel_outlined,
-            message: 'Sự kiện đã bị hủy.',
+            message: 'Sự kiện đã bị hủy. Bạn có thể chỉnh sửa thông tin và xuất bản lại.',
             color: const Color(0xFF6B7280),
           ),
         if (isLocked || isClosed || isCancelled) const SizedBox(height: 12),
@@ -600,16 +602,17 @@ class _OrganizerEventDetailPageState extends State<OrganizerEventDetailPage> {
               )),
         ],
         if (isDraft || isPublished) const SizedBox(height: 10),
-        Obx(() => _buildActionBtn(
-              icon: Icons.cancel_outlined,
-              label: _detailCtrl.isCancelling.value
-                  ? 'Đang hủy...'
-                  : 'Hủy sự kiện',
-              color: const Color(0xFFEF4444),
-              onTap: _detailCtrl.isCancelling.value
-                  ? () {}
-                  : () => _handleCancel(),
-            )),
+        if (isDraft || isPublished)
+          Obx(() => _buildActionBtn(
+                icon: Icons.cancel_outlined,
+                label: _detailCtrl.isCancelling.value
+                    ? 'Đang hủy...'
+                    : 'Hủy sự kiện',
+                color: const Color(0xFFEF4444),
+                onTap: _detailCtrl.isCancelling.value
+                    ? () {}
+                    : () => _handleCancel(),
+              )),
       ],
     );
   }
@@ -673,45 +676,150 @@ class _OrganizerEventDetailPageState extends State<OrganizerEventDetailPage> {
   void _handlePublish() async {
     final confirm = await Get.dialog<bool>(
       AlertDialog(
-        title: const Text('Xuất bản sự kiện'),
-        content: const Text(
-            'Sau khi xuất bản, sự kiện sẽ hiển thị công khai và người dùng có thể đăng ký. Bạn có chắc muốn xuất bản?'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(Icons.rocket_launch,
+                  color: Color(0xFF10B981), size: 22),
+            ),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Text('Xuất bản sự kiện',
+                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
+            ),
+          ],
+        ),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(height: 4),
+            Text(
+              'Sau khi xuất bản, sự kiện sẽ hiển thị công khai và người dùng có thể đăng ký tham gia.',
+              style: TextStyle(fontSize: 14, height: 1.5),
+            ),
+            SizedBox(height: 12),
+            Row(
+              children: [
+                Icon(Icons.info_outline, size: 15, color: Color(0xFF64748B)),
+                SizedBox(width: 6),
+                Text(
+                  'Bạn vẫn có thể chỉnh sửa sau khi xuất bản.',
+                  style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+                ),
+              ],
+            ),
+          ],
+        ),
         actions: [
           TextButton(
-              onPressed: () => Get.back(result: false),
-              child: const Text('Hủy')),
+            onPressed: () => Get.back(result: false),
+            child: const Text('Hủy'),
+          ),
           ElevatedButton(
-              onPressed: () => Get.back(result: true),
-              child: const Text('Xuất bản')),
+            onPressed: () => Get.back(result: true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF10B981),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            ),
+            child: const Text('Xuất bản'),
+          ),
         ],
       ),
     );
     if (confirm == true) {
       await _detailCtrl.publishEvent();
+      if (_detailCtrl.event.value?.status == EventStatus.published) {
+        try {
+          final listCtrl = Get.find<OrganizerEventListController>();
+          listCtrl.refreshEvents();
+        } catch (_) {}
+      }
     }
   }
 
   void _handleClose() async {
     final confirm = await Get.dialog<bool>(
       AlertDialog(
-        title: const Text('Đóng sự kiện'),
-        content: const Text(
-            'Sau khi đóng, sự kiện sẽ không còn nhận đăng ký mới. Bạn có chắc muốn đóng sự kiện này?'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF59E0B).withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child:
+                  const Icon(Icons.event_busy, color: Color(0xFFF59E0B), size: 22),
+            ),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Text('Đóng sự kiện',
+                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
+            ),
+          ],
+        ),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(height: 4),
+            Text(
+              'Sau khi đóng, sự kiện sẽ ở trạng thái cuối cùng. Không thể chỉnh sửa hay thay đổi trạng thái sự kiện.',
+              style: TextStyle(fontSize: 14, height: 1.5),
+            ),
+            SizedBox(height: 10),
+            Row(
+              children: [
+                Icon(Icons.info_outline, size: 15, color: Color(0xFF64748B)),
+                SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    'Hành động này không thể hoàn tác.',
+                    style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
         actions: [
           TextButton(
-              onPressed: () => Get.back(result: false),
-              child: const Text('Hủy')),
+            onPressed: () => Get.back(result: false),
+            child: const Text('Hủy'),
+          ),
           ElevatedButton(
-              onPressed: () => Get.back(result: true),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFF59E0B),
-              ),
-              child: const Text('Đóng sự kiện')),
+            onPressed: () => Get.back(result: true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFF59E0B),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            ),
+            child: const Text('Đóng sự kiện'),
+          ),
         ],
       ),
     );
     if (confirm == true) {
       await _detailCtrl.closeEvent();
+      if (_detailCtrl.event.value?.status == EventStatus.closed) {
+        try {
+          final listCtrl = Get.find<OrganizerEventListController>();
+          listCtrl.refreshEvents();
+        } catch (_) {}
+      }
     }
   }
 
@@ -719,32 +827,67 @@ class _OrganizerEventDetailPageState extends State<OrganizerEventDetailPage> {
     final event = _detailCtrl.event.value;
     final hasParticipants = (event?.totalParticipants ?? 0) > 0;
 
-    String message =
-        'Hành động này sẽ hủy sự kiện và không thể hoàn tác. Bạn có chắc muốn hủy?';
-    if (hasParticipants) {
-      message =
-          'Sự kiện đã có người đăng ký. Hủy sự kiện sẽ ảnh hưởng đến người tham gia. Bạn có chắc muốn hủy?';
-    }
-
     final confirm = await Get.dialog<bool>(
       AlertDialog(
-        title: const Text('Hủy sự kiện'),
-        content: Text(message),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEF4444).withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(Icons.cancel_outlined,
+                  color: Color(0xFFEF4444), size: 22),
+            ),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Text('Hủy sự kiện',
+                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 4),
+            Text(
+              hasParticipants
+                  ? 'Sự kiện đã có người đăng ký. Hủy sự kiện sẽ ảnh hưởng đến người tham gia. Bạn có chắc muốn hủy?'
+                  : 'Hành động này sẽ hủy sự kiện. Bạn vẫn có thể chỉnh sửa thông tin và xuất bản lại sau khi hủy.',
+              style: const TextStyle(fontSize: 14, height: 1.5),
+            ),
+          ],
+        ),
         actions: [
           TextButton(
-              onPressed: () => Get.back(result: false),
-              child: const Text('Không')),
+            onPressed: () => Get.back(result: false),
+            child: const Text('Không'),
+          ),
           ElevatedButton(
-              onPressed: () => Get.back(result: true),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFEF4444),
-              ),
-              child: const Text('Hủy sự kiện')),
+            onPressed: () => Get.back(result: true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFEF4444),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            ),
+            child: const Text('Hủy sự kiện'),
+          ),
         ],
       ),
     );
     if (confirm == true) {
       await _detailCtrl.deleteEvent();
+      if (_detailCtrl.event.value?.status == EventStatus.cancelled) {
+        try {
+          final listCtrl = Get.find<OrganizerEventListController>();
+          listCtrl.refreshEvents();
+        } catch (_) {}
+      }
     }
   }
 }

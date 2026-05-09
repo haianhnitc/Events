@@ -215,18 +215,9 @@ class _OrganizerRecruitmentListPageState
                             maxLines: 2,
                           ),
                           const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              Icon(Icons.event,
-                                  size: 12, color: Colors.grey.shade600),
-                              const SizedBox(width: 4),
-                              Text(
-                                item.eventTitle ?? 'N/A',
-                                style: TextStyle(
-                                    fontSize: 12, color: Colors.grey.shade600),
-                              ),
-                            ],
-                          ),
+                          if (item.startTime != null)
+                            _buildMetaItem(Icons.schedule,
+                                'Hạn: ${AppDateUtils.formatDate(item.startTime!)}'),
                         ],
                       ),
                     ),
@@ -240,13 +231,9 @@ class _OrganizerRecruitmentListPageState
                   children: [
                     _buildMetaItem(Icons.group_outlined,
                         '${item.appliedCount ?? 0} ứng tuyển'),
-                    const SizedBox(width: 16),
-                    _buildMetaItem(Icons.person_outline,
-                        '${item.quantity ?? 0} cần tuyển'),
                     const Spacer(),
-                    if (item.startTime != null)
-                      _buildMetaItem(Icons.schedule,
-                          'Hạn: ${AppDateUtils.formatDate(item.startTime!)}'),
+                    _buildMetaItem(Icons.person_outline,
+                        '${item.quantity ?? 0} Cần tuyển'),
                   ],
                 ),
                 const SizedBox(height: 12),
@@ -297,7 +284,7 @@ class _OrganizerRecruitmentListPageState
       AlertDialog(
         title: const Text('Xác nhận đóng tuyển'),
         content: Text(
-          'Bạn có chắc muốn đóng tuyển CTV cho sự kiện "${item.eventTitle}" không? Sau khi đóng, người đăng ký sẽ không thể nộp đơn ứng tuyển CTV.',
+          'Bạn có chắc muốn đóng tuyển CTV cho bài tuyển "${item.title ?? 'N/A'}" không? Sau khi đóng, người đăng ký sẽ không thể nộp đơn ứng tuyển CTV.',
           style: const TextStyle(fontSize: 14),
         ),
         actions: [

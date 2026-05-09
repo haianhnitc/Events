@@ -61,6 +61,7 @@ class _AuthGateState extends State<AuthGate> {
         _authController.resetAllRegisterFields();
         _authController.loginFormState?.reset();
         _authController.loginFormState = null;
+        _authController.clearSessionData();
         AppSnackbarUtils.showError(
           'Phiên đăng nhập hết hạn',
           'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.',
@@ -68,6 +69,7 @@ class _AuthGateState extends State<AuthGate> {
         Get.offAll(() => const LoginScreen());
 
       case AuthEvent.accountDisabled:
+        _authController.clearSessionData();
         AppSnackbarUtils.showError(
           'Tài khoản bị khóa',
           'Tài khoản của bạn đã bị khóa. Liên hệ Admin để được hỗ trợ.',

@@ -10,12 +10,23 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class OrganizerAppLayoutController extends GetxController {
-  final OrganizerNavBarController navController = Get.find<OrganizerNavBarController>();
+  OrganizerNavBarController? _navController;
+
+  OrganizerNavBarController get navController {
+    if (_navController == null) {
+      if (Get.isRegistered<OrganizerNavBarController>()) {
+        _navController = Get.find<OrganizerNavBarController>();
+      }
+    }
+    return _navController!;
+  }
 
   final Rx<int?> currentEventId = Rx<int?>(null);
 
-  int get currentIndex =>
-      OrganizerNavOptions.values.indexOf(navController.selectedPage.value);
+  int get currentIndex {
+    final nav = _navController ?? navController;
+    return OrganizerNavOptions.values.indexOf(nav.selectedPage.value);
+  }
 
   List<Widget> get pages => [
         const OrganizerDashboardPage(),

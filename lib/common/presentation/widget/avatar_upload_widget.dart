@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:events_app/common/utils/upload_helper.dart';
+import 'package:events_app/dependency_injection/injection.dart';
 import 'package:events_app/feature/common/domain/enum/app_enum.dart';
 import 'package:events_app/feature/common/usecase/upload_file_params.dart';
 import 'package:events_app/feature/common/usecase/upload_file_usecase.dart';
@@ -61,7 +62,7 @@ class _AvatarUploadWidgetState extends State<AvatarUploadWidget> {
   }
 
   Future<FileUploadResult?> _uploadFile(String filePath) async {
-    final usecase = Get.find<UploadFileUsecase>();
+    final usecase = networkGetIt<UploadFileUsecase>();
     final result = await usecase(UploadFileParams(
       filePath: filePath,
       fileType: widget.fileType,
@@ -206,7 +207,7 @@ class _BannerUploadWidgetState extends State<BannerUploadWidget> {
   }
 
   Future<FileUploadResult?> _uploadFile(String filePath) async {
-    final usecase = Get.find<UploadFileUsecase>();
+    final usecase = networkGetIt<UploadFileUsecase>();
     final result = await usecase(UploadFileParams(
       filePath: filePath,
       fileType: widget.fileType,

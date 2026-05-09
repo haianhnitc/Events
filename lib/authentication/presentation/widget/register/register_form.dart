@@ -3,6 +3,7 @@ import 'package:events_app/authentication/presentation/widget/terms_privacy_dial
 import 'package:events_app/common/presentation/widget/avatar_upload_widget.dart';
 import 'package:events_app/common/presentation/widget/custom_text_field.dart';
 import 'package:events_app/common/utils/upload_helper.dart';
+import 'package:events_app/dependency_injection/injection.dart';
 import 'package:events_app/feature/common/domain/enum/app_enum.dart';
 import 'package:events_app/feature/common/usecase/upload_file_params.dart';
 import 'package:events_app/feature/common/usecase/upload_file_usecase.dart';
@@ -404,7 +405,7 @@ class _RegisterFormState extends State<RegisterForm> {
   }
 
   Future<FileUploadResult?> _uploadAvatarFile(String filePath) async {
-    final usecase = Get.find<UploadFileUsecase>();
+    final usecase = networkGetIt<UploadFileUsecase>();
     final result = await usecase(UploadFileParams(
       filePath: filePath,
       fileType: FileType.avatar,
@@ -481,7 +482,7 @@ class _RegisterFormState extends State<RegisterForm> {
   }
 
   Future<FileUploadResult?> _uploadLogoFile(String filePath) async {
-    final usecase = Get.find<UploadFileUsecase>();
+    final usecase = networkGetIt<UploadFileUsecase>();
     final result = await usecase(UploadFileParams(
       filePath: filePath,
       fileType: FileType.organizationLogo,

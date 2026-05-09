@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:events_app/feature/common/domain/enum/app_enum.dart';
 import 'package:events_app/feature/feedback/domain/entity/feedback_entity.dart';
 import 'package:events_app/feature/organizer/event/domain/usecase/event_params.dart';
+import 'package:get/get.dart';
 
 String _getQuestionTypeLabel(FeedbackQuestionType? type) {
   switch (type) {
@@ -663,7 +664,7 @@ class _FeedbackQuestionSheetBodyState
 }
 
 class FeedbackQuestionStep extends StatelessWidget {
-  final List<FeedbackQuestionEntity> questions;
+  final RxList<FeedbackQuestionEntity> questions;
   final void Function(FeedbackQuestionCreateParams) onSave;
   final void Function(int) onRemoveQuestion;
 
@@ -678,10 +679,7 @@ class FeedbackQuestionStep extends StatelessWidget {
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildCard([
+      child: Obx(() => _buildCard([
             const _StepTitle('Câu hỏi phản hồi'),
             const SizedBox(height: 8),
             const Text(
@@ -693,9 +691,7 @@ class FeedbackQuestionStep extends StatelessWidget {
               _buildEmptyState(context)
             else
               _buildQuestionList(context),
-          ]),
-        ],
-      ),
+          ])),
     );
   }
 

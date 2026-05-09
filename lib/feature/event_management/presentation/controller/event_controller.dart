@@ -18,7 +18,17 @@ class EventController extends GetxController implements FilterSelectionControlle
 
   late final GetEventsUsecase _getEventsUsecase;
 
-  CategoryController get _categoryController => Get.find<CategoryController>();
+  CategoryController? _categoryControllerRef;
+
+  CategoryController get _categoryController {
+    _categoryControllerRef ??= Get.isRegistered<CategoryController>()
+        ? Get.find<CategoryController>()
+        : null;
+    if (_categoryControllerRef == null) {
+      throw StateError('CategoryController not registered');
+    }
+    return _categoryControllerRef!;
+  }
 
   final List<EventSummaryEntity> _allEvents = [];
   final List<EventSummaryEntity> _filteredEvents = <EventSummaryEntity>[];
@@ -46,11 +56,15 @@ class EventController extends GetxController implements FilterSelectionControlle
   }
 
   void _watchCategories() {
-    ever(_categoryController.categories, (_) => _reapplyFiltersIfReady());
+    if (Get.isRegistered<CategoryController>()) {
+      ever(_categoryController.categories, (_) => _reapplyFiltersIfReady());
+    }
   }
 
   void _reapplyFiltersIfReady() {
-    if (!_categoryController.hasLoaded.value) return;
+    if (!Get.isRegistered<CategoryController>()) return;
+    final cc = _categoryController;
+    if (!cc.hasLoaded.value) return;
     if (_allEvents.isEmpty) {
       loadEvents(refresh: true);
       return;
@@ -159,6 +173,8 @@ class EventController extends GetxController implements FilterSelectionControlle
   }
 
   void _applyFiltersAndSync() {
+    if (!Get.isRegistered<CategoryController>()) return;
+    final cc = _categoryController;
     _filteredEvents
       ..clear()
       ..addAll(
@@ -166,7 +182,7 @@ class EventController extends GetxController implements FilterSelectionControlle
           final matchesCategory = CategoryFilterUtils.matchesEvent(
             event,
             selectedFilters,
-            allCategories: _categoryController.categories.toList(),
+            allCategories: cc.categories.toList(),
           );
           final matchesKeyword = keyword.value.isEmpty ||
               (event.title ?? '').toLowerCase().contains(keyword.value);

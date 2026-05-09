@@ -503,8 +503,9 @@ class _OrganizerDashboardPageState extends State<OrganizerDashboardPage> {
 
   String? _formatGrowth(double? growth) {
     if (growth == null) return null;
-    final sign = growth >= 0 ? '+' : '';
-    return '$sign${growth.toStringAsFixed(0)}%';
+    final percent = growth / 100;
+    final sign = percent >= 0 ? '+' : '';
+    return '$sign${percent.toStringAsFixed(1)}%';
   }
 
   String _formatCompact(int value) {

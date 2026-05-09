@@ -34,7 +34,17 @@ class CtvController extends GetxController
   late final CreateStaffApplicationUsecase _createStaffApplicationUsecase;
   late final GetEventsUsecase _getEventsUsecase;
 
-  CategoryController get _categoryController => Get.find<CategoryController>();
+  CategoryController? _categoryControllerRef;
+
+  CategoryController get _categoryController {
+    _categoryControllerRef ??= Get.isRegistered<CategoryController>()
+        ? Get.find<CategoryController>()
+        : null;
+    if (_categoryControllerRef == null) {
+      throw StateError('CategoryController not registered');
+    }
+    return _categoryControllerRef!;
+  }
 
   final List<CtvRecruitmentEntity> _allRecruitments = [];
   final List<CtvRecruitmentEntity> _filteredRecruitments = <CtvRecruitmentEntity>[];
@@ -65,11 +75,15 @@ class CtvController extends GetxController
   }
 
   void _watchCategories() {
-    ever(_categoryController.categories, (_) => _reapplyFiltersIfReady());
+    if (Get.isRegistered<CategoryController>()) {
+      ever(_categoryController.categories, (_) => _reapplyFiltersIfReady());
+    }
   }
 
   void _reapplyFiltersIfReady() {
-    if (!_categoryController.hasLoaded.value) return;
+    if (!Get.isRegistered<CategoryController>()) return;
+    final cc = _categoryController;
+    if (!cc.hasLoaded.value) return;
     if (_allRecruitments.isEmpty) {
       loadRecruitments(refresh: true);
       return;
@@ -208,6 +222,7 @@ class CtvController extends GetxController
   }
 
   void _applyFiltersAndSync() {
+    if (!Get.isRegistered<CategoryController>()) return;
     final query = keyword.value;
     _filteredRecruitments
       ..clear()
