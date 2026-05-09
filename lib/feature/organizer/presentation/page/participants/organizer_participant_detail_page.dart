@@ -15,6 +15,18 @@ String _participantTypeName(ParticipantType? type) {
   }
 }
 
+String _participantStatusName(ParticipantStatus? status) {
+  if (status == null) return 'REGISTERED';
+  switch (status) {
+    case ParticipantStatus.attended:
+      return 'ATTENDED';
+    case ParticipantStatus.noShow:
+      return 'NOSHOW';
+    case ParticipantStatus.registered:
+      return 'REGISTERED';
+  }
+}
+
 class OrganizerParticipantDetailPage extends StatefulWidget {
   final int participantId;
 
@@ -109,7 +121,7 @@ class _OrganizerParticipantDetailPageState
     final email = user?.email ?? 'N/A';
     final avatar = user?.avatarUrl;
     final typeName = _participantTypeName(p.participantType);
-    final statusName = p.status?.apiValue ?? 'REGISTERED';
+    final statusName = _participantStatusName(p.status);
     final isCheckedIn = p.hasCheckedIn == true;
     final registeredTime = p.registeredTime != null
         ? AppDateUtils.formatDate(p.registeredTime!)
