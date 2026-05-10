@@ -4,7 +4,6 @@ import 'package:events_app/feature/event_management/domain/entity/event_summary_
 import 'package:events_app/feature/organizer/presentation/controller/organizer_attendance_list_controller.dart';
 import 'package:events_app/feature/organizer/presentation/controller/organizer_event_list_controller.dart';
 import 'package:events_app/feature/organizer/presentation/controller/organizer_event_statistics_controller.dart';
-import 'package:events_app/feature/organizer/presentation/widget/widgets.dart';
 import 'package:events_app/routes/organizer_app_layout_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -41,8 +40,8 @@ class _OrganizerAttendanceOverviewPageState
       final layoutCtrl = Get.find<OrganizerAppLayoutController>();
       layoutCtrl.setEventContext(widget.eventId!);
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        final found = _eventCtrl.events.firstWhereOrNull(
-            (e) => e.eventId == widget.eventId);
+        final found = _eventCtrl.events
+            .firstWhereOrNull((e) => e.eventId == widget.eventId);
         if (found != null && mounted) {
           setState(() => _selectedEvent = found);
           _onEventSelected(found);
@@ -148,7 +147,8 @@ class _OrganizerAttendanceOverviewPageState
             labelColor: const Color(0xFF06B6D4),
             unselectedLabelColor: Colors.grey.shade600,
             indicatorColor: const Color(0xFF06B6D4),
-            labelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+            labelStyle:
+                const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
             tabs: const [
               Tab(text: 'Tổng quan'),
               Tab(text: 'Theo dõi real-time'),
@@ -243,13 +243,13 @@ class _OrganizerAttendanceOverviewPageState
             const SizedBox(height: 20),
             Row(
               children: [
-                _buildOverviewItem('$total', 'Tổng vé', Icons.confirmation_number),
-                _buildOverviewItem('$checkedIn', 'Check-in', Icons.check_circle),
-                _buildOverviewItem('$checkedOut', 'Check-out', Icons.logout),
                 _buildOverviewItem(
-                    '${(rate * 100).toStringAsFixed(0)}%',
-                    'Tỷ lệ',
-                    Icons.percent),
+                    '$total', 'Tổng vé', Icons.confirmation_number),
+                _buildOverviewItem(
+                    '$checkedIn', 'Check-in', Icons.check_circle),
+                _buildOverviewItem('$checkedOut', 'Check-out', Icons.logout),
+                _buildOverviewItem('${(rate * 100).toStringAsFixed(0)}%',
+                    'Tỷ lệ', Icons.percent),
               ],
             ),
           ],
@@ -356,14 +356,14 @@ class _OrganizerAttendanceOverviewPageState
                 Expanded(
                   child: Column(
                     children: [
-                      _buildRateRow(
-                          'Đã check-in', '$checkedIn', const Color(0xFF10B981), rate),
+                      _buildRateRow('Đã check-in', '$checkedIn',
+                          const Color(0xFF10B981), rate),
                       const SizedBox(height: 10),
-                      _buildRateRow(
-                          'Đã check-out', '$checkedOut', const Color(0xFFF59E0B), checkoutRate),
+                      _buildRateRow('Đã check-out', '$checkedOut',
+                          const Color(0xFFF59E0B), checkoutRate),
                       const SizedBox(height: 10),
-                      _buildRateRow(
-                          'Vắng mặt', '$noShow', const Color(0xFFEF4444), noShowRate),
+                      _buildRateRow('Vắng mặt', '$noShow',
+                          const Color(0xFFEF4444), noShowRate),
                     ],
                   ),
                 ),
@@ -375,7 +375,8 @@ class _OrganizerAttendanceOverviewPageState
     });
   }
 
-  Widget _buildRateRow(String label, String value, Color color, double progress) {
+  Widget _buildRateRow(
+      String label, String value, Color color, double progress) {
     return Row(
       children: [
         Container(
@@ -479,7 +480,8 @@ class _OrganizerAttendanceOverviewPageState
             ),
           ),
           const SizedBox(height: 4),
-          Text(time, style: TextStyle(fontSize: 10, color: Colors.grey.shade500)),
+          Text(time,
+              style: TextStyle(fontSize: 10, color: Colors.grey.shade500)),
         ],
       ),
     );
@@ -489,8 +491,7 @@ class _OrganizerAttendanceOverviewPageState
     return Obx(() {
       final gender = _statsCtrl.analytics.value?.genderDistribution;
       final major = _statsCtrl.analytics.value?.majorDistribution;
-      final hasData = gender != null ||
-          (major != null && major.isNotEmpty);
+      final hasData = gender != null || (major != null && major.isNotEmpty);
 
       return Container(
         padding: const EdgeInsets.all(16),
@@ -526,7 +527,8 @@ class _OrganizerAttendanceOverviewPageState
                 const SizedBox(height: 8),
                 _buildCategoryRow('Nữ', gender.femalePercentage?.toInt() ?? 0,
                     const Color(0xFFEC4899)),
-                if (major != null && major.isNotEmpty) const SizedBox(height: 12),
+                if (major != null && major.isNotEmpty)
+                  const SizedBox(height: 12),
               ],
               if (major != null && major.isNotEmpty) ...[
                 const Divider(height: 16),
@@ -539,10 +541,8 @@ class _OrganizerAttendanceOverviewPageState
                 ...major.take(5).map((m) {
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 8),
-                    child: _buildCategoryRow(
-                        m.name ?? 'N/A',
-                        (m.percentage ?? 0).toInt(),
-                        const Color(0xFF06B6D4)),
+                    child: _buildCategoryRow(m.name ?? 'N/A',
+                        (m.percentage ?? 0).toInt(), const Color(0xFF06B6D4)),
                   );
                 }),
               ],
@@ -595,8 +595,11 @@ class _OrganizerAttendanceOverviewPageState
 
   Widget _buildTrackerTab() {
     return Obx(() {
-      if (_attendanceCtrl.isLoading.value && _attendanceCtrl.attendanceLogs.isEmpty) {
-        return const Center(child: CircularProgressIndicator());
+      if (_attendanceCtrl.isLoading.value &&
+          _attendanceCtrl.attendanceLogs.isEmpty) {
+        return const Center(
+          child: CircularProgressIndicator(color: Color(0xff06B6D4)),
+        );
       }
       return RefreshIndicator(
         onRefresh: _attendanceCtrl.refreshLogs,
@@ -624,7 +627,8 @@ class _OrganizerAttendanceOverviewPageState
     final total = stats?.totalRegistered ?? 0;
     final checkedIn = stats?.totalCheckedIn ?? 0;
     final noShow = total - checkedIn;
-    final rate = total > 0 ? ((checkedIn / total) * 100).toStringAsFixed(0) : '0';
+    final rate =
+        total > 0 ? ((checkedIn / total) * 100).toStringAsFixed(0) : '0';
     final lastUpdate = stats?.lastUpdateTime;
     return Container(
       padding: const EdgeInsets.all(16),
@@ -661,13 +665,15 @@ class _OrganizerAttendanceOverviewPageState
                     style: TextStyle(fontSize: 12, color: Colors.grey.shade500))
               else
                 Text(AppDateUtils.formatDate(DateTime.now()),
-                    style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
+                    style:
+                        TextStyle(fontSize: 12, color: Colors.grey.shade500)),
             ],
           ),
           const SizedBox(height: 16),
           Row(
             children: [
-              _buildStatBox('$checkedIn', 'Đã check-in', const Color(0xFF10B981)),
+              _buildStatBox(
+                  '$checkedIn', 'Đã check-in', const Color(0xFF10B981)),
               _buildStatBox('$noShow', 'Vắng mặt', const Color(0xFFEF4444)),
               _buildStatBox('$rate%', 'Tỷ lệ', const Color(0xFF06B4D4)),
               _buildStatBox('$total', 'Tổng', Colors.grey.shade700),
@@ -754,7 +760,8 @@ class _OrganizerAttendanceOverviewPageState
               const Spacer(),
               if (lastUpdate != null)
                 Text('Cập nhật: ${AppDateUtils.formatDate(lastUpdate)}',
-                    style: TextStyle(fontSize: 11, color: Colors.grey.shade500)),
+                    style:
+                        TextStyle(fontSize: 11, color: Colors.grey.shade500)),
             ],
           ),
           const SizedBox(height: 16),
@@ -765,7 +772,8 @@ class _OrganizerAttendanceOverviewPageState
                 final fraction = maxCount > 0
                     ? ((item.count ?? 0) / maxCount).clamp(0.05, 1.0)
                     : 0.05;
-                return _buildTimeBar(item.time ?? '', fraction, item.count ?? 0);
+                return _buildTimeBar(
+                    item.time ?? '', fraction, item.count ?? 0);
               }).toList(),
             ),
           ),
@@ -876,9 +884,8 @@ class _OrganizerAttendanceOverviewPageState
             child: Icon(
               isCheckIn ? Icons.login : Icons.logout,
               size: 14,
-              color: isCheckIn
-                  ? const Color(0xFF10B981)
-                  : const Color(0xFFEF4444),
+              color:
+                  isCheckIn ? const Color(0xFF10B981) : const Color(0xFFEF4444),
             ),
           ),
           const SizedBox(width: 12),

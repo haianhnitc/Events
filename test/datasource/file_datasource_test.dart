@@ -39,7 +39,7 @@ class TestFileDatasource extends FileDatasourceImpl {
   @override
   Future<ApiResponse<void>> deleteFile(int fileId) async {
     final envelope = deleteStub ??
-        ApiResponse.success({
+        const ApiResponse.success({
           'errorCode': 0,
           'statusCode': 200,
           'message': 'OK',
@@ -47,7 +47,7 @@ class TestFileDatasource extends FileDatasourceImpl {
         });
     return forwardEnvelopeResponse<void>(
       envelope,
-      (_) => null,
+      (_) {},
       fallbackError: 'Xóa file thất bại',
     );
   }
@@ -157,7 +157,7 @@ void main() {
 
     test('trả về responseParsing khi object không phải Map', () async {
       final datasource = TestFileDatasource(
-        uploadStub: ApiResponse.success({
+        uploadStub: const ApiResponse.success({
           'errorCode': 0,
           'statusCode': 200,
           'message': 'OK',
@@ -194,7 +194,7 @@ void main() {
   group('deleteFile', () {
     test('trả về success khi xóa thành công', () async {
       final datasource = TestFileDatasource(
-        deleteStub: ApiResponse.success({
+        deleteStub: const ApiResponse.success({
           'errorCode': 0,
           'statusCode': 200,
           'message': 'OK',

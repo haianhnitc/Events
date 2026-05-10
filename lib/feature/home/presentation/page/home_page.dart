@@ -40,7 +40,7 @@ class HomePage extends StatelessWidget {
                       _buildTwoItemSubHeader(),
                       const SizedBox(height: 24),
                       Obx(() {
-                        controller.userRank?.value;
+                        controller.userRank.value;
                         return RankingCard(
                           onTap: () {
                             Navigator.push(

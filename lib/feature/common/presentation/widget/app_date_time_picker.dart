@@ -164,9 +164,11 @@ class AppDateTimePicker extends StatelessWidget {
   }
 
   Future<void> _showPicker(BuildContext context) async {
-    final initial =
-        value ?? initialDate ?? DateTime.now().add(const Duration(days: 7));
     final first = firstDate ?? DateTime.now();
+    final effectiveInitial = value ?? initialDate;
+    final initial = effectiveInitial != null && !effectiveInitial.isBefore(first)
+        ? effectiveInitial
+        : first.add(const Duration(days: 7));
 
     final date = await showDatePicker(
       context: context,

@@ -17,8 +17,7 @@ class TransactionHistoryController extends GetxController {
 
   final RxList<CoinTransactionEntity> coinTransactions =
       <CoinTransactionEntity>[].obs;
-  final RxList<TransactionEntity> moneyTransactions =
-      <TransactionEntity>[].obs;
+  final RxList<TransactionEntity> moneyTransactions = <TransactionEntity>[].obs;
 
   final RxBool isLoadingCoin = false.obs;
   final RxBool isLoadingMoney = false.obs;
@@ -88,7 +87,7 @@ class TransactionHistoryController extends GetxController {
     }
     isLoadingMoney.value = true;
 
-    final result = await _getTransactionsUsecase(NoParams());
+    final result = await _getTransactionsUsecase(const NoParams());
 
     isLoadingMoney.value = false;
 

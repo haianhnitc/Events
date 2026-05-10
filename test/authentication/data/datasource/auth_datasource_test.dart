@@ -109,9 +109,9 @@ void main() {
       badRequest: (_) => fail('Expected success'),
       unauthorized: (_) => fail('Expected success'),
       forbidden: (_) => fail('Expected success'),
-notFound: (_) => fail('Expected success'),
-        conflict: (_) => fail('Expected success'),
-        internalServerError: () => fail('Expected success'),
+      notFound: (_) => fail('Expected success'),
+      conflict: (_) => fail('Expected success'),
+      internalServerError: () => fail('Expected success'),
       badGateway: () => fail('Expected success'),
       serviceUnavailable: () => fail('Expected success'),
       gatewayTimeout: () => fail('Expected success'),
@@ -128,7 +128,7 @@ notFound: (_) => fail('Expected success'),
     expect(provider.requests.first.headers?['Content-Type'], 'text/plain');
     final body = provider.requests.first.body;
     expect(
-      body?.when(
+      body.when(
         empty: () => null,
         json: (_) => null,
         text: (text) => text,

@@ -603,7 +603,7 @@ class _FeedbackQuestionSheetBodyState
                     Switch(
                       value: _isRequired,
                       onChanged: (v) => setState(() => _isRequired = v),
-                      activeColor: const Color(0xFF06B6D4),
+                      activeThumbColor: const Color(0xFF06B6D4),
                     ),
                     const SizedBox(width: 8),
                   ],

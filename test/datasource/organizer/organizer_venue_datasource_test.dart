@@ -18,7 +18,7 @@ class TestOrganizerVenueDatasource extends OrganizerVenueDatasourceImpl {
   @override
   Future<ApiResponse<VenuePage>> getVenues(VenueListParams params) async {
     final envelope = getVenuesStub ??
-        ApiResponse.success({
+        const ApiResponse.success({
           'errorCode': 0,
           'statusCode': 200,
           'message': 'OK',
@@ -82,7 +82,7 @@ void main() {
   group('getVenues', () {
     test('success with content', () async {
       final datasource = TestOrganizerVenueDatasource(
-        getVenuesStub: ApiResponse.success({
+        getVenuesStub: const ApiResponse.success({
           'errorCode': 0,
           'statusCode': 200,
           'message': 'OK',
@@ -103,7 +103,7 @@ void main() {
         }),
       );
 
-      final params = VenueListParams(page: 0, size: 20);
+      const params = VenueListParams(page: 0, size: 20);
       final result = await datasource.getVenues(params);
 
       result.when(
@@ -127,7 +127,7 @@ void main() {
 
     test('empty', () async {
       final datasource = TestOrganizerVenueDatasource(
-        getVenuesStub: ApiResponse.success({
+        getVenuesStub: const ApiResponse.success({
           'errorCode': 0,
           'statusCode': 200,
           'message': 'OK',
@@ -141,7 +141,7 @@ void main() {
         }),
       );
 
-      final params = VenueListParams(page: 0, size: 20);
+      const params = VenueListParams(page: 0, size: 20);
       final result = await datasource.getVenues(params);
 
       result.when(
@@ -167,7 +167,7 @@ void main() {
   group('createVenue', () {
     test('success', () async {
       final datasource = TestOrganizerVenueDatasource(
-        createStub: ApiResponse.success({
+        createStub: const ApiResponse.success({
           'errorCode': 0,
           'statusCode': 200,
           'message': 'OK',
@@ -180,7 +180,7 @@ void main() {
         }),
       );
 
-      final params = VenueCreateParams(
+      const params = VenueCreateParams(
         name: 'New Venue',
         address: '456 Avenue',
         capacity: 300,
@@ -213,7 +213,7 @@ void main() {
         ),
       );
 
-      final params = VenueCreateParams(name: '');
+      const params = VenueCreateParams(name: '');
       final result = await datasource.createVenue(params);
 
       expect(
@@ -243,7 +243,7 @@ void main() {
         ),
       );
 
-      final params = VenueCreateParams(name: 'Unauthorized Venue');
+      const params = VenueCreateParams(name: 'Unauthorized Venue');
       final result = await datasource.createVenue(params);
 
       expect(

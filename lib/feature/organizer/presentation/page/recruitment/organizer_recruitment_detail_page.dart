@@ -2,7 +2,7 @@ import 'package:events_app/feature/common/utils/app_date_utils.dart';
 import 'package:events_app/feature/common/utils/app_image_utils.dart';
 import 'package:events_app/feature/common/utils/app_map_utils.dart';
 import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
-import 'package:events_app/feature/event_management/presentation/page/event_detail_page.dart';
+import 'package:events_app/feature/organizer/presentation/page/events/organizer_event_detail_page.dart';
 import 'package:events_app/feature/organizer/presentation/controller/organizer_recruitment_detail_controller.dart';
 import 'package:events_app/feature/organizer/presentation/page/recruitment/organizer_recruitment_form_page.dart';
 import 'package:flutter/material.dart';
@@ -230,7 +230,7 @@ class _OrganizerRecruitmentDetailPageState
                   context,
                   MaterialPageRoute(
                     builder: (_) =>
-                        EventDetailPage(eventId: recruitment.eventId),
+                        OrganizerEventDetailPage(eventId: recruitment.eventId),
                   ),
                 );
               },

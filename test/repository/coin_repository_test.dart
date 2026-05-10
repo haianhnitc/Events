@@ -23,7 +23,8 @@ void main() {
   });
 
   group('getCoinHistory', () {
-    test('trả về list CoinTransactionEntity khi datasource trả success', () async {
+    test('trả về list CoinTransactionEntity khi datasource trả success',
+        () async {
       final coinPage = CoinPage(
         items: [
           CoinTransactionModel.fromJson(fakeCoinTransactionJson(id: 1)),
@@ -53,8 +54,9 @@ void main() {
       );
     });
 
-    test('trả về empty list khi datasource trả success với content rỗng', () async {
-      final coinPage = CoinPage(
+    test('trả về empty list khi datasource trả success với content rỗng',
+        () async {
+      const coinPage = CoinPage(
         items: [],
         totalElements: 0,
         totalPages: 0,
@@ -81,18 +83,20 @@ void main() {
 
     test('trả về Left khi datasource trả failure', () async {
       when(() => mockDatasource.getCoinHistory(
-            page: any(named: 'page'),
-            size: any(named: 'size'),
-            sort: any(named: 'sort'),
-          )).thenAnswer(
-          (_) async => errorResponse<CoinPage>(unauthorizedResponse()));
+                page: any(named: 'page'),
+                size: any(named: 'size'),
+                sort: any(named: 'sort'),
+              ))
+          .thenAnswer(
+              (_) async => errorResponse<CoinPage>(unauthorizedResponse()));
 
       final result = await repository.getCoinHistory();
 
       expect(result.isLeft(), isTrue);
     });
 
-    test('chuyển đổi CoinTransactionModel sang CoinTransactionEntity đúng', () async {
+    test('chuyển đổi CoinTransactionModel sang CoinTransactionEntity đúng',
+        () async {
       final coinPage = CoinPage(
         items: [
           CoinTransactionModel.fromJson(fakeCoinTransactionJson(id: 5)),

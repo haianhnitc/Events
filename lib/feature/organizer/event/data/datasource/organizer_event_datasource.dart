@@ -11,9 +11,11 @@ import 'package:events_app/feature/organizer/event/domain/usecase/event_params.d
 import 'package:injectable/injectable.dart';
 
 abstract class OrganizerEventDatasource {
-  Future<ApiResponse<EventSummaryPage>> getOrganizerEvents(OrganizerEventListParams params);
+  Future<ApiResponse<EventSummaryPage>> getOrganizerEvents(
+      OrganizerEventListParams params);
   Future<ApiResponse<EventModel>> createEvent(EventCreateParams params);
-  Future<ApiResponse<EventModel>> updateEvent(int eventId, EventUpdateParams params);
+  Future<ApiResponse<EventModel>> updateEvent(
+      int eventId, EventUpdateParams params);
   Future<ApiResponse<void>> deleteEvent(int eventId);
   Future<ApiResponse<EventModel>> publishEvent(int eventId);
   Future<ApiResponse<EventModel>> getEventById(int eventId);
@@ -22,7 +24,9 @@ abstract class OrganizerEventDatasource {
   Future<ApiResponse<Map<String, dynamic>>> createEventCategoryOption(
       EventCategoryOptionCreateParams params);
   Future<ApiResponse<Map<String, dynamic>>> updateEventCategoryOption(
-      int eventId, int categoryOptionId, EventCategoryOptionUpdateParams params);
+      int eventId,
+      int categoryOptionId,
+      EventCategoryOptionUpdateParams params);
   Future<ApiResponse<void>> deleteEventCategoryOption(
       int eventId, int categoryOptionId);
 }
@@ -44,7 +48,8 @@ class EventSummaryPage {
 }
 
 @Injectable(as: OrganizerEventDatasource)
-class OrganizerEventDatasourceImpl extends ApiProvider implements OrganizerEventDatasource {
+class OrganizerEventDatasourceImpl extends ApiProvider
+    implements OrganizerEventDatasource {
   OrganizerEventDatasourceImpl({RestClient? client})
       : super(client: client ?? NRDRestClient());
 
@@ -82,7 +87,8 @@ class OrganizerEventDatasourceImpl extends ApiProvider implements OrganizerEvent
           final contentList = object['content'] as List<dynamic>? ?? [];
           return EventSummaryPage(
             content: contentList
-                .map((e) => EventSummaryModel.fromJson(e as Map<String, dynamic>))
+                .map((e) =>
+                    EventSummaryModel.fromJson(e as Map<String, dynamic>))
                 .toList(),
             totalElements: object['totalElements'] as int? ?? 0,
             totalPages: object['totalPages'] as int? ?? 0,
@@ -123,7 +129,8 @@ class OrganizerEventDatasourceImpl extends ApiProvider implements OrganizerEvent
   }
 
   @override
-  Future<ApiResponse<EventModel>> updateEvent(int eventId, EventUpdateParams params) async {
+  Future<ApiResponse<EventModel>> updateEvent(
+      int eventId, EventUpdateParams params) async {
     try {
       final response = await put<Map<String, dynamic>>(
         ApiPath.eventDetail(eventId),
@@ -158,7 +165,7 @@ class OrganizerEventDatasourceImpl extends ApiProvider implements OrganizerEvent
 
       return forwardEnvelopeResponse<void>(
         response,
-        (_) => null,
+        (_) {},
         fallbackError: 'Xóa sự kiện thất bại',
       );
     } catch (e) {
@@ -215,7 +222,8 @@ class OrganizerEventDatasourceImpl extends ApiProvider implements OrganizerEvent
   }
 
   @override
-  Future<ApiResponse<Map<String, dynamic>>> getEventStatistics(int eventId) async {
+  Future<ApiResponse<Map<String, dynamic>>> getEventStatistics(
+      int eventId) async {
     try {
       final response = await get<Map<String, dynamic>>(
         ApiPath.eventStatistics(eventId),
@@ -239,7 +247,8 @@ class OrganizerEventDatasourceImpl extends ApiProvider implements OrganizerEvent
   }
 
   @override
-  Future<ApiResponse<EventAnalyticsModel>> getEventAnalytics(int eventId) async {
+  Future<ApiResponse<EventAnalyticsModel>> getEventAnalytics(
+      int eventId) async {
     try {
       final response = await get<Map<String, dynamic>>(
         ApiPath.eventAnalytics(eventId),
@@ -290,7 +299,9 @@ class OrganizerEventDatasourceImpl extends ApiProvider implements OrganizerEvent
 
   @override
   Future<ApiResponse<Map<String, dynamic>>> updateEventCategoryOption(
-      int eventId, int categoryOptionId, EventCategoryOptionUpdateParams params) async {
+      int eventId,
+      int categoryOptionId,
+      EventCategoryOptionUpdateParams params) async {
     try {
       final response = await put<Map<String, dynamic>>(
         ApiPath.eventCategoryOptionUpdate(eventId, categoryOptionId),
@@ -326,7 +337,7 @@ class OrganizerEventDatasourceImpl extends ApiProvider implements OrganizerEvent
 
       return forwardEnvelopeResponse<void>(
         response,
-        (_) => null,
+        (_) {},
         fallbackError: 'Xóa category option thất bại',
       );
     } catch (e) {

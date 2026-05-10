@@ -9,7 +9,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../../helpers/fake_data.dart';
 
-class TestOrganizerParticipantDatasource extends OrganizerParticipantDatasourceImpl {
+class TestOrganizerParticipantDatasource
+    extends OrganizerParticipantDatasourceImpl {
   ApiResponse<Map<String, dynamic>>? participantsStub;
   ApiResponse<Map<String, dynamic>>? byIdStub;
   ApiResponse<Map<String, dynamic>>? createStub;
@@ -100,7 +101,7 @@ class TestOrganizerParticipantDatasource extends OrganizerParticipantDatasourceI
   @override
   Future<ApiResponse<void>> deleteParticipant(int id) async {
     final envelope = deleteStub ??
-        ApiResponse.success({
+        const ApiResponse.success({
           'errorCode': 0,
           'statusCode': 200,
           'message': 'OK',
@@ -108,7 +109,7 @@ class TestOrganizerParticipantDatasource extends OrganizerParticipantDatasourceI
         });
     return forwardEnvelopeResponse<void>(
       envelope,
-      (_) => null,
+      (_) {},
       fallbackError: 'Xóa participant thất bại',
     );
   }
@@ -193,7 +194,7 @@ void main() {
 
     test('trả về list rỗng khi không có participant', () async {
       final datasource = TestOrganizerParticipantDatasource(
-        participantsStub: ApiResponse.success({
+        participantsStub: const ApiResponse.success({
           'errorCode': 0,
           'statusCode': 200,
           'message': 'OK',
@@ -383,7 +384,7 @@ void main() {
   group('deleteParticipant', () {
     test('trả về success khi xóa thành công', () async {
       final datasource = TestOrganizerParticipantDatasource(
-        deleteStub: ApiResponse.success({
+        deleteStub: const ApiResponse.success({
           'errorCode': 0,
           'statusCode': 200,
           'message': 'OK',

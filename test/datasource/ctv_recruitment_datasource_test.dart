@@ -99,7 +99,12 @@ class TestCtvRecruitmentDatasource extends CtvRecruitmentDatasourceImpl {
     final envelope = stub != null
         ? ApiResponse.success(stub is Map<String, dynamic>
             ? stub
-            : {'errorCode': 0, 'statusCode': 200, 'message': 'OK', 'object': stub})
+            : {
+                'errorCode': 0,
+                'statusCode': 200,
+                'message': 'OK',
+                'object': stub
+              })
         : ApiResponse.success({
             'errorCode': 0,
             'statusCode': 200,
@@ -115,13 +120,15 @@ class TestCtvRecruitmentDatasource extends CtvRecruitmentDatasourceImpl {
         if (object == null) return <RequirementQuestionModel>[];
         if (object is List<dynamic>) {
           return object
-              .map((e) => RequirementQuestionModel.fromJson(e as Map<String, dynamic>))
+              .map((e) =>
+                  RequirementQuestionModel.fromJson(e as Map<String, dynamic>))
               .toList();
         }
         if (object is Map<String, dynamic>) {
           final content = object['content'] as List<dynamic>? ?? [];
           return content
-              .map((e) => RequirementQuestionModel.fromJson(e as Map<String, dynamic>))
+              .map((e) =>
+                  RequirementQuestionModel.fromJson(e as Map<String, dynamic>))
               .toList();
         }
         throw const FormatException('Invalid object payload');
@@ -172,7 +179,7 @@ void main() {
 
     test('trả về list rỗng khi không có recruitment', () async {
       final datasource = TestCtvRecruitmentDatasource()
-        ..getRecruitmentsStub = ApiResponse.success({
+        ..getRecruitmentsStub = const ApiResponse.success({
           'errorCode': 0,
           'statusCode': 200,
           'message': 'OK',
@@ -346,7 +353,7 @@ void main() {
 
     test('trả về responseParsing khi object không phải Map', () async {
       final datasource = TestCtvRecruitmentDatasource()
-        ..getRecruitmentByIdStub = ApiResponse.success(null);
+        ..getRecruitmentByIdStub = const ApiResponse.success(null);
 
       final result = await datasource.getRecruitmentById(1);
 
@@ -442,7 +449,7 @@ void main() {
 
     test('trả về list rỗng khi object null', () async {
       final datasource = TestCtvRecruitmentDatasource()
-        ..getRecruitmentQuestionsStub = ApiResponse.success(null);
+        ..getRecruitmentQuestionsStub = const ApiResponse.success(null);
 
       final result = await datasource.getRecruitmentQuestions(5);
 

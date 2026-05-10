@@ -22,8 +22,8 @@ class TestStaffApplicationDatasource extends StaffApplicationDatasourceImpl {
   Future<ApiResponse<StaffApplicationModel>> createApplication(
     ApplyCtvParams params,
   ) async {
-    final envelope = createApplicationStub ??
-        successEnvelope(fakeStaffApplicationJson());
+    final envelope =
+        createApplicationStub ?? successEnvelope(fakeStaffApplicationJson());
     return forwardEnvelopeResponse<StaffApplicationModel>(
       envelope,
       (object) {
@@ -60,7 +60,7 @@ void main() {
         createApplicationStub: successEnvelope(fakeStaffApplicationJson(id: 5)),
       );
 
-      final params = ApplyCtvParams(eventId: 1, answers: []);
+      const params = ApplyCtvParams(eventId: 1, answers: []);
       final result = await datasource.createApplication(params);
 
       result.when(
@@ -88,7 +88,7 @@ void main() {
         createApplicationStub: successEnvelope(fakeStaffApplicationJson()),
       );
 
-      final params = ApplyCtvParams(
+      const params = ApplyCtvParams(
         eventId: 1,
         cvUrl: 'https://example.com/cv.pdf',
         answers: [
@@ -119,7 +119,7 @@ void main() {
         createApplicationStub: conflictResponse(),
       );
 
-      final params = ApplyCtvParams(eventId: 1, answers: []);
+      const params = ApplyCtvParams(eventId: 1, answers: []);
       final result = await datasource.createApplication(params);
 
       expect(
@@ -147,7 +147,7 @@ void main() {
         createApplicationStub: badRequestResponse(),
       );
 
-      final params = ApplyCtvParams(eventId: 1, answers: []);
+      const params = ApplyCtvParams(eventId: 1, answers: []);
       final result = await datasource.createApplication(params);
 
       expect(
@@ -174,7 +174,8 @@ void main() {
   group('getApplicationById', () {
     test('trả về StaffApplicationModel khi thành công', () async {
       final datasource = TestStaffApplicationDatasource(
-        getApplicationByIdStub: successEnvelope(fakeStaffApplicationJson(id: 10)),
+        getApplicationByIdStub:
+            successEnvelope(fakeStaffApplicationJson(id: 10)),
       );
 
       final result = await datasource.getApplicationById(10);

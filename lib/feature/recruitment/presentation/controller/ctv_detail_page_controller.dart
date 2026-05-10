@@ -1,7 +1,7 @@
 import 'package:events_app/api_template/services/failure.dart';
 import 'package:events_app/authentication/presentation/controller/auth_controller.dart';
 import 'package:events_app/dependency_injection/injection.dart';
-import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
+import 'package:events_app/feature/common/domain/enum/app_enum.dart';
 import 'package:events_app/feature/common/utils/category_label_utils.dart';
 import 'package:events_app/feature/recruitment/domain/entity/ctv_recruitment_entity.dart';
 import 'package:events_app/feature/recruitment/domain/usecase/ctv_recruitment_usecase.dart';
@@ -19,6 +19,8 @@ class CtvDetailPageController extends GetxController {
   final int? ctvRecruitmentId;
   final Rxn<CtvRecruitmentEntity> recruitment = Rxn<CtvRecruitmentEntity>();
   final RxBool isLoading = true.obs;
+  final Rx<ActionButtonState> actionState =
+      const ActionButtonState(label: 'Ứng tuyển', isEnabled: false).obs;
   final CtvController _ctvController = Get.find<CtvController>();
 
   static String buildTag(int? ctvRecruitmentId) {
@@ -48,6 +50,30 @@ class CtvDetailPageController extends GetxController {
   void onInit() {
     super.onInit();
     _loadRecruitment();
+    _watchCtvStateUpdates();
+  }
+
+  void _watchCtvStateUpdates() {
+    ever(_ctvController.ctvStateUpdate, (tuple) {
+      final (updatedRecruitmentId, newState) = tuple;
+      if (ctvRecruitmentId == updatedRecruitmentId) {
+        recruitment.value =
+            recruitment.value?.copyWith(userEventState: newState);
+        actionState.value = _computeActionState(newState);
+      }
+    });
+  }
+
+  ActionButtonState _computeActionState(UserEventState? userEventState) {
+    final item = recruitment.value;
+    if (item == null) {
+      return const ActionButtonState(label: 'Ứng tuyển', isEnabled: false);
+    }
+    return _ctvController.getApplyActionStateByValues(
+      isOpen: item.isOpen,
+      quantity: item.quantity,
+      userEventState: userEventState ?? item.userEventState,
+    );
   }
 
   Future<void> _loadRecruitment() async {
@@ -67,6 +93,7 @@ class CtvDetailPageController extends GetxController {
       },
       (data) {
         recruitment.value = data;
+        actionState.value = _computeActionState(null);
         isLoading.value = false;
       },
     );
@@ -139,20 +166,6 @@ class CtvDetailPageController extends GetxController {
     items.add('Được trải nghiệm công việc mong muốn');
     items.add('Được làm việc cùng các chuyên gia');
     return items;
-  }
-
-  ActionButtonState get actionState {
-    final item = recruitment.value;
-
-    if (item == null) {
-      return const ActionButtonState(label: 'Ứng tuyển', isEnabled: false);
-    }
-
-    return _ctvController.getApplyActionStateByValues(
-      isOpen: item.isOpen,
-      quantity: item.quantity,
-      userEventState: item.userEventState,
-    );
   }
 
   void _handleFailure(FailureEntity failure) {

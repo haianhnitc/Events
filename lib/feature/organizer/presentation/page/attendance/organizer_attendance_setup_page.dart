@@ -3,7 +3,6 @@ import 'package:events_app/feature/organizer/presentation/controller/organizer_e
 import 'package:events_app/feature/organizer/presentation/controller/organizer_participant_list_controller.dart';
 import 'package:events_app/feature/organizer/presentation/page/attendance/organizer_barcode_scanner_page.dart';
 import 'package:events_app/feature/organizer/presentation/page/attendance/organizer_event_qr_fullscreen_page.dart';
-import 'package:events_app/feature/organizer/presentation/page/attendance/organizer_qr_scanner_page.dart';
 import 'package:events_app/feature/organizer/presentation/widget/widgets.dart';
 import 'package:events_app/routes/organizer_app_layout_controller.dart';
 import 'package:flutter/material.dart';

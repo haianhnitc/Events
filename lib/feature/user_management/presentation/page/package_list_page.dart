@@ -20,7 +20,7 @@ class _PackageListPageState extends State<PackageListPage>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    ctrl = Get.put(PackageListController());
+    ctrl = Get.put(PackageListController(), tag: 'package_list');
     _tabController = TabController(length: 3, vsync: this, initialIndex: 0);
     _tabController.addListener(_onTabChanged);
     ctrl.onTabChanged(0);
@@ -107,22 +107,34 @@ class _PackageListPageState extends State<PackageListPage>
 
       return RefreshIndicator(
         onRefresh: () => ctrl.loadAvailablePackages(refresh: true),
-        child: ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount:
-              ctrl.availablePackages.length + (ctrl.hasMoreAvailable.value ? 1 : 0),
-          itemBuilder: (context, index) {
-            if (index >= ctrl.availablePackages.length) {
+        notificationPredicate: (notification) => notification.depth == 1,
+        child: NotificationListener<ScrollNotification>(
+          onNotification: (notification) {
+            if (notification is ScrollEndNotification &&
+                notification.metrics.extentAfter < 80 &&
+                ctrl.availablePackages.isNotEmpty &&
+                !ctrl.isLoadingAvailable.value &&
+                ctrl.hasMoreAvailable.value) {
               ctrl.loadAvailablePackages();
-              return const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(16),
-                  child: CircularProgressIndicator(),
-                ),
-              );
             }
-            return _buildAvailablePackageItem(ctrl.availablePackages[index]);
+            return false;
           },
+          child: ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: ctrl.availablePackages.length +
+                (ctrl.hasMoreAvailable.value ? 1 : 0),
+            itemBuilder: (context, index) {
+              if (index >= ctrl.availablePackages.length) {
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(16),
+                    child: CircularProgressIndicator(),
+                  ),
+                );
+              }
+              return _buildAvailablePackageItem(ctrl.availablePackages[index]);
+            },
+          ),
         ),
       );
     });
@@ -146,21 +158,34 @@ class _PackageListPageState extends State<PackageListPage>
 
       return RefreshIndicator(
         onRefresh: () => ctrl.loadMyPackages(refresh: true),
-        child: ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: activePackages.length + (ctrl.hasMoreMyPackages.value ? 1 : 0),
-          itemBuilder: (context, index) {
-            if (index >= activePackages.length) {
+        notificationPredicate: (notification) => notification.depth == 1,
+        child: NotificationListener<ScrollNotification>(
+          onNotification: (notification) {
+            if (notification is ScrollEndNotification &&
+                notification.metrics.extentAfter < 80 &&
+                activePackages.isNotEmpty &&
+                !ctrl.isLoadingMyPackages.value &&
+                ctrl.hasMoreMyPackages.value) {
               ctrl.loadMyPackages();
-              return const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(16),
-                  child: CircularProgressIndicator(),
-                ),
-              );
             }
-            return _buildMyPackageItem(activePackages[index]);
+            return false;
           },
+          child: ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: activePackages.length +
+                (ctrl.hasMoreMyPackages.value ? 1 : 0),
+            itemBuilder: (context, index) {
+              if (index >= activePackages.length) {
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(16),
+                    child: CircularProgressIndicator(),
+                  ),
+                );
+              }
+              return _buildMyPackageItem(activePackages[index]);
+            },
+          ),
         ),
       );
     });
@@ -181,21 +206,34 @@ class _PackageListPageState extends State<PackageListPage>
 
       return RefreshIndicator(
         onRefresh: () => ctrl.loadExpiredPackages(refresh: true),
-        child: ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: ctrl.expiredPackages.length + (ctrl.hasMoreExpired.value ? 1 : 0),
-          itemBuilder: (context, index) {
-            if (index >= ctrl.expiredPackages.length) {
+        notificationPredicate: (notification) => notification.depth == 1,
+        child: NotificationListener<ScrollNotification>(
+          onNotification: (notification) {
+            if (notification is ScrollEndNotification &&
+                notification.metrics.extentAfter < 80 &&
+                ctrl.expiredPackages.isNotEmpty &&
+                !ctrl.isLoadingExpired.value &&
+                ctrl.hasMoreExpired.value) {
               ctrl.loadExpiredPackages();
-              return const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(16),
-                  child: CircularProgressIndicator(),
-                ),
-              );
             }
-            return _buildMyPackageItem(ctrl.expiredPackages[index], expired: true);
+            return false;
           },
+          child: ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: ctrl.expiredPackages.length +
+                (ctrl.hasMoreExpired.value ? 1 : 0),
+            itemBuilder: (context, index) {
+              if (index >= ctrl.expiredPackages.length) {
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(16),
+                    child: CircularProgressIndicator(),
+                  ),
+                );
+              }
+              return _buildMyPackageItem(ctrl.expiredPackages[index], expired: true);
+            },
+          ),
         ),
       );
     });
@@ -334,7 +372,8 @@ class _PackageListPageState extends State<PackageListPage>
 
   Widget _buildPackageButton(package) {
     final pkgId = package.packageId;
-    final owned = pkgId != null && ctrl.hasPackage(pkgId);
+    final owned = pkgId != null &&
+        ctrl.myPackages.any((p) => p.packageId == pkgId);
 
     if (owned) {
       return ElevatedButton(

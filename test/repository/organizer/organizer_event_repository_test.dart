@@ -25,18 +25,19 @@ void main() {
   });
 
   setUpAll(() {
-    registerFallbackValue(OrganizerEventListParams(
+    registerFallbackValue(const OrganizerEventListParams(
       organizerId: 1,
       page: 0,
       size: 20,
     ));
-    registerFallbackValue(EventCreateParams(title: 'Test'));
-    registerFallbackValue(EventUpdateParams());
-    registerFallbackValue(EventCategoryOptionCreateParams(
+    registerFallbackValue(const EventCreateParams(title: 'Test'));
+    registerFallbackValue(const EventUpdateParams());
+    registerFallbackValue(const EventCategoryOptionCreateParams(
       eventId: 1,
       categoryOptionId: 1,
     ));
-    registerFallbackValue(EventCategoryOptionUpdateParams(categoryOptionId: 1));
+    registerFallbackValue(
+        const EventCategoryOptionUpdateParams(categoryOptionId: 1));
   });
 
   group('getOrganizerEventList', () {
@@ -52,7 +53,7 @@ void main() {
       when(() => mockDatasource.getOrganizerEvents(any()))
           .thenAnswer((_) async => ApiResponse.success(page));
 
-      final params = OrganizerEventListParams(
+      const params = OrganizerEventListParams(
         organizerId: 1,
         page: 0,
         size: 20,
@@ -81,7 +82,7 @@ void main() {
       when(() => mockDatasource.getOrganizerEvents(any()))
           .thenAnswer((_) async => ApiResponse.success(page));
 
-      final params = OrganizerEventListParams(
+      const params = OrganizerEventListParams(
         organizerId: 1,
         page: 0,
         size: 20,
@@ -102,7 +103,7 @@ void main() {
       when(() => mockDatasource.getOrganizerEvents(any()))
           .thenAnswer((_) async => errorResponse<Map<String, dynamic>>());
 
-      final params = OrganizerEventListParams(
+      const params = OrganizerEventListParams(
         organizerId: 1,
         page: 0,
         size: 20,
@@ -119,7 +120,7 @@ void main() {
       when(() => mockDatasource.createEvent(any()))
           .thenAnswer((_) async => ApiResponse.success(eventModel));
 
-      final params = EventCreateParams(title: 'New Event');
+      const params = EventCreateParams(title: 'New Event');
       final result = await repository.createEvent(params);
 
       expect(result.isRight(), true);
@@ -136,7 +137,7 @@ void main() {
       when(() => mockDatasource.updateEvent(any(), any()))
           .thenAnswer((_) async => ApiResponse.success(eventModel));
 
-      final params = EventUpdateParams(title: 'Updated');
+      const params = EventUpdateParams(title: 'Updated');
       final result = await repository.updateEvent(1, params);
 
       expect(result.isRight(), true);
@@ -150,7 +151,7 @@ void main() {
   group('deleteEvent', () {
     test('success returns Right(unit)', () async {
       when(() => mockDatasource.deleteEvent(any()))
-          .thenAnswer((_) async => ApiResponse.success(null));
+          .thenAnswer((_) async => const ApiResponse.success(null));
 
       final result = await repository.deleteEvent(1);
 
@@ -238,10 +239,10 @@ void main() {
 
   group('createEventCategoryOption', () {
     test('success returns Right(unit)', () async {
-      when(() => mockDatasource.createEventCategoryOption(any()))
-          .thenAnswer((_) async => ApiResponse.success({'success': true}));
+      when(() => mockDatasource.createEventCategoryOption(any())).thenAnswer(
+          (_) async => const ApiResponse.success({'success': true}));
 
-      final params = EventCategoryOptionCreateParams(
+      const params = EventCategoryOptionCreateParams(
         eventId: 1,
         categoryOptionId: 5,
       );
@@ -258,9 +259,10 @@ void main() {
   group('updateEventCategoryOption', () {
     test('success returns Right(unit)', () async {
       when(() => mockDatasource.updateEventCategoryOption(any(), any(), any()))
-          .thenAnswer((_) async => ApiResponse.success({'success': true}));
+          .thenAnswer(
+              (_) async => const ApiResponse.success({'success': true}));
 
-      final params = EventCategoryOptionUpdateParams(categoryOptionId: 5);
+      const params = EventCategoryOptionUpdateParams(categoryOptionId: 5);
       final result = await repository.updateEventCategoryOption(1, 5, params);
 
       expect(result.isRight(), true);
@@ -274,7 +276,7 @@ void main() {
   group('deleteEventCategoryOption', () {
     test('success returns Right(unit)', () async {
       when(() => mockDatasource.deleteEventCategoryOption(any(), any()))
-          .thenAnswer((_) async => ApiResponse.success(null));
+          .thenAnswer((_) async => const ApiResponse.success(null));
 
       final result = await repository.deleteEventCategoryOption(1, 5);
 

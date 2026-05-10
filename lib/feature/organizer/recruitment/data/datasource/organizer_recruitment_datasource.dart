@@ -9,16 +9,20 @@ import 'package:events_app/feature/organizer/recruitment/domain/usecase/organize
 import 'package:injectable/injectable.dart';
 
 abstract class OrganizerRecruitmentDatasource {
-  Future<ApiResponse<List<CtvRecruitmentModel>>> getRecruitments({int? eventId, String? keyword, int page, int size});
+  Future<ApiResponse<List<CtvRecruitmentModel>>> getRecruitments(
+      {int? eventId, String? keyword, int page, int size});
   Future<ApiResponse<CtvRecruitmentModel>> getRecruitmentById(int id);
-  Future<ApiResponse<CtvRecruitmentModel>> createRecruitment(CreateRecruitmentParams params);
-  Future<ApiResponse<CtvRecruitmentModel>> updateRecruitment(int id, UpdateRecruitmentParams params);
+  Future<ApiResponse<CtvRecruitmentModel>> createRecruitment(
+      CreateRecruitmentParams params);
+  Future<ApiResponse<CtvRecruitmentModel>> updateRecruitment(
+      int id, UpdateRecruitmentParams params);
   Future<ApiResponse<void>> closeRecruitment(int id);
   Future<ApiResponse<void>> deleteRecruitment(int id);
 }
 
 @Injectable(as: OrganizerRecruitmentDatasource)
-class OrganizerRecruitmentDatasourceImpl extends ApiProvider implements OrganizerRecruitmentDatasource {
+class OrganizerRecruitmentDatasourceImpl extends ApiProvider
+    implements OrganizerRecruitmentDatasource {
   OrganizerRecruitmentDatasourceImpl({RestClient? client})
       : super(client: client ?? NRDRestClient());
 
@@ -32,7 +36,8 @@ class OrganizerRecruitmentDatasourceImpl extends ApiProvider implements Organize
     try {
       final queryParams = <String, dynamic>{'page': page, 'size': size};
       if (eventId != null) queryParams['eventId'] = eventId;
-      if (keyword != null && keyword.isNotEmpty) queryParams['keyword'] = keyword;
+      if (keyword != null && keyword.isNotEmpty)
+        queryParams['keyword'] = keyword;
 
       final response = await get<Map<String, dynamic>>(
         ApiPath.recruitments,
@@ -49,7 +54,8 @@ class OrganizerRecruitmentDatasourceImpl extends ApiProvider implements Organize
           }
           final content = object['content'] as List<dynamic>? ?? [];
           return content
-              .map((e) => CtvRecruitmentModel.fromJson(e as Map<String, dynamic>))
+              .map((e) =>
+                  CtvRecruitmentModel.fromJson(e as Map<String, dynamic>))
               .toList();
         },
         fallbackError: 'Lấy danh sách tuyển CTV thất bại',
@@ -149,7 +155,7 @@ class OrganizerRecruitmentDatasourceImpl extends ApiProvider implements Organize
 
       return forwardEnvelopeResponse<void>(
         response,
-        (_) => null,
+        (_) {},
         fallbackError: 'Đóng tuyển CTV thất bại',
       );
     } catch (e) {
@@ -168,7 +174,7 @@ class OrganizerRecruitmentDatasourceImpl extends ApiProvider implements Organize
 
       return forwardEnvelopeResponse<void>(
         response,
-        (_) => null,
+        (_) {},
         fallbackError: 'Xóa tuyển CTV thất bại',
       );
     } catch (e) {

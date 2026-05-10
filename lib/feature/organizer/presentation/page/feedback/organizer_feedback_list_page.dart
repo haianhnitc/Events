@@ -57,9 +57,14 @@ class _OrganizerFeedbackListPageState extends State<OrganizerFeedbackListPage> {
 
   Widget _buildBody() {
     if (_ctrl.isLoading.value && _ctrl.feedbacks.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(
+        child: CircularProgressIndicator(color: Color(0xff06B6D4)),
+      );
     }
+    return _buildBodyContent();
+  }
 
+  Widget _buildBodyContent() {
     return RefreshIndicator(
       onRefresh: _ctrl.refresh,
       child: CustomScrollView(
@@ -85,7 +90,8 @@ class _OrganizerFeedbackListPageState extends State<OrganizerFeedbackListPage> {
                   ),
                   const SizedBox(width: 8),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
                       color: const Color(0xFFF59E0B).withOpacity(0.1),
                       borderRadius: BorderRadius.circular(12),
@@ -104,7 +110,7 @@ class _OrganizerFeedbackListPageState extends State<OrganizerFeedbackListPage> {
             ),
           ),
           if (_ctrl.feedbacks.isEmpty)
-            SliverFillRemaining(
+            const SliverFillRemaining(
               child: OrganizerEmptyState(
                 message: 'Chưa có phản hồi',
                 description: 'Người tham gia chưa gửi đánh giá nào',
@@ -164,7 +170,8 @@ class _OrganizerFeedbackListPageState extends State<OrganizerFeedbackListPage> {
                   color: Colors.white.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(Icons.star_rate, color: Colors.white, size: 24),
+                child:
+                    const Icon(Icons.star_rate, color: Colors.white, size: 24),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -430,9 +437,8 @@ class _OrganizerFeedbackListPageState extends State<OrganizerFeedbackListPage> {
                 flex: 2,
                 child: Text(
                   e.key,
-                  style: const TextStyle(
-                      fontSize: 11,
-                      color: Color(0xff475569)),
+                  style:
+                      const TextStyle(fontSize: 11, color: Color(0xff475569)),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -533,8 +539,8 @@ class _OrganizerFeedbackListPageState extends State<OrganizerFeedbackListPage> {
               decoration: BoxDecoration(
                 color: const Color(0xFFF59E0B).withOpacity(0.06),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                    color: const Color(0xFFF59E0B).withOpacity(0.2)),
+                border:
+                    Border.all(color: const Color(0xFFF59E0B).withOpacity(0.2)),
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -572,8 +578,7 @@ class _OrganizerFeedbackListPageState extends State<OrganizerFeedbackListPage> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Icon(Icons.help_outline,
-                size: 14, color: Color(0xff94A3B8)),
+            const Icon(Icons.help_outline, size: 14, color: Color(0xff94A3B8)),
             const SizedBox(width: 6),
             Expanded(
               child: Column(
@@ -581,8 +586,7 @@ class _OrganizerFeedbackListPageState extends State<OrganizerFeedbackListPage> {
                 children: [
                   Text(
                     questionText,
-                    style: TextStyle(
-                        fontSize: 11, color: Colors.grey.shade600),
+                    style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
                   ),
                   const SizedBox(height: 4),
                   Row(
@@ -607,8 +611,7 @@ class _OrganizerFeedbackListPageState extends State<OrganizerFeedbackListPage> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.help_outline,
-              size: 14, color: Color(0xff94A3B8)),
+          const Icon(Icons.help_outline, size: 14, color: Color(0xff94A3B8)),
           const SizedBox(width: 6),
           Expanded(
             child: Column(

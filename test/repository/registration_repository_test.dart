@@ -11,7 +11,8 @@ import 'package:mocktail/mocktail.dart';
 import '../helpers/fake_data.dart';
 import '../helpers/mock_rest_client.dart';
 
-class MockRegistrationDatasource extends Mock implements RegistrationDatasource {}
+class MockRegistrationDatasource extends Mock
+    implements RegistrationDatasource {}
 
 class FakeCreateRegistrationParams extends Fake
     implements CreateRegistrationParams {}
@@ -32,7 +33,7 @@ void main() {
   group('createRegistration', () {
     test('trả về ParticipantEntity khi datasource trả success', () async {
       final model = ParticipantModel.fromJson(fakeParticipantJson(id: 100));
-      final params = const CreateRegistrationParams(eventId: 1);
+      const params = CreateRegistrationParams(eventId: 1);
       when(() => mockDatasource.createRegistration(any()))
           .thenAnswer((_) async => successResponse(model));
 
@@ -49,9 +50,9 @@ void main() {
     });
 
     test('trả về Left khi datasource trả conflict', () async {
-      final params = const CreateRegistrationParams(eventId: 1);
-      when(() => mockDatasource.createRegistration(any()))
-          .thenAnswer((_) async => errorResponse<ParticipantModel>(conflictResponse()));
+      const params = CreateRegistrationParams(eventId: 1);
+      when(() => mockDatasource.createRegistration(any())).thenAnswer(
+          (_) async => errorResponse<ParticipantModel>(conflictResponse()));
 
       final result = await repository.createRegistration(params);
 
@@ -65,9 +66,9 @@ void main() {
     });
 
     test('trả về Left khi datasource trả notFound', () async {
-      final params = const CreateRegistrationParams(eventId: 9999);
-      when(() => mockDatasource.createRegistration(any()))
-          .thenAnswer((_) async => errorResponse<ParticipantModel>(notFoundResponse()));
+      const params = CreateRegistrationParams(eventId: 9999);
+      when(() => mockDatasource.createRegistration(any())).thenAnswer(
+          (_) async => errorResponse<ParticipantModel>(notFoundResponse()));
 
       final result = await repository.createRegistration(params);
 
@@ -99,12 +100,14 @@ void main() {
       );
     });
 
-    test('trả về empty list khi datasource trả success với content rỗng', () async {
+    test('trả về empty list khi datasource trả success với content rỗng',
+        () async {
       when(() => mockDatasource.getMyRegistrations(
-            any(),
-            page: any(named: 'page'),
-            size: any(named: 'size'),
-          )).thenAnswer((_) async => successResponse<List<ParticipantModel>>([]));
+                any(),
+                page: any(named: 'page'),
+                size: any(named: 'size'),
+              ))
+          .thenAnswer((_) async => successResponse<List<ParticipantModel>>([]));
 
       final result = await repository.getMyRegistrations(42);
 

@@ -47,13 +47,13 @@ class _OrganizerStaffAnswerSummaryPageState
       ),
       body: Obx(() {
         if (_ctrl.isLoading.value && _ctrl.applications.isEmpty) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(
+            child: CircularProgressIndicator(color: Color(0xff06B6D4)),
+          );
         }
-
         final approved = _ctrl.applications
             .where((a) => a.status == StaffApplicationStatus.approved)
             .length;
-
         return SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -93,26 +93,25 @@ class _OrganizerStaffAnswerSummaryPageState
                 const Icon(Icons.summarize, size: 24, color: Color(0xFF06B6D4)),
           ),
           const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Bai tuyen CTV',
-                      style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xff273143)),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${_ctrl.applications.length} don ung tuyen',
-                      style:
-                          TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                    ),
-                  ],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Bài tuyển CTV',
+                  style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xff273143)),
                 ),
-              ),
+                const SizedBox(height: 4),
+                Text(
+                  '${_ctrl.applications.length} đơn ứng tuyển',
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                ),
+              ],
+            ),
+          ),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
@@ -120,7 +119,7 @@ class _OrganizerStaffAnswerSummaryPageState
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
-              '$approvedCount da duyet',
+              '$approvedCount đã duyệt',
               style: const TextStyle(
                   fontSize: 12,
                   color: Color(0xFF10B981),

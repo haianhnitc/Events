@@ -4,7 +4,6 @@ import 'package:events_app/feature/event_management/domain/entity/event_summary_
 import 'package:events_app/feature/organizer/presentation/controller/organizer_attendance_list_controller.dart';
 import 'package:events_app/feature/organizer/presentation/controller/organizer_event_list_controller.dart';
 import 'package:events_app/feature/organizer/presentation/controller/organizer_event_statistics_controller.dart';
-import 'package:events_app/feature/organizer/presentation/widget/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -460,7 +459,11 @@ class _OrganizerAttendanceReportPageState
   Widget _buildDetailedTable() {
     return Obx(() {
       final filteredLogs = _getFilteredLogs();
-
+      if (_attendanceCtrl.isLoading.value && filteredLogs.isEmpty) {
+        return const Center(
+          child: CircularProgressIndicator(color: Color(0xff06B6D4)),
+        );
+      }
       return Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
@@ -501,9 +504,7 @@ class _OrganizerAttendanceReportPageState
               ],
             ),
             const SizedBox(height: 12),
-            if (_attendanceCtrl.isLoading.value && filteredLogs.isEmpty)
-              const Center(child: CircularProgressIndicator())
-            else if (filteredLogs.isEmpty)
+            if (filteredLogs.isEmpty)
               const Center(
                 child: Padding(
                   padding: EdgeInsets.all(20),

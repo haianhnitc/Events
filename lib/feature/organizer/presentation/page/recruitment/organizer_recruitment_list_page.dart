@@ -1,5 +1,4 @@
 import 'package:events_app/feature/common/utils/app_date_utils.dart';
-import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
 import 'package:events_app/feature/event_management/domain/entity/event_summary_entity.dart';
 import 'package:events_app/feature/organizer/presentation/controller/organizer_event_list_controller.dart';
 import 'package:events_app/feature/organizer/presentation/controller/organizer_recruitment_list_controller.dart';
@@ -63,41 +62,16 @@ class _OrganizerRecruitmentListPageState
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
-                Obx(() {
-                  final events = _eventCtrl.events;
-                  return Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14),
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade50,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: Colors.grey.shade200),
-                    ),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<EventSummaryEntity>(
-                        value: _selectedEvent,
-                        hint: Text('Tất cả sự kiện',
-                            style: TextStyle(
-                                color: Colors.grey.shade400, fontSize: 14)),
-                        isExpanded: true,
-                        items: [
-                          const DropdownMenuItem<EventSummaryEntity>(
-                            value: null,
-                            child: Text('Tất cả sự kiện'),
-                          ),
-                          ...events.map((e) => DropdownMenuItem(
-                                value: e,
-                                child: Text(e.title ?? 'N/A',
-                                    overflow: TextOverflow.ellipsis),
-                              )),
-                        ],
-                        onChanged: (e) {
-                          setState(() => _selectedEvent = e);
-                          _ctrl.setEventFilter(e?.eventId);
-                        },
-                      ),
-                    ),
-                  );
-                }),
+                Obx(() => OrganizerEventDropdownField(
+                      events: _eventCtrl.events.toList(),
+                      selectedEvent: _selectedEvent,
+                      onChanged: (e) {
+                        setState(() => _selectedEvent = e);
+                        _ctrl.setEventFilter(e?.eventId);
+                      },
+                      showAllOption: true,
+                      hint: 'Tất cả sự kiện',
+                    )),
                 const SizedBox(height: 12),
                 OrganizerSearchField(
                   controller: _searchController,
@@ -117,37 +91,12 @@ class _OrganizerRecruitmentListPageState
           ),
           Expanded(
             child: Obx(() {
-              if (_ctrl.isLoading.value && _ctrl.recruitments.isEmpty) {
-                return const Center(child: CircularProgressIndicator());
-              }
-              final items = _ctrl.recruitments;
-              if (items.isEmpty) {
-                return OrganizerEmptyState(
-                  message: 'Chưa có bài tuyển dụng',
-                  description: 'Tạo bài tuyển CTV để thu hút ứng viên',
-                  icon: Icons.work_outline,
-                  actionLabel: 'Tạo bài tuyển',
-                  onAction: () =>
-                      Get.to(() => const OrganizerRecruitmentFormPage()),
+              if (_ctrl.isLoading.value) {
+                return const Center(
+                  child: CircularProgressIndicator(color: Color(0xff06B6D4)),
                 );
               }
-              return RefreshIndicator(
-                onRefresh: _ctrl.refreshRecruitments,
-                child: ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: items.length + (_ctrl.isLoading.value ? 1 : 0),
-                  itemBuilder: (context, index) {
-                    if (_ctrl.isLoading.value && index == 0) {
-                      return const Padding(
-                        padding: EdgeInsets.only(bottom: 8),
-                        child: LinearProgressIndicator(),
-                      );
-                    }
-                    final item = items[index - (_ctrl.isLoading.value ? 1 : 0)];
-                    return _buildCard(item);
-                  },
-                ),
-              );
+              return _buildRecruitmentListContent();
             }),
           ),
         ],
@@ -157,6 +106,27 @@ class _OrganizerRecruitmentListPageState
         onPressed: () => Get.to(() => const OrganizerRecruitmentFormPage()),
         backgroundColor: const Color(0xFF06B6D4),
         child: const Icon(Icons.add, color: Colors.white),
+      ),
+    );
+  }
+
+  Widget _buildRecruitmentListContent() {
+    final items = _ctrl.recruitments;
+    if (items.isEmpty) {
+      return OrganizerEmptyState(
+        message: 'Chưa có bài tuyển dụng',
+        description: 'Tạo bài tuyển CTV để thu hút ứng viên',
+        icon: Icons.work_outline,
+        actionLabel: 'Tạo bài tuyển',
+        onAction: () => Get.to(() => const OrganizerRecruitmentFormPage()),
+      );
+    }
+    return RefreshIndicator(
+      onRefresh: _ctrl.refreshRecruitments,
+      child: ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: items.length,
+        itemBuilder: (context, index) => _buildCard(items[index]),
       ),
     );
   }
@@ -257,17 +227,13 @@ class _OrganizerRecruitmentListPageState
                     }, enabled: item.isOpen != true)),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: item.isOpen == true
-                          ? _buildActionBtn(
-                              'Đóng tuyển',
-                              Icons.stop_circle_outlined,
-                              () => _showCloseRecruitmentDialog(
-                                  item, item.ctvRecruitmentId!))
-                          : _buildActionBtn('Mở lại', Icons.play_arrow, () {
-                              if (item.ctvRecruitmentId != null) {
-                                _ctrl.reopenRecruitment(item.ctvRecruitmentId!);
-                              }
-                            }),
+                      child: _buildActionBtn(
+                        'Đóng tuyển',
+                        Icons.stop_circle_outlined,
+                        () => _showCloseRecruitmentDialog(
+                            item, item.ctvRecruitmentId!),
+                        enabled: item.isOpen == true,
+                      ),
                     ),
                   ],
                 ),
@@ -325,29 +291,27 @@ class _OrganizerRecruitmentListPageState
   }
 
   Widget _buildActionBtn(String label, IconData icon, VoidCallback onTap,
-      {bool enabled = true}) {
+      {bool enabled = true, Color? color}) {
+    final activeColor = color ?? const Color(0xff64748B);
+    final disabledColor = color?.withOpacity(0.35) ?? Colors.grey.shade400;
     return GestureDetector(
       onTap: enabled ? onTap : null,
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 8),
         decoration: BoxDecoration(
-          color: enabled ? Colors.grey.shade50 : Colors.grey.shade100,
+          color: Colors.grey.shade100,
           borderRadius: BorderRadius.circular(8),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon,
-                size: 14,
-                color:
-                    enabled ? const Color(0xff64748B) : Colors.grey.shade400),
+            Icon(icon, size: 14, color: enabled ? activeColor : disabledColor),
             const SizedBox(width: 4),
-            Text(label,
-                style: TextStyle(
-                    fontSize: 12,
-                    color: enabled
-                        ? const Color(0xff64748B)
-                        : Colors.grey.shade400)),
+            Text(
+              label,
+              style: TextStyle(
+                  fontSize: 12, color: enabled ? activeColor : disabledColor),
+            ),
           ],
         ),
       ),

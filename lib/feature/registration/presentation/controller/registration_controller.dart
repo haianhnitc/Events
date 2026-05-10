@@ -1,5 +1,6 @@
 import 'package:events_app/api_template/services/failure.dart';
 import 'package:events_app/authentication/presentation/controller/auth_controller.dart';
+import 'package:events_app/feature/common/domain/enum/app_enum.dart';
 import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
 import 'package:events_app/dependency_injection/injection.dart';
 import 'package:events_app/feature/participant/domain/entity/participant_entity.dart';
@@ -52,6 +53,8 @@ class RegistrationController extends GetxController {
   final RxBool isRegistering = false.obs;
   final RxBool hasMore = true.obs;
   final RxInt currentPage = 0.obs;
+
+  final Rx<(int, UserEventState)> eventStateUpdate = Rx<(int, UserEventState)>((0, UserEventState.none));
 
   static RegistrationController get to => Get.find<RegistrationController>();
 
@@ -130,12 +133,6 @@ class RegistrationController extends GetxController {
       (participant) {
         registrations.insert(0, participant);
         registeredParticipant = participant;
-        if (participant.ticketId != null) {
-          AppSnackbarUtils.showSuccess('Thành công',
-              'Đăng ký thành công! Vui lòng thanh toán để nhận vé.');
-        } else {
-          AppSnackbarUtils.showSuccess('Thành công', 'Đăng ký tham gia thành công!');
-        }
         isRegistering.value = false;
       },
     );

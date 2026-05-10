@@ -11,12 +11,12 @@ class SharedPaymentCheckoutController extends GetxController {
 
   SharedPaymentCheckoutController({required this.args});
 
-  late final SePayPaymentController _paymentController;
   late final TextEditingController coinController;
 
   final RxBool isLoading = false.obs;
   final RxString coinError = ''.obs;
   final RxInt coinUsedTrigger = 0.obs;
+  final RxBool _isCreatingPayment = false.obs;
 
   int get currentCoin => AuthController.to.currentUser.value?.currentCoin ?? 0;
 
@@ -45,16 +45,16 @@ class SharedPaymentCheckoutController extends GetxController {
         coinUsedRaw > args.originalAmount;
   }
 
-  bool get isCreatingPayment => _paymentController.isCreatingPayment.value;
+  bool get isCreatingPayment => _isCreatingPayment.value;
 
   SharedPaymentCheckoutController init() {
-    Get.lazyPut(() => SePayPaymentController());
-    _paymentController = Get.find<SePayPaymentController>();
     coinController = TextEditingController(
         text: args.initialCoinUsed > 0 ? '${args.initialCoinUsed}' : '');
     update();
     return this;
   }
+
+  SharedPaymentFlowArgs get argsForView => args;
 
   void onCoinChanged() {
     coinError.value = '';
@@ -74,9 +74,11 @@ class SharedPaymentCheckoutController extends GetxController {
       return null;
     }
     isLoading.value = true;
+    _isCreatingPayment.value = true;
 
     try {
-      final payment = await _paymentController.createPayment(
+      final paymentController = Get.put(SePayPaymentController(), tag: 'checkout');
+      final payment = await paymentController.createPayment(
         referenceType: args.referenceType,
         referenceId: args.referenceId,
         originalAmount: args.originalAmount,
@@ -84,9 +86,11 @@ class SharedPaymentCheckoutController extends GetxController {
         currency: args.currency,
         extraData: args.extraData,
       );
+      Get.delete<SePayPaymentController>(tag: 'checkout');
       return payment;
     } finally {
       isLoading.value = false;
+      _isCreatingPayment.value = false;
     }
   }
 

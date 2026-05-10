@@ -23,7 +23,8 @@ class HeaderEventOrCtvPage extends StatelessWidget {
   String get _subtitle => isEvent
       ? 'Khám phá và tham gia sự kiện'
       : 'Tìm cơ hội làm CTV, tích lũy kinh nghiệm';
-  String get _hintText => isEvent ? 'Tìm kiếm sự kiện...' : 'Tìm kiếm việc làm...';
+  String get _hintText =>
+      isEvent ? 'Tìm kiếm sự kiện...' : 'Tìm kiếm việc làm...';
 
   @override
   Widget build(BuildContext context) {
@@ -110,7 +111,7 @@ class HeaderEventOrCtvPage extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
+            const Icon(
               Icons.tune_outlined,
               size: 18,
               color: Colors.white,

@@ -119,15 +119,16 @@ class TestOrganizerEventDatasource extends OrganizerEventDatasourceImpl {
 
   @override
   Future<ApiResponse<void>> deleteEvent(int eventId) async {
-    final envelope = deleteEventStub ?? ApiResponse.success({
-      'errorCode': 0,
-      'statusCode': 200,
-      'message': 'OK',
-      'object': null,
-    });
+    final envelope = deleteEventStub ??
+        const ApiResponse.success({
+          'errorCode': 0,
+          'statusCode': 200,
+          'message': 'OK',
+          'object': null,
+        });
     return forwardEnvelopeResponse<void>(
       envelope,
-      (_) => null,
+      (_) {},
       fallbackError: 'Xóa sự kiện thất bại',
     );
   }
@@ -201,7 +202,8 @@ class TestOrganizerEventDatasource extends OrganizerEventDatasourceImpl {
   }
 
   @override
-  Future<ApiResponse<EventAnalyticsModel>> getEventAnalytics(int eventId) async {
+  Future<ApiResponse<EventAnalyticsModel>> getEventAnalytics(
+      int eventId) async {
     final envelope = getEventAnalyticsStub ??
         ApiResponse.success({
           'errorCode': 0,
@@ -225,7 +227,7 @@ class TestOrganizerEventDatasource extends OrganizerEventDatasourceImpl {
   Future<ApiResponse<Map<String, dynamic>>> createEventCategoryOption(
       EventCategoryOptionCreateParams params) async {
     final envelope = createCategoryOptionStub ??
-        ApiResponse.success({
+        const ApiResponse.success({
           'errorCode': 0,
           'statusCode': 200,
           'message': 'OK',
@@ -245,10 +247,11 @@ class TestOrganizerEventDatasource extends OrganizerEventDatasourceImpl {
 
   @override
   Future<ApiResponse<Map<String, dynamic>>> updateEventCategoryOption(
-      int eventId, int categoryOptionId,
+      int eventId,
+      int categoryOptionId,
       EventCategoryOptionUpdateParams params) async {
     final envelope = updateCategoryOptionStub ??
-        ApiResponse.success({
+        const ApiResponse.success({
           'errorCode': 0,
           'statusCode': 200,
           'message': 'OK',
@@ -269,15 +272,16 @@ class TestOrganizerEventDatasource extends OrganizerEventDatasourceImpl {
   @override
   Future<ApiResponse<void>> deleteEventCategoryOption(
       int eventId, int categoryOptionId) async {
-    final envelope = deleteCategoryOptionStub ?? ApiResponse.success({
-      'errorCode': 0,
-      'statusCode': 200,
-      'message': 'OK',
-      'object': null,
-    });
+    final envelope = deleteCategoryOptionStub ??
+        const ApiResponse.success({
+          'errorCode': 0,
+          'statusCode': 200,
+          'message': 'OK',
+          'object': null,
+        });
     return forwardEnvelopeResponse<void>(
       envelope,
-      (_) => null,
+      (_) {},
       fallbackError: 'Xóa category option thất bại',
     );
   }
@@ -314,7 +318,7 @@ void main() {
         }),
       );
 
-      final params = OrganizerEventListParams(
+      const params = OrganizerEventListParams(
         organizerId: 1,
         page: 0,
         size: 20,
@@ -343,7 +347,7 @@ void main() {
 
     test('empty content', () async {
       final datasource = TestOrganizerEventDatasource(
-        getOrganizerEventsStub: ApiResponse.success({
+        getOrganizerEventsStub: const ApiResponse.success({
           'errorCode': 0,
           'statusCode': 200,
           'message': 'OK',
@@ -357,7 +361,7 @@ void main() {
         }),
       );
 
-      final params = OrganizerEventListParams(
+      const params = OrganizerEventListParams(
         organizerId: 1,
         page: 0,
         size: 20,
@@ -430,7 +434,7 @@ void main() {
         ),
       );
 
-      final params = EventCreateParams(title: '');
+      const params = EventCreateParams(title: '');
       final result = await datasource.createEvent(params);
 
       expect(
@@ -465,7 +469,7 @@ void main() {
         }),
       );
 
-      final params = EventUpdateParams(title: 'Updated Event');
+      const params = EventUpdateParams(title: 'Updated Event');
       final result = await datasource.updateEvent(1, params);
 
       result.when(
@@ -494,7 +498,7 @@ void main() {
         ),
       );
 
-      final params = EventUpdateParams(title: 'Updated');
+      const params = EventUpdateParams(title: 'Updated');
       final result = await datasource.updateEvent(999, params);
 
       expect(
@@ -521,7 +525,7 @@ void main() {
   group('deleteEvent', () {
     test('success returns void', () async {
       final datasource = TestOrganizerEventDatasource(
-        deleteEventStub: ApiResponse.success({
+        deleteEventStub: const ApiResponse.success({
           'errorCode': 0,
           'statusCode': 200,
           'message': 'OK',
@@ -708,7 +712,7 @@ void main() {
   group('getEventStatistics', () {
     test('success returns map', () async {
       final datasource = TestOrganizerEventDatasource(
-        getEventStatisticsStub: ApiResponse.success({
+        getEventStatisticsStub: const ApiResponse.success({
           'errorCode': 0,
           'statusCode': 200,
           'message': 'OK',
@@ -780,7 +784,7 @@ void main() {
   group('createEventCategoryOption', () {
     test('success', () async {
       final datasource = TestOrganizerEventDatasource(
-        createCategoryOptionStub: ApiResponse.success({
+        createCategoryOptionStub: const ApiResponse.success({
           'errorCode': 0,
           'statusCode': 200,
           'message': 'OK',
@@ -788,7 +792,7 @@ void main() {
         }),
       );
 
-      final params = EventCategoryOptionCreateParams(
+      const params = EventCategoryOptionCreateParams(
         eventId: 1,
         categoryOptionId: 5,
       );
@@ -817,7 +821,7 @@ void main() {
   group('updateEventCategoryOption', () {
     test('success', () async {
       final datasource = TestOrganizerEventDatasource(
-        updateCategoryOptionStub: ApiResponse.success({
+        updateCategoryOptionStub: const ApiResponse.success({
           'errorCode': 0,
           'statusCode': 200,
           'message': 'OK',
@@ -825,7 +829,7 @@ void main() {
         }),
       );
 
-      final params = EventCategoryOptionUpdateParams(categoryOptionId: 5);
+      const params = EventCategoryOptionUpdateParams(categoryOptionId: 5);
       final result = await datasource.updateEventCategoryOption(1, 5, params);
 
       result.when(
@@ -851,7 +855,7 @@ void main() {
   group('deleteEventCategoryOption', () {
     test('success', () async {
       final datasource = TestOrganizerEventDatasource(
-        deleteCategoryOptionStub: ApiResponse.success({
+        deleteCategoryOptionStub: const ApiResponse.success({
           'errorCode': 0,
           'statusCode': 200,
           'message': 'OK',

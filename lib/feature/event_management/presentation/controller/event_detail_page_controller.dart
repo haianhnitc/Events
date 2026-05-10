@@ -1,6 +1,7 @@
 import 'package:events_app/api_template/services/failure.dart';
 import 'package:events_app/authentication/presentation/controller/auth_controller.dart';
 import 'package:events_app/dependency_injection/injection.dart';
+import 'package:events_app/feature/common/domain/enum/app_enum.dart';
 import 'package:events_app/feature/common/utils/category_label_utils.dart';
 import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
 import 'package:events_app/feature/event_management/domain/entity/event_entity.dart';
@@ -9,6 +10,7 @@ import 'package:events_app/feature/payment/presentation/page/shared_payment_flow
 import 'package:events_app/feature/payment/presentation/page/shared_payment_flow_page.dart';
 import 'package:events_app/feature/registration/presentation/controller/registration_controller.dart';
 import 'package:events_app/feature/event_management/presentation/utils/event_action_utils.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class EventDetailPageController extends GetxController {
@@ -20,39 +22,68 @@ class EventDetailPageController extends GetxController {
 
   final int? eventId;
   final Rxn<EventEntity> event = Rxn<EventEntity>();
-  final RxBool isLoading = true.obs;
+  final RxBool isRefreshing = false.obs;
   final RxBool isSubmittingRegistration = false.obs;
+
+  bool get isLoading => isRefreshing.value;
+
+  static String tagFor(int? eventId) => 'event_detail_${eventId ?? 'unknown'}';
+
+  static void refreshByEventId(int? eventId) {
+    if (eventId == null) return;
+    final tag = tagFor(eventId);
+    if (Get.isRegistered<EventDetailPageController>(tag: tag)) {
+      Get.find<EventDetailPageController>(tag: tag).refreshEvent();
+    }
+  }
 
   @override
   void onInit() {
     super.onInit();
     _loadEvent();
+    _watchRegistrationUpdates();
+  }
+
+  void _watchRegistrationUpdates() {
+    final regCtrl = RegistrationController.ensureInstance();
+    ever(regCtrl.eventStateUpdate, (tuple) {
+      final (updatedEventId, newState) = tuple;
+      debugPrint(
+          '[EventDetail] ever triggered — eventId=$updatedEventId, newState=$newState, currentEventId=${event.value?.eventId}');
+      if (event.value?.eventId == updatedEventId) {
+        debugPrint('[EventDetail] ever updating userEventState');
+        event.value = event.value?.copyWith(userEventState: newState);
+      }
+    });
   }
 
   Future<void> _loadEvent() async {
     if (eventId == null) {
-      isLoading.value = false;
+      isRefreshing.value = false;
       return;
     }
 
-    isLoading.value = true;
+    isRefreshing.value = true;
 
     final result = await _getEventByIdUsecase(eventId!);
 
     result.fold(
       (failure) {
         _handleFailure(failure);
-        isLoading.value = false;
+        isRefreshing.value = false;
       },
       (data) {
         event.value = data;
-        isLoading.value = false;
+        isRefreshing.value = false;
       },
     );
   }
 
   Future<void> refreshEvent() async {
+    debugPrint('[EventDetail] refreshEvent() CALLED — eventId=$eventId');
     await _loadEvent();
+    debugPrint(
+        '[EventDetail] refreshEvent() DONE — event.value?.eventId=${event.value?.eventId}, userEventState=${event.value?.userEventState}');
   }
 
   List<String> get categoryValues =>
@@ -108,6 +139,7 @@ class EventDetailPageController extends GetxController {
       );
 
       if (participant == null) {
+        isSubmittingRegistration.value = false;
         return;
       }
 
@@ -119,11 +151,21 @@ class EventDetailPageController extends GetxController {
           'Lỗi hệ thống',
           'Không nhận được thông tin vé. Vui lòng thử lại sau.',
         );
+        isSubmittingRegistration.value = false;
         return;
       }
 
-      if (ticketId != null && eventPrice > 0) {
-        await Get.to(
+      if (ticketId == null || eventPrice == 0) {
+        AppSnackbarUtils.showSuccess(
+            'Thành công', 'Đăng ký tham gia thành công!');
+        RegistrationController.ensureInstance().eventStateUpdate.value =
+            (currentEventId, UserEventState.attendee);
+        isSubmittingRegistration.value = false;
+        return;
+      }
+
+      if (eventPrice > 0) {
+        final result = await Get.to(
           () => SharedPaymentCheckoutPage(
             args: SharedPaymentFlowArgs.forTicket(
               title: currentEvent?.title ?? 'Thanh toán vé sự kiện',
@@ -132,11 +174,13 @@ class EventDetailPageController extends GetxController {
               event: currentEvent,
             ),
           ),
-        )?.then((_) {
+        );
+        if (result == true) {
           refreshEvent();
-        });
+        }
+        isSubmittingRegistration.value = false;
       }
-    } finally {
+    } catch (_) {
       isSubmittingRegistration.value = false;
     }
   }

@@ -1,4 +1,3 @@
-import 'package:dartz/dartz.dart';
 import 'package:events_app/api_template/base_response/api_response.dart';
 import 'package:events_app/api_template/services/failure.dart';
 import 'package:events_app/feature/ticket/data/datasource/ticket_datasource.dart';
@@ -47,7 +46,8 @@ void main() {
       );
     });
 
-    test('trả về empty list khi datasource trả success với content rỗng', () async {
+    test('trả về empty list khi datasource trả success với content rỗng',
+        () async {
       when(() => mockDatasource.getMyTickets(
             any(),
             page: any(named: 'page'),
@@ -65,11 +65,12 @@ void main() {
 
     test('trả về Left khi datasource trả failure', () async {
       when(() => mockDatasource.getMyTickets(
-            any(),
-            page: any(named: 'page'),
-            size: any(named: 'size'),
-          )).thenAnswer(
-          (_) async => errorResponse<List<TicketModel>>(unauthorizedResponse()));
+                any(),
+                page: any(named: 'page'),
+                size: any(named: 'size'),
+              ))
+          .thenAnswer((_) async =>
+              errorResponse<List<TicketModel>>(unauthorizedResponse()));
 
       final result = await repository.getMyTickets(42);
 
@@ -102,8 +103,8 @@ void main() {
     });
 
     test('trả về Left khi datasource trả responseParsing', () async {
-      when(() => mockDatasource.getTicketById(1)).thenAnswer(
-          (_) async => errorResponse<TicketModel>(const ApiResponse.responseParsing()));
+      when(() => mockDatasource.getTicketById(1)).thenAnswer((_) async =>
+          errorResponse<TicketModel>(const ApiResponse.responseParsing()));
 
       final result = await repository.getTicketById(1);
 

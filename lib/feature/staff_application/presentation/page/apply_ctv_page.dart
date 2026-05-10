@@ -53,27 +53,21 @@ class _ApplyCtvPageState extends State<ApplyCtvPage> {
       body: Obx(() {
         if (_controller.isLoading.value && _controller.recruitments.isEmpty) {
           return const Center(
-            child: CircularProgressIndicator(
-              color: Color(0xffDB0025),
-            ),
+            child: CircularProgressIndicator(color: Color(0xffDB0025)),
           );
         }
-
         final recruitments = _controller.recruitments;
-
         if (recruitments.isEmpty) {
           return _buildEmptyState();
         }
-
         return RefreshIndicator(
           onRefresh: () => _controller.loadOpenRecruitments(),
           color: const Color(0xffDB0025),
           child: ListView.builder(
             padding: const EdgeInsets.all(16),
             itemCount: recruitments.length,
-            itemBuilder: (context, index) {
-              return _buildRecruitmentCard(recruitments[index]);
-            },
+            itemBuilder: (context, index) =>
+                _buildRecruitmentCard(recruitments[index]),
           ),
         );
       }),

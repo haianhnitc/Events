@@ -8,4 +8,5 @@ export 'organizer_empty_state.dart';
 export 'organizer_app_bar.dart';
 export 'organizer_delete_dialog.dart';
 export 'organizer_event_picker.dart';
+export 'organizer_event_dropdown_field.dart';
 export 'participants/organizer_invite_dialog.dart';

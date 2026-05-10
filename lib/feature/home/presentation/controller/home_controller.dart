@@ -1,6 +1,5 @@
 import 'package:events_app/api_template/services/failure.dart';
 import 'package:events_app/authentication/presentation/controller/auth_controller.dart';
-import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
 import 'package:events_app/dependency_injection/injection.dart';
 import 'package:events_app/feature/event_management/domain/entity/event_summary_entity.dart';
 import 'package:events_app/feature/event_management/domain/usecase/get_featured_events_usecase.dart';

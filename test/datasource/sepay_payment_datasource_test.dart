@@ -28,8 +28,7 @@ class TestSePayPaymentDatasource extends SePayPaymentDatasourceImpl {
     CreateTransactionParams params,
   ) async {
     lastRequestBody = params.toJson();
-    final envelope = createStub ??
-        successEnvelope(fakePaymentUrlJson());
+    final envelope = createStub ?? successEnvelope(fakePaymentUrlJson());
     return forwardEnvelopeResponse<PaymentUrlModel>(
       envelope,
       (object) {
@@ -84,13 +83,14 @@ class TestSePayPaymentDatasource extends SePayPaymentDatasourceImpl {
 
 void main() {
   group('createSePayPayment', () {
-    test('trả về PaymentUrlModel với paymentUrl và qrCodeUrl khi thành công', () async {
+    test('trả về PaymentUrlModel với paymentUrl và qrCodeUrl khi thành công',
+        () async {
       final datasource = TestSePayPaymentDatasource(
         createStub: successEnvelope(fakePaymentUrlJson(id: 123)),
       );
 
       final result = await datasource.createSePayPayment(
-        CreateTransactionParams(
+        const CreateTransactionParams(
           referenceType: TransactionReferenceType.ticket,
           referenceId: 5,
           originalAmount: 100000,
@@ -125,7 +125,7 @@ void main() {
       );
 
       await datasource.createSePayPayment(
-        CreateTransactionParams(
+        const CreateTransactionParams(
           referenceType: TransactionReferenceType.ticket,
           referenceId: 10,
           originalAmount: 50000,
@@ -148,7 +148,7 @@ void main() {
       );
 
       final result = await datasource.createSePayPayment(
-        CreateTransactionParams(
+        const CreateTransactionParams(
           referenceType: TransactionReferenceType.ticket,
           originalAmount: 0,
           paymentProvider: PaymentProvider.sepay,
@@ -181,7 +181,7 @@ void main() {
       );
 
       final result = await datasource.createSePayPayment(
-        CreateTransactionParams(
+        const CreateTransactionParams(
           referenceType: TransactionReferenceType.ticket,
           originalAmount: 100000,
           paymentProvider: PaymentProvider.sepay,

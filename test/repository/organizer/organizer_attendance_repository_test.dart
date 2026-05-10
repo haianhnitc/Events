@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+import 'package:events_app/feature/organizer/attendance/data/repository/organizer_attendance_repository_impl.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:events_app/api_template/base_response/api_response.dart';
@@ -8,6 +9,8 @@ import 'package:events_app/feature/organizer/attendance/data/datasource/organize
 import 'package:events_app/feature/organizer/attendance/domain/usecase/organizer_attendance_params.dart';
 import 'package:events_app/feature/attendance/data/model/attendance_model.dart';
 import 'package:events_app/feature/attendance/data/model/event_attendance_log_model.dart';
+
+import '../../helpers/fake_data.dart';
 
 class MockOrganizerAttendanceDatasource extends Mock
     implements OrganizerAttendanceDatasource {}
@@ -22,7 +25,8 @@ void main() {
   });
 
   setUpAll(() {
-    registerFallbackValue(OrganizerManualAttendanceParams(eventParticipantId: 1));
+    registerFallbackValue(
+        const OrganizerManualAttendanceParams(eventParticipantId: 1));
   });
 
   group('getEventQr', () {
@@ -77,11 +81,12 @@ void main() {
 
   group('manualCheckIn', () {
     test('success', () async {
-      final logModel = EventAttendanceLogModel.fromJson(fakeAttendanceLogJson());
+      final logModel =
+          EventAttendanceLogModel.fromJson(fakeAttendanceLogJson());
       when(() => mockDatasource.manualCheckIn(any()))
           .thenAnswer((_) async => ApiResponse.success(logModel));
 
-      final params = OrganizerManualAttendanceParams(eventParticipantId: 1);
+      const params = OrganizerManualAttendanceParams(eventParticipantId: 1);
       final result = await repository.manualCheckIn(params);
 
       expect(result.isRight(), true);
@@ -95,7 +100,7 @@ void main() {
       when(() => mockDatasource.manualCheckIn(any()))
           .thenAnswer((_) async => errorResponse<Map<String, dynamic>>());
 
-      final params = OrganizerManualAttendanceParams(eventParticipantId: 1);
+      const params = OrganizerManualAttendanceParams(eventParticipantId: 1);
       final result = await repository.manualCheckIn(params);
 
       expect(result.isLeft(), true);
@@ -104,11 +109,12 @@ void main() {
 
   group('manualCheckOut', () {
     test('success', () async {
-      final logModel = EventAttendanceLogModel.fromJson(fakeAttendanceLogJson());
+      final logModel =
+          EventAttendanceLogModel.fromJson(fakeAttendanceLogJson());
       when(() => mockDatasource.manualCheckOut(any()))
           .thenAnswer((_) async => ApiResponse.success(logModel));
 
-      final params = OrganizerManualAttendanceParams(eventParticipantId: 1);
+      const params = OrganizerManualAttendanceParams(eventParticipantId: 1);
       final result = await repository.manualCheckOut(params);
 
       expect(result.isRight(), true);
@@ -132,7 +138,7 @@ void main() {
             size: any(named: 'size'),
           )).thenAnswer((_) async => ApiResponse.success(response));
 
-      final params = GetOrganizerAttendanceLogsParams(
+      const params = GetOrganizerAttendanceLogsParams(
         eventId: null,
         page: 0,
         size: 20,
@@ -157,7 +163,7 @@ void main() {
             size: any(named: 'size'),
           )).thenAnswer((_) async => ApiResponse.success(response));
 
-      final params = GetOrganizerAttendanceLogsParams(
+      const params = GetOrganizerAttendanceLogsParams(
         eventId: null,
         page: 0,
         size: 20,

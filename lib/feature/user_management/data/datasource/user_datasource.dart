@@ -153,8 +153,9 @@ class UserDatasourceImpl extends ApiProvider implements UserDatasource {
   }) async {
     try {
       final queryParams = <String, dynamic>{'page': page, 'size': size};
-      if (participantType != null)
+      if (participantType != null) {
         queryParams['participantType'] = participantType;
+      }
 
       final response = await get<Map<String, dynamic>>(
         ApiPath.userParticipatedEvents(userId),

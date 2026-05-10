@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:events_app/api_template/services/failure.dart';
 import 'package:events_app/authentication/presentation/controller/auth_controller.dart';
 import 'package:events_app/dependency_injection/injection.dart';
-import 'package:events_app/feature/common/utils/app_map_utils.dart';
 import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
 import 'package:events_app/feature/organizer/event/domain/usecase/organizer_venue_usecase.dart';
 import 'package:events_app/feature/organizer/event/domain/usecase/venue_params.dart';
@@ -85,7 +83,8 @@ class _VenuePickerDialogState extends State<VenuePickerDialog> {
     setState(() => _isLoading = true);
     try {
       final usecase = networkGetIt<GetOrganizerVenuesUsecase>();
-      final result = await usecase.call(const VenueListParams(page: 0, size: 100));
+      final result =
+          await usecase.call(const VenueListParams(page: 0, size: 100));
       result.fold(
         (failure) {
           _showFailureSnackbar(failure);
@@ -104,7 +103,8 @@ class _VenuePickerDialogState extends State<VenuePickerDialog> {
   void _showFailureSnackbar(FailureEntity failure) {
     failure.when(
       serverFailure: (_, message) => _showErrorSnackbar(message),
-      dataParsingFailure: () => _showErrorSnackbar('Không đọc được dữ liệu địa điểm'),
+      dataParsingFailure: () =>
+          _showErrorSnackbar('Không đọc được dữ liệu địa điểm'),
       noConnectionFailure: () => _showErrorSnackbar('Không có kết nối mạng'),
       systemFailure: (_, message) => _showErrorSnackbar(message),
     );
@@ -250,8 +250,7 @@ class _VenuePickerDialogState extends State<VenuePickerDialog> {
                   : ListView.separated(
                       padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
                       itemCount: _filteredVenues.length,
-                      separatorBuilder: (_, __) =>
-                          const SizedBox(height: 8),
+                      separatorBuilder: (_, __) => const SizedBox(height: 8),
                       itemBuilder: (context, index) {
                         final venue = _filteredVenues[index];
                         final isSelected =
@@ -332,9 +331,7 @@ class _VenuePickerDialogState extends State<VenuePickerDialog> {
               : const Color(0xFFF4F6F8),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected
-                ? const Color(0xFF06B6D4)
-                : Colors.grey.shade200,
+            color: isSelected ? const Color(0xFF06B6D4) : Colors.grey.shade200,
             width: isSelected ? 1.5 : 1,
           ),
         ),
@@ -344,9 +341,8 @@ class _VenuePickerDialogState extends State<VenuePickerDialog> {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: isSelected
-                    ? const Color(0xFF06B6D4)
-                    : Colors.grey.shade200,
+                color:
+                    isSelected ? const Color(0xFF06B6D4) : Colors.grey.shade200,
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(
@@ -578,7 +574,8 @@ class _VenuePickerDialogState extends State<VenuePickerDialog> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Color(0xFF06B6D4), width: 1.5),
+              borderSide:
+                  const BorderSide(color: Color(0xFF06B6D4), width: 1.5),
             ),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 14,

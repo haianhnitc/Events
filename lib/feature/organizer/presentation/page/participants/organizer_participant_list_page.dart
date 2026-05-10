@@ -96,7 +96,7 @@ class _OrganizerParticipantListPageState
           ),
           const SizedBox(height: 8),
           Obx(() => _buildStatsBar()),
-          Expanded(child: Obx(() => _buildParticipantList())),
+          Expanded(child: _buildParticipantList()),
         ],
       ),
     );
@@ -173,9 +173,17 @@ class _OrganizerParticipantListPageState
   }
 
   Widget _buildParticipantList() {
-    if (_ctrl.isLoading.value && _ctrl.participants.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
-    }
+    return Obx(() {
+      if (_ctrl.isLoading.value && _ctrl.participants.isEmpty) {
+        return const Center(
+          child: CircularProgressIndicator(color: Color(0xff06B6D4)),
+        );
+      }
+      return _buildParticipantListContent();
+    });
+  }
+
+  Widget _buildParticipantListContent() {
     final participants = _ctrl.participants;
     if (participants.isEmpty) {
       return const OrganizerEmptyState(
@@ -260,13 +268,18 @@ class _OrganizerParticipantListPageState
                   CircleAvatar(
                     radius: 22,
                     backgroundColor: const Color(0xFFE0F2FE),
-                    child: Text(
-                      (p.user?.fullName ?? '?')[0],
-                      style: const TextStyle(
-                          fontSize: 16,
-                          color: Color(0xFF06B6D4),
-                          fontWeight: FontWeight.w600),
-                    ),
+                    backgroundImage: p.user?.avatarUrl != null
+                        ? NetworkImage(p.user!.avatarUrl!)
+                        : null,
+                    child: p.user?.avatarUrl == null
+                        ? Text(
+                            (p.user?.fullName ?? '?')[0],
+                            style: const TextStyle(
+                                fontSize: 16,
+                                color: Color(0xFF06B6D4),
+                                fontWeight: FontWeight.w600),
+                          )
+                        : null,
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -283,30 +296,20 @@ class _OrganizerParticipantListPageState
                         const SizedBox(height: 4),
                         Row(
                           children: [
-                            Icon(Icons.email_outlined,
+                            Icon(Icons.calendar_today,
                                 size: 12, color: Colors.grey.shade500),
                             const SizedBox(width: 4),
                             Expanded(
-                              child: Text(p.user?.email ?? '',
+                              child: Text(
+                                  p.user?.joinedAt != null
+                                      ? AppDateUtils.formatDate(
+                                          p.user!.joinedAt!)
+                                      : '',
                                   style: TextStyle(
                                       fontSize: 11,
                                       color: Colors.grey.shade600),
                                   overflow: TextOverflow.ellipsis),
                             ),
-                          ],
-                        ),
-                        const SizedBox(height: 2),
-                        Row(
-                          children: [
-                            Icon(Icons.calendar_today,
-                                size: 12, color: Colors.grey.shade500),
-                            const SizedBox(width: 4),
-                            Text(
-                                p.registeredTime != null
-                                    ? AppDateUtils.formatDate(p.registeredTime!)
-                                    : '',
-                                style: TextStyle(
-                                    fontSize: 11, color: Colors.grey.shade600)),
                           ],
                         ),
                       ],

@@ -68,7 +68,8 @@ void main() {
   late MockSendPasswordResetEmailUsecase sendPasswordResetEmailUsecase;
   late MockSigninWithGoogleUsecase signinWithGoogleUsecase;
   late MockSignInWithGoogleOnlyUsecase signInWithGoogleOnlyUsecase;
-  late MockSignInWithGoogleExistingUserUsecase signInWithGoogleExistingUserUsecase;
+  late MockSignInWithGoogleExistingUserUsecase
+      signInWithGoogleExistingUserUsecase;
   late MockUploadVerificationDocumentUsecase uploadVerificationDocumentUsecase;
   late MockUploadFileUsecase uploadFileUsecase;
   late MockRefreshCurrentUserUsecase refreshCurrentUserUsecase;
@@ -98,7 +99,7 @@ void main() {
       ),
     );
     registerFallbackValue(
-      SignupWithEmailAndPasswordParams(
+      const SignupWithEmailAndPasswordParams(
         password: '123456',
         signupParams: SignupParams(
           idToken: 'fallback-token',
@@ -131,7 +132,8 @@ void main() {
     sendPasswordResetEmailUsecase = MockSendPasswordResetEmailUsecase();
     signinWithGoogleUsecase = MockSigninWithGoogleUsecase();
     signInWithGoogleOnlyUsecase = MockSignInWithGoogleOnlyUsecase();
-    signInWithGoogleExistingUserUsecase = MockSignInWithGoogleExistingUserUsecase();
+    signInWithGoogleExistingUserUsecase =
+        MockSignInWithGoogleExistingUserUsecase();
     uploadVerificationDocumentUsecase = MockUploadVerificationDocumentUsecase();
     uploadFileUsecase = MockUploadFileUsecase();
     refreshCurrentUserUsecase = MockRefreshCurrentUserUsecase();

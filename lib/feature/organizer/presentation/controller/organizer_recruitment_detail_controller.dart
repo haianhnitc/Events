@@ -1,11 +1,12 @@
+import 'package:flutter/foundation.dart';
 import 'package:events_app/api_template/services/failure.dart';
 import 'package:events_app/authentication/presentation/controller/auth_controller.dart';
 import 'package:events_app/dependency_injection/injection.dart';
 import 'package:events_app/feature/common/domain/enum/app_enum.dart';
-import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
 import 'package:events_app/feature/event_management/domain/usecase/get_event_by_id_usecase.dart';
 import 'package:events_app/feature/recruitment/domain/entity/ctv_recruitment_entity.dart';
 import 'package:events_app/feature/recruitment/domain/usecase/ctv_recruitment_usecase.dart';
+import 'package:events_app/feature/organizer/presentation/controller/organizer_recruitment_list_controller.dart';
 import 'package:get/get.dart';
 
 class OrganizerRecruitmentDetailController extends GetxController {
@@ -47,6 +48,16 @@ class OrganizerRecruitmentDetailController extends GetxController {
   void onInit() {
     super.onInit();
     loadRecruitment();
+    _watchRecruitmentUpdates();
+  }
+
+  void _watchRecruitmentUpdates() {
+    ever(OrganizerRecruitmentListController.recruitmentStateUpdate, (tuple) {
+      final (updatedId, newIsOpen) = tuple;
+      if (recruitmentId == updatedId) {
+        refreshRecruitment();
+      }
+    });
   }
 
   Future<void> loadRecruitment() async {
@@ -58,6 +69,19 @@ class OrganizerRecruitmentDetailController extends GetxController {
       (failure) {
         _handleFailure(failure);
         isLoading.value = false;
+      },
+      (data) {
+        recruitment.value = data;
+        _loadEventStatus(data.eventId);
+      },
+    );
+  }
+
+  Future<void> refreshRecruitment() async {
+    final result = await _getRecruitmentByIdUsecase(recruitmentId);
+    result.fold(
+      (failure) {
+        debugPrint('[RecruitmentDetail] refresh failed: $failure');
       },
       (data) {
         recruitment.value = data;

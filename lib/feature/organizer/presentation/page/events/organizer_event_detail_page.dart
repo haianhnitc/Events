@@ -4,7 +4,6 @@ import 'package:events_app/feature/common/utils/app_date_utils.dart';
 import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
 import 'package:events_app/feature/event_management/domain/entity/event_entity.dart';
 import 'package:events_app/feature/organizer/presentation/controller/organizer_event_detail_controller.dart';
-import 'package:events_app/feature/organizer/presentation/controller/organizer_event_list_controller.dart';
 import 'package:events_app/feature/organizer/presentation/controller/organizer_event_statistics_controller.dart';
 import 'package:events_app/feature/organizer/presentation/page/attendance/organizer_event_qr_fullscreen_page.dart';
 import 'package:events_app/feature/organizer/presentation/page/events/organizer_create_event_page.dart';
@@ -492,13 +491,7 @@ class _OrganizerEventDetailPageState extends State<OrganizerEventDetailPage> {
             message: 'Sự kiện đã đóng hoàn toàn. Không thể chỉnh sửa hay thay đổi trạng thái.',
             color: const Color(0xFFF59E0B),
           ),
-        if (isCancelled)
-          _buildStatusWarningBanner(
-            icon: Icons.cancel_outlined,
-            message: 'Sự kiện đã bị hủy. Bạn có thể chỉnh sửa thông tin và xuất bản lại.',
-            color: const Color(0xFF6B7280),
-          ),
-        if (isLocked || isClosed || isCancelled) const SizedBox(height: 12),
+        if (isLocked || isClosed) const SizedBox(height: 12),
         Row(
           children: [
             Expanded(
@@ -577,7 +570,7 @@ class _OrganizerEventDetailPageState extends State<OrganizerEventDetailPage> {
           ],
         ),
         const SizedBox(height: 10),
-        if (isDraft)
+        if (isDraft || isCancelled)
           Obx(() => _buildActionBtn(
                 icon: Icons.publish,
                 label: _detailCtrl.isActionLoading.value
@@ -601,8 +594,8 @@ class _OrganizerEventDetailPageState extends State<OrganizerEventDetailPage> {
                     : () => _handleClose(),
               )),
         ],
-        if (isDraft || isPublished) const SizedBox(height: 10),
-        if (isDraft || isPublished)
+        if (isDraft || isPublished) ...[
+          const SizedBox(height: 10),
           Obx(() => _buildActionBtn(
                 icon: Icons.cancel_outlined,
                 label: _detailCtrl.isCancelling.value
@@ -613,6 +606,7 @@ class _OrganizerEventDetailPageState extends State<OrganizerEventDetailPage> {
                     ? () {}
                     : () => _handleCancel(),
               )),
+        ],
       ],
     );
   }
@@ -738,12 +732,6 @@ class _OrganizerEventDetailPageState extends State<OrganizerEventDetailPage> {
     );
     if (confirm == true) {
       await _detailCtrl.publishEvent();
-      if (_detailCtrl.event.value?.status == EventStatus.published) {
-        try {
-          final listCtrl = Get.find<OrganizerEventListController>();
-          listCtrl.refreshEvents();
-        } catch (_) {}
-      }
     }
   }
 
@@ -814,12 +802,6 @@ class _OrganizerEventDetailPageState extends State<OrganizerEventDetailPage> {
     );
     if (confirm == true) {
       await _detailCtrl.closeEvent();
-      if (_detailCtrl.event.value?.status == EventStatus.closed) {
-        try {
-          final listCtrl = Get.find<OrganizerEventListController>();
-          listCtrl.refreshEvents();
-        } catch (_) {}
-      }
     }
   }
 
@@ -882,12 +864,6 @@ class _OrganizerEventDetailPageState extends State<OrganizerEventDetailPage> {
     );
     if (confirm == true) {
       await _detailCtrl.deleteEvent();
-      if (_detailCtrl.event.value?.status == EventStatus.cancelled) {
-        try {
-          final listCtrl = Get.find<OrganizerEventListController>();
-          listCtrl.refreshEvents();
-        } catch (_) {}
-      }
     }
   }
 }

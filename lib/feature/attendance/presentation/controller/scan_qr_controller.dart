@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
@@ -188,14 +186,15 @@ class ScanQrController extends GetxController with GetTickerProviderStateMixin {
 
     final eventIdFromQr = _parseEventIdFromQr(code);
     if (eventIdFromQr == null) {
-      _showErrorSnackbar('Mã QR không hợp lệ', 'Mã QR không đúng định dạng sự kiện.');
+      _showErrorSnackbar(
+          'Mã QR không hợp lệ', 'Mã QR không đúng định dạng sự kiện.');
       _resumeScanner();
       return;
     }
 
     if (_isQrExpired(code)) {
-      _showErrorSnackbar('Mã QR hết hạn',
-          'Mã QR đã hết hạn (1 tiếng). Vui lòng tạo mã mới.');
+      _showErrorSnackbar(
+          'Mã QR hết hạn', 'Mã QR đã hết hạn (1 tiếng). Vui lòng tạo mã mới.');
       _resumeScanner();
       return;
     }
@@ -221,23 +220,29 @@ class ScanQrController extends GetxController with GetTickerProviderStateMixin {
     final action = _parseActionFromQr(code);
 
     if (action == null) {
-      _showErrorSnackbar('Mã QR không hợp lệ', 'Mã QR không chứa thông tin hành động.');
+      _showErrorSnackbar(
+          'Mã QR không hợp lệ', 'Mã QR không chứa thông tin hành động.');
       _resumeScanner();
       return;
     }
 
-    if (action == AttendanceAction.checkIn && participant.hasCheckedIn == true) {
-      _showErrorSnackbar('Không thể check-in', 'Bạn đã check-in sự kiện này rồi.');
+    if (action == AttendanceAction.checkIn &&
+        participant.hasCheckedIn == true) {
+      _showErrorSnackbar(
+          'Không thể check-in', 'Bạn đã check-in sự kiện này rồi.');
       _resumeScanner();
       return;
     }
-    if (action == AttendanceAction.checkOut && participant.hasCheckedIn != true) {
-      _showErrorSnackbar('Không thể check-out', 'Bạn chưa check-in sự kiện. Vui lòng check-in trước.');
+    if (action == AttendanceAction.checkOut &&
+        participant.hasCheckedIn != true) {
+      _showErrorSnackbar('Không thể check-out',
+          'Bạn chưa check-in sự kiện. Vui lòng check-in trước.');
       _resumeScanner();
       return;
     }
     if (action == AttendanceAction.checkOut && participant.isCheckOut == true) {
-      _showErrorSnackbar('Không thể check-out', 'Bạn đã check-out sự kiện này rồi.');
+      _showErrorSnackbar(
+          'Không thể check-out', 'Bạn đã check-out sự kiện này rồi.');
       _resumeScanner();
       return;
     }
@@ -261,8 +266,10 @@ class ScanQrController extends GetxController with GetTickerProviderStateMixin {
       );
       if (!withinRadius) {
         final distance = calculateDistance(
-          lat1: coords.latitude, lng1: coords.longitude,
-          lat2: venueLat, lng2: venueLng,
+          lat1: coords.latitude,
+          lng1: coords.longitude,
+          lat2: venueLat,
+          lng2: venueLng,
         );
         final distanceText = distance >= 1000
             ? '${(distance / 1000).toStringAsFixed(1)} km'
@@ -277,7 +284,8 @@ class ScanQrController extends GetxController with GetTickerProviderStateMixin {
     if (action == AttendanceAction.checkOut) {
       final eventForFeedback = await _getEventById(participant.eventId!);
       final coordsForFeedback = await _getCurrentLocation();
-      final hasQuestions = await _eventHasFeedbackQuestions(participant.eventId!);
+      final hasQuestions =
+          await _eventHasFeedbackQuestions(participant.eventId!);
       if (hasQuestions) {
         final willSubmit = await _showFeedbackRequiredDialog(
           participant: participant,
@@ -313,7 +321,8 @@ class ScanQrController extends GetxController with GetTickerProviderStateMixin {
   }
 
   String? _validateQrFormat(String code) {
-    if (!code.startsWith('EVENT_CHECKIN:') && !code.startsWith('EVENT_CHECKOUT:')) {
+    if (!code.startsWith('EVENT_CHECKIN:') &&
+        !code.startsWith('EVENT_CHECKOUT:')) {
       return 'Bạn cần quét mã QR của sự kiện (EVENT_CHECKIN / EVENT_CHECKOUT).';
     }
     final parts = code.split(':');
@@ -406,7 +415,6 @@ class ScanQrController extends GetxController with GetTickerProviderStateMixin {
     return null;
   }
 
- 
   Future<bool> _validateCheckOut({
     required ParticipantEntity participant,
     required EventEntity? event,
@@ -421,8 +429,8 @@ class ScanQrController extends GetxController with GetTickerProviderStateMixin {
     }
 
     if (participant.isCheckOut == true) {
-      _showErrorSnackbar('Không thể check-out',
-          'Bạn đã check-out sự kiện này rồi.');
+      _showErrorSnackbar(
+          'Không thể check-out', 'Bạn đã check-out sự kiện này rồi.');
       _resumeScanner();
       return true;
     }
@@ -461,8 +469,7 @@ class ScanQrController extends GetxController with GetTickerProviderStateMixin {
       }
     }
 
-    final hasQuestions =
-        await _eventHasFeedbackQuestions(participant.eventId!);
+    final hasQuestions = await _eventHasFeedbackQuestions(participant.eventId!);
 
     if (hasQuestions) {
       if (participant.hasFeedback != true) {
@@ -478,7 +485,6 @@ class ScanQrController extends GetxController with GetTickerProviderStateMixin {
 
     return false;
   }
-
 
   Future<EventEntity?> _getEventById(int eventId) async {
     final result = await _getEventByIdUsecase(eventId);
@@ -748,7 +754,8 @@ class ScanQrController extends GetxController with GetTickerProviderStateMixin {
     failure.when(
       serverFailure: (_, msg) => message = msg ?? 'Đã xảy ra lỗi từ máy chủ',
       dataParsingFailure: () => message = 'Không đọc được dữ liệu phản hồi',
-      noConnectionFailure: () => message = 'Không có kết nối mạng. Vui lòng kiểm tra internet.',
+      noConnectionFailure: () =>
+          message = 'Không có kết nối mạng. Vui lòng kiểm tra internet.',
       systemFailure: (_, msg) => message = msg ?? 'Lỗi hệ thống',
     );
     return message;
@@ -802,7 +809,8 @@ class ScanQrController extends GetxController with GetTickerProviderStateMixin {
         lower.contains('cách địa điểm')) {
       return 'Bạn đang ở ngoài phạm vi cho phép (cách quá 1km). Di chuyển gần địa điểm sự kiện và thử lại.';
     }
-    if (lower.contains('event venue location') && lower.contains('not configured')) {
+    if (lower.contains('event venue location') &&
+        lower.contains('not configured')) {
       return 'Sự kiện chưa cấu hình địa điểm. Liên hệ người tổ chức.';
     }
     if (lower.contains('only registered participants') ||
@@ -836,8 +844,7 @@ class ScanQrController extends GetxController with GetTickerProviderStateMixin {
     if (lower.contains('event participant id is required')) {
       return 'Không tìm thấy thông tin người tham gia.';
     }
-    if (lower.contains('free attendee') ||
-        lower.contains('miễn phí')) {
+    if (lower.contains('free attendee') || lower.contains('miễn phí')) {
       return 'Sự kiện miễn phí không cần quét mã vé. Hãy quét mã QR sự kiện.';
     }
 

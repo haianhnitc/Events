@@ -3,8 +3,6 @@ import 'package:events_app/feature/event_management/data/datasource/event_dataso
 import 'package:events_app/feature/event_management/data/model/event_model.dart';
 import 'package:events_app/feature/event_management/data/model/event_summary_model.dart';
 import 'package:events_app/feature/event_management/data/repository/event_repository_impl.dart';
-import 'package:events_app/feature/event_management/domain/entity/event_entity.dart';
-import 'package:events_app/feature/event_management/domain/entity/event_summary_entity.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -52,12 +50,14 @@ void main() {
 
     test('trả về empty list khi datasource trả content rỗng', () async {
       when(() => mockDatasource.getEvents(
-            categoryId: any(named: 'categoryId'),
-            status: any(named: 'status'),
-            page: any(named: 'page'),
-            size: any(named: 'size'),
-            keyword: any(named: 'keyword'),
-          )).thenAnswer((_) async => successResponse<List<EventSummaryModel>>([]));
+                categoryId: any(named: 'categoryId'),
+                status: any(named: 'status'),
+                page: any(named: 'page'),
+                size: any(named: 'size'),
+                keyword: any(named: 'keyword'),
+              ))
+          .thenAnswer(
+              (_) async => successResponse<List<EventSummaryModel>>([]));
 
       final result = await repository.getEvents(page: 0, size: 20);
 
@@ -69,13 +69,14 @@ void main() {
 
     test('trả về FailureEntity khi datasource trả failure', () async {
       when(() => mockDatasource.getEvents(
-            categoryId: any(named: 'categoryId'),
-            status: any(named: 'status'),
-            page: any(named: 'page'),
-            size: any(named: 'size'),
-            keyword: any(named: 'keyword'),
-          )).thenAnswer(
-          (_) async => errorResponse<List<EventSummaryModel>>(serverErrorResponse()));
+                categoryId: any(named: 'categoryId'),
+                status: any(named: 'status'),
+                page: any(named: 'page'),
+                size: any(named: 'size'),
+                keyword: any(named: 'keyword'),
+              ))
+          .thenAnswer((_) async =>
+              errorResponse<List<EventSummaryModel>>(serverErrorResponse()));
 
       final result = await repository.getEvents(page: 0, size: 20);
 
@@ -129,8 +130,8 @@ void main() {
     });
 
     test('trả về FailureEntity khi datasource trả failure', () async {
-      when(() => mockDatasource.getFeaturedEvents())
-          .thenAnswer((_) async => errorResponse<List<EventSummaryModel>>(notFoundResponse()));
+      when(() => mockDatasource.getFeaturedEvents()).thenAnswer((_) async =>
+          errorResponse<List<EventSummaryModel>>(notFoundResponse()));
 
       final result = await repository.getFeaturedEvents();
 
@@ -158,15 +159,17 @@ void main() {
     });
 
     test('trả về FailureEntity khi datasource trả notFound', () async {
-      when(() => mockDatasource.getEventById(9999))
-          .thenAnswer((_) async => errorResponse<EventModel>(notFoundResponse()));
+      when(() => mockDatasource.getEventById(9999)).thenAnswer(
+          (_) async => errorResponse<EventModel>(notFoundResponse()));
 
       final result = await repository.getEventById(9999);
 
       expect(result.isLeft(), isTrue);
     });
 
-    test('trả về FailureEntity dataParsingFailure khi datasource trả responseParsing', () async {
+    test(
+        'trả về FailureEntity dataParsingFailure khi datasource trả responseParsing',
+        () async {
       when(() => mockDatasource.getEventById(1))
           .thenAnswer((_) async => const ApiResponse.responseParsing());
 

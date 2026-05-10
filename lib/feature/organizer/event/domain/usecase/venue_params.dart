@@ -1,5 +1,3 @@
-import 'package:events_app/feature/common/domain/enum/app_enum.dart';
-
 class VenueListParams {
   final int page;
   final int size;

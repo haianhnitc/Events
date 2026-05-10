@@ -18,6 +18,8 @@ class OrganizerEventListController extends GetxController {
       networkGetIt<UpdateOrganizerEventUsecase>();
 
   final RxList<EventSummaryEntity> events = <EventSummaryEntity>[].obs;
+  final RxList<EventSummaryEntity> _displayedEvents =
+      <EventSummaryEntity>[].obs;
   final RxBool isLoading = false.obs;
   final RxBool isRefreshing = false.obs;
   final Rx<EventStatus?> filterStatus = Rx<EventStatus?>(null);
@@ -27,14 +29,65 @@ class OrganizerEventListController extends GetxController {
 
   int _currentPage = 0;
   int _totalPages = 1;
-  bool get _hasMore => _currentPage < _totalPages - 1;
+  bool get hasMore => _currentPage < _totalPages - 1;
 
   AuthController get _authController => Get.find<AuthController>();
+
+  static final Rx<(int, EventStatus?)> eventStateUpdate =
+      Rx<(int, EventStatus?)>((0, null));
 
   @override
   void onInit() {
     super.onInit();
-    loadEvents();
+    _loadAllEventsCache();
+    loadEvents(reset: true);
+    _watchEventUpdates();
+  }
+
+  Future<void> _loadAllEventsCache() async {
+    final organizerId = _organizerId;
+    if (organizerId == null) return;
+
+    final params = OrganizerEventListParams(
+      organizerId: organizerId,
+      page: 0,
+      size: 9999,
+      status: null,
+      keyword: null,
+      sortBy: sortBy.value,
+      sortDirection: sortDirection.value,
+    );
+
+    final result = await _getEventListUsecase(params);
+    result.fold(
+      (failure) => _handleFailure(failure),
+      (data) {
+        final uniqueItems = <int, EventSummaryEntity>{};
+        for (final item in data.items) {
+          if (item.eventId != null) {
+            uniqueItems[item.eventId!] = item;
+          }
+        }
+        events.assignAll(uniqueItems.values.toList());
+      },
+    );
+  }
+
+  void _watchEventUpdates() {
+    ever(eventStateUpdate, (tuple) {
+      final (updatedEventId, newStatus) = tuple;
+      if (newStatus == null) return;
+      final idx = events.indexWhere((e) => e.eventId == updatedEventId);
+      if (idx >= 0) {
+        events[idx] = events[idx].copyWith(status: newStatus);
+      }
+      final displayIdx =
+          _displayedEvents.indexWhere((e) => e.eventId == updatedEventId);
+      if (displayIdx >= 0) {
+        _displayedEvents[displayIdx] =
+            _displayedEvents[displayIdx].copyWith(status: newStatus);
+      }
+    });
   }
 
   int? get _organizerId => _authController.currentUser.value?.userId;
@@ -72,18 +125,12 @@ class OrganizerEventListController extends GetxController {
       },
       (data) {
         if (reset) {
-          final uniqueItems = <int, EventSummaryEntity>{};
-          for (final item in data.items) {
-            if (item.eventId != null) {
-              uniqueItems[item.eventId!] = item;
-            }
-          }
-          events.assignAll(uniqueItems.values.toList());
+          _displayedEvents.assignAll(data.items);
         } else {
           for (final item in data.items) {
             if (item.eventId != null &&
-                !events.any((e) => e.eventId == item.eventId)) {
-              events.add(item);
+                !_displayedEvents.any((e) => e.eventId == item.eventId)) {
+              _displayedEvents.add(item);
             }
           }
         }
@@ -102,7 +149,7 @@ class OrganizerEventListController extends GetxController {
   }
 
   Future<void> loadMore() async {
-    if (!_hasMore || isLoading.value) return;
+    if (!hasMore || isLoading.value) return;
     _currentPage++;
     await loadEvents(reset: false);
   }
@@ -124,17 +171,19 @@ class OrganizerEventListController extends GetxController {
   }
 
   List<EventSummaryEntity> get filteredEvents {
-    if (searchQuery.value.isEmpty) return events.toList();
+    if (searchQuery.value.isEmpty) return _displayedEvents.toList();
     final q = searchQuery.value.toLowerCase();
-    return events
+    return _displayedEvents
         .where((e) => e.title?.toLowerCase().contains(q) ?? false)
         .toList();
   }
 
   Future<void> deleteEvent(int eventId) async {
     final ev = events.firstWhereOrNull((e) => e.eventId == eventId);
-    if (ev?.status != EventStatus.draft && ev?.status != EventStatus.published) {
-      AppSnackbarUtils.showError('Không hợp lệ', 'Sự kiện ở trạng thái này không thể hủy.');
+    if (ev?.status != EventStatus.draft &&
+        ev?.status != EventStatus.published) {
+      AppSnackbarUtils.showError(
+          'Không hợp lệ', 'Sự kiện ở trạng thái này không thể hủy.');
       return;
     }
     final confirmed = await Get.dialog<bool>(
@@ -155,7 +204,7 @@ class OrganizerEventListController extends GetxController {
     );
     if (confirmed != true) return;
 
-    final params = EventUpdateParams(status: EventStatus.cancelled);
+    const params = EventUpdateParams(status: EventStatus.cancelled);
     final result = await _updateEventUsecase(UpdateOrganizerEventParams(
       eventId: eventId,
       params: params,
@@ -164,29 +213,38 @@ class OrganizerEventListController extends GetxController {
       (failure) => _handleFailure(failure),
       (event) {
         AppSnackbarUtils.showSuccess('Thành công', 'Hủy sự kiện thành công');
-        final index = events.indexWhere((e) => e.eventId == eventId);
-        if (index >= 0) {
-          events[index] = events[index].copyWith(status: event.status);
-        }
+        eventStateUpdate.value = (eventId, event.status);
+        _syncEventStatus(eventId, event.status);
       },
     );
+  }
+
+  void _syncEventStatus(int eventId, EventStatus? newStatus) {
+    if (newStatus == null) return;
+    final idx = events.indexWhere((e) => e.eventId == eventId);
+    if (idx >= 0) events[idx] = events[idx].copyWith(status: newStatus);
+    final displayIdx = _displayedEvents.indexWhere((e) => e.eventId == eventId);
+    if (displayIdx >= 0) {
+      _displayedEvents[displayIdx] =
+          _displayedEvents[displayIdx].copyWith(status: newStatus);
+    }
   }
 
   Future<void> publishEvent(int eventId) async {
     final ev = events.firstWhereOrNull((e) => e.eventId == eventId);
     if (ev?.status != EventStatus.draft) {
-      AppSnackbarUtils.showError('Không hợp lệ', 'Chỉ sự kiện nháp mới có thể xuất bản.');
+      AppSnackbarUtils.showError(
+          'Không hợp lệ', 'Chỉ sự kiện nháp mới có thể xuất bản.');
       return;
     }
     final result = await _publishEventUsecase(eventId);
     result.fold(
       (failure) => _handleFailure(failure),
       (event) {
-        AppSnackbarUtils.showSuccess('Thành công', 'Xuất bản sự kiện thành công');
-        final index = events.indexWhere((e) => e.eventId == eventId);
-        if (index >= 0) {
-          events[index] = events[index].copyWith(status: event.status);
-        }
+        AppSnackbarUtils.showSuccess(
+            'Thành công', 'Xuất bản sự kiện thành công');
+        eventStateUpdate.value = (eventId, event.status);
+        _syncEventStatus(eventId, event.status);
       },
     );
   }
@@ -194,10 +252,11 @@ class OrganizerEventListController extends GetxController {
   Future<void> closeEvent(int eventId) async {
     final ev = events.firstWhereOrNull((e) => e.eventId == eventId);
     if (ev?.status != EventStatus.published) {
-      AppSnackbarUtils.showError('Không hợp lệ', 'Chỉ sự kiện đã xuất bản mới có thể đóng.');
+      AppSnackbarUtils.showError(
+          'Không hợp lệ', 'Chỉ sự kiện đã xuất bản mới có thể đóng.');
       return;
     }
-    final params = EventUpdateParams(status: EventStatus.closed);
+    const params = EventUpdateParams(status: EventStatus.closed);
     final result = await _updateEventUsecase(UpdateOrganizerEventParams(
       eventId: eventId,
       params: params,
@@ -206,10 +265,8 @@ class OrganizerEventListController extends GetxController {
       (failure) => _handleFailure(failure),
       (event) {
         AppSnackbarUtils.showSuccess('Thành công', 'Đóng sự kiện thành công');
-        final index = events.indexWhere((e) => e.eventId == eventId);
-        if (index >= 0) {
-          events[index] = events[index].copyWith(status: event.status);
-        }
+        eventStateUpdate.value = (eventId, event.status);
+        _syncEventStatus(eventId, event.status);
       },
     );
   }

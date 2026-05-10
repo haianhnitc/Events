@@ -1,4 +1,3 @@
-import 'package:events_app/api_template/base_request/api_request.dart';
 import 'package:events_app/api_template/base_response/api_response.dart';
 import 'package:events_app/api_template/base_response/api_response_forwarder.dart';
 import 'package:events_app/api_template/services/rest_clients.dart';
@@ -48,8 +47,8 @@ class TestTicketDatasource extends TicketDatasourceImpl {
 
   @override
   Future<ApiResponse<TicketModel>> getTicketById(int id) async {
-    final envelope = getTicketByIdStub ??
-        successEnvelope(fakeTicketJson(id: id));
+    final envelope =
+        getTicketByIdStub ?? successEnvelope(fakeTicketJson(id: id));
     return forwardEnvelopeResponse<TicketModel>(
       envelope,
       (object) {
@@ -67,8 +66,8 @@ class TestTicketDatasource extends TicketDatasourceImpl {
     int ticketId,
     String status,
   ) async {
-    final envelope = updateTicketStatusStub ??
-        successEnvelope(fakeTicketJson(id: ticketId));
+    final envelope =
+        updateTicketStatusStub ?? successEnvelope(fakeTicketJson(id: ticketId));
     return forwardEnvelopeResponse<TicketModel>(
       envelope,
       (object) {

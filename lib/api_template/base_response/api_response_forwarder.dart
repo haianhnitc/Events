@@ -76,12 +76,14 @@ Future<ApiResponse<TOut>> forwardOnSuccess<TIn, TOut>(
     forbidden: (error) => Future.value(ApiResponse.forbidden(error)),
     notFound: (error) => Future.value(ApiResponse.notFound(error)),
     conflict: (error) => Future.value(ApiResponse.conflict(error)),
-    internalServerError: () => Future.value(ApiResponse.internalServerError()),
-    badGateway: () => Future.value(ApiResponse.badGateway()),
-    serviceUnavailable: () => Future.value(ApiResponse.serviceUnavailable()),
-    gatewayTimeout: () => Future.value(ApiResponse.gatewayTimeout()),
-    canceled: () => Future.value(ApiResponse.canceled()),
-    responseParsing: () => Future.value(ApiResponse.responseParsing()),
+    internalServerError: () =>
+        Future.value(const ApiResponse.internalServerError()),
+    badGateway: () => Future.value(const ApiResponse.badGateway()),
+    serviceUnavailable: () =>
+        Future.value(const ApiResponse.serviceUnavailable()),
+    gatewayTimeout: () => Future.value(const ApiResponse.gatewayTimeout()),
+    canceled: () => Future.value(const ApiResponse.canceled()),
+    responseParsing: () => Future.value(const ApiResponse.responseParsing()),
     unexpected: (error) => Future.value(ApiResponse.unexpected(error)),
   );
 }
@@ -126,14 +128,15 @@ ApiResponse<T> mapExceptionToApiResponse<T>(Object error) {
 
   if (error is TypeError) {
     final msg = error.toString();
-    if (msg.contains('PigeonUserDetails') || msg.contains('PigeonUserCredential')) {
-      return ApiResponse.unexpected(ApiResponseError(
+    if (msg.contains('PigeonUserDetails') ||
+        msg.contains('PigeonUserCredential')) {
+      return ApiResponse.unexpected(const ApiResponseError(
         code: 'PLUGIN_MISMATCH',
         message: 'Lỗi đồng bộ Firebase. Vui lòng khởi động lại ứng dụng.',
         errors: null,
       ));
     }
-    return ApiResponse.unexpected(ApiResponseError(
+    return ApiResponse.unexpected(const ApiResponseError(
       code: 'TYPE_ERROR',
       message: 'Đã xảy ra lỗi không xác định. Vui lòng thử lại.',
       errors: null,
@@ -143,8 +146,9 @@ ApiResponse<T> mapExceptionToApiResponse<T>(Object error) {
   if (error is PlatformException) {
     final code = error.code;
     final msg = error.message ?? '';
-    if (msg.contains('PigeonUserDetails') || msg.contains('PigeonUserCredential')) {
-      return ApiResponse.unexpected(ApiResponseError(
+    if (msg.contains('PigeonUserDetails') ||
+        msg.contains('PigeonUserCredential')) {
+      return ApiResponse.unexpected(const ApiResponseError(
         code: 'PLUGIN_MISMATCH',
         message: 'Lỗi đồng bộ Firebase. Vui lòng khởi động lại ứng dụng.',
         errors: null,
@@ -175,16 +179,20 @@ extension ApiResponseExtension<T> on ApiResponse<T> {
       forbidden: (error) => _leftFromError(error),
       conflict: (error) => _leftFromError(error),
       internalServerError: () => const Left(
-        FailureEntity.serverFailure('500', 'Máy chủ đang bận. Vui lòng thử lại sau.'),
+        FailureEntity.serverFailure(
+            '500', 'Máy chủ đang bận. Vui lòng thử lại sau.'),
       ),
       badGateway: () => const Left(
-        FailureEntity.serverFailure('502', 'Kết nối đến máy chủ thất bại. Vui lòng thử lại.'),
+        FailureEntity.serverFailure(
+            '502', 'Kết nối đến máy chủ thất bại. Vui lòng thử lại.'),
       ),
       serviceUnavailable: () => const Left(
-        FailureEntity.serverFailure('503', 'Mất kết nối mạng hoặc máy chủ không phản hồi. Vui lòng kiểm tra mạng và thử lại.'),
+        FailureEntity.serverFailure('503',
+            'Mất kết nối mạng hoặc máy chủ không phản hồi. Vui lòng kiểm tra mạng và thử lại.'),
       ),
       gatewayTimeout: () => const Left(
-        FailureEntity.serverFailure('504', 'Yêu cầu hết thời gian chờ. Vui lòng thử lại.'),
+        FailureEntity.serverFailure(
+            '504', 'Yêu cầu hết thời gian chờ. Vui lòng thử lại.'),
       ),
       responseParsing: () => const Left(
         FailureEntity.dataParsingFailure(),
@@ -205,16 +213,20 @@ extension ApiResponseExtension<T> on ApiResponse<T> {
       forbidden: (error) => _leftFromErrorUnit(error),
       conflict: (error) => _leftFromErrorUnit(error),
       internalServerError: () => const Left(
-        FailureEntity.serverFailure('500', 'Máy chủ đang bận. Vui lòng thử lại sau.'),
+        FailureEntity.serverFailure(
+            '500', 'Máy chủ đang bận. Vui lòng thử lại sau.'),
       ),
       badGateway: () => const Left(
-        FailureEntity.serverFailure('502', 'Kết nối đến máy chủ thất bại. Vui lòng thử lại.'),
+        FailureEntity.serverFailure(
+            '502', 'Kết nối đến máy chủ thất bại. Vui lòng thử lại.'),
       ),
       serviceUnavailable: () => const Left(
-        FailureEntity.serverFailure('503', 'Mất kết nối mạng hoặc máy chủ không phản hồi. Vui lòng kiểm tra mạng và thử lại.'),
+        FailureEntity.serverFailure('503',
+            'Mất kết nối mạng hoặc máy chủ không phản hồi. Vui lòng kiểm tra mạng và thử lại.'),
       ),
       gatewayTimeout: () => const Left(
-        FailureEntity.serverFailure('504', 'Yêu cầu hết thời gian chờ. Vui lòng thử lại.'),
+        FailureEntity.serverFailure(
+            '504', 'Yêu cầu hết thời gian chờ. Vui lòng thử lại.'),
       ),
       responseParsing: () => const Left(
         FailureEntity.dataParsingFailure(),
@@ -226,14 +238,16 @@ extension ApiResponseExtension<T> on ApiResponse<T> {
   }
 
   Either<FailureEntity, T> toEitherNullable() {
-    return toEither().map((model) => model as T);
+    return toEither().map((model) => model);
   }
 }
 
 Left<FailureEntity, T> _leftFromError<T>(ApiResponseError error) {
-  return Left(FailureEntity.serverFailure(error.code.toString(), error.message));
+  return Left(
+      FailureEntity.serverFailure(error.code.toString(), error.message));
 }
 
 Left<FailureEntity, Unit> _leftFromErrorUnit(ApiResponseError error) {
-  return Left(FailureEntity.serverFailure(error.code.toString(), error.message));
+  return Left(
+      FailureEntity.serverFailure(error.code.toString(), error.message));
 }

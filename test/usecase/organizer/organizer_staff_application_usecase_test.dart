@@ -18,14 +18,14 @@ void main() {
   });
 
   setUpAll(() {
-    registerFallbackValue(GetOrganizerStaffApplicationsParams(
+    registerFallbackValue(const GetOrganizerStaffApplicationsParams(
       eventId: null,
       keyword: null,
       status: null,
       page: 0,
       size: 20,
     ));
-    registerFallbackValue(ApproveStaffApplicationParams(
+    registerFallbackValue(const ApproveStaffApplicationParams(
       applicationId: 1,
       isApproved: true,
     ));
@@ -40,10 +40,10 @@ void main() {
 
     test('success', () async {
       when(() => mockRepository.getStaffApplications(any())).thenAnswer(
-        (_) async => Right(<StaffApplicationEntity>[]),
+        (_) async => const Right(<StaffApplicationEntity>[]),
       );
 
-      final params = GetOrganizerStaffApplicationsParams(
+      const params = GetOrganizerStaffApplicationsParams(
         eventId: null,
         keyword: null,
         status: null,
@@ -60,7 +60,7 @@ void main() {
         (_) async => const Right([]),
       );
 
-      final params = GetOrganizerStaffApplicationsParams(
+      const params = GetOrganizerStaffApplicationsParams(
         eventId: null,
         keyword: null,
         status: null,
@@ -78,10 +78,10 @@ void main() {
 
     test('with status filter', () async {
       when(() => mockRepository.getStaffApplications(any())).thenAnswer(
-        (_) async => Right(<StaffApplicationEntity>[]),
+        (_) async => const Right(<StaffApplicationEntity>[]),
       );
 
-      final params = GetOrganizerStaffApplicationsParams(
+      const params = GetOrganizerStaffApplicationsParams(
         eventId: null,
         keyword: null,
         status: null,
@@ -113,7 +113,8 @@ void main() {
 
     test('404 returns Left', () async {
       when(() => mockRepository.getStaffApplicationById(any())).thenAnswer(
-        (_) async => Left(FailureEntity.serverFailure('404', 'Not found')),
+        (_) async =>
+            const Left(FailureEntity.serverFailure('404', 'Not found')),
       );
 
       final result = await usecase(999);
@@ -134,7 +135,7 @@ void main() {
         (_) async => Right(StaffApplicationEntity()),
       );
 
-      final params = ApproveStaffApplicationParams(
+      const params = ApproveStaffApplicationParams(
         applicationId: 1,
         isApproved: true,
       );
@@ -148,7 +149,7 @@ void main() {
         (_) async => Right(StaffApplicationEntity()),
       );
 
-      final params = ApproveStaffApplicationParams(
+      const params = ApproveStaffApplicationParams(
         applicationId: 1,
         isApproved: false,
         feedback: 'Better luck next time',
@@ -160,10 +161,11 @@ void main() {
 
     test('404 returns Left', () async {
       when(() => mockRepository.approveStaffApplication(any())).thenAnswer(
-        (_) async => Left(FailureEntity.serverFailure('404', 'Not found')),
+        (_) async =>
+            const Left(FailureEntity.serverFailure('404', 'Not found')),
       );
 
-      final params = ApproveStaffApplicationParams(
+      const params = ApproveStaffApplicationParams(
         applicationId: 999,
         isApproved: true,
       );

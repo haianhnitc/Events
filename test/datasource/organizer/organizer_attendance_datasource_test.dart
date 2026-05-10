@@ -9,7 +9,8 @@ import 'package:events_app/feature/attendance/data/model/event_attendance_log_mo
 
 import '../../helpers/fake_data.dart';
 
-class TestOrganizerAttendanceDatasource extends OrganizerAttendanceDatasourceImpl {
+class TestOrganizerAttendanceDatasource
+    extends OrganizerAttendanceDatasourceImpl {
   ApiResponse<Map<String, dynamic>>? getEventQrStub;
   ApiResponse<Map<String, dynamic>>? getParticipantQrStub;
   ApiResponse<Map<String, dynamic>>? manualCheckInStub;
@@ -25,7 +26,8 @@ class TestOrganizerAttendanceDatasource extends OrganizerAttendanceDatasourceImp
   }) : super(client: StubRestClient());
 
   @override
-  Future<ApiResponse<AttendanceQrModel>> getEventQr(int eventId, String action) async {
+  Future<ApiResponse<AttendanceQrModel>> getEventQr(
+      int eventId, String action) async {
     final envelope = getEventQrStub ??
         ApiResponse.success({
           'errorCode': 0,
@@ -46,7 +48,8 @@ class TestOrganizerAttendanceDatasource extends OrganizerAttendanceDatasourceImp
   }
 
   @override
-  Future<ApiResponse<AttendanceQrModel>> getParticipantQr(int eventParticipantId) async {
+  Future<ApiResponse<AttendanceQrModel>> getParticipantQr(
+      int eventParticipantId) async {
     final envelope = getParticipantQrStub ??
         ApiResponse.success({
           'errorCode': 0,
@@ -341,7 +344,7 @@ void main() {
         }),
       );
 
-      final params = OrganizerManualAttendanceParams(eventParticipantId: 1);
+      const params = OrganizerManualAttendanceParams(eventParticipantId: 1);
       final result = await datasource.manualCheckIn(params);
 
       result.when(
@@ -370,7 +373,7 @@ void main() {
         ),
       );
 
-      final params = OrganizerManualAttendanceParams(eventParticipantId: 1);
+      const params = OrganizerManualAttendanceParams(eventParticipantId: 1);
       final result = await datasource.manualCheckIn(params);
 
       expect(
@@ -405,7 +408,7 @@ void main() {
         }),
       );
 
-      final params = OrganizerManualAttendanceParams(eventParticipantId: 1);
+      const params = OrganizerManualAttendanceParams(eventParticipantId: 1);
       final result = await datasource.manualCheckOut(params);
 
       result.when(
@@ -434,7 +437,7 @@ void main() {
         ),
       );
 
-      final params = OrganizerManualAttendanceParams(eventParticipantId: 999);
+      const params = OrganizerManualAttendanceParams(eventParticipantId: 999);
       final result = await datasource.manualCheckOut(params);
 
       expect(
@@ -498,7 +501,7 @@ void main() {
 
     test('empty list', () async {
       final datasource = TestOrganizerAttendanceDatasource(
-        getAttendanceLogsStub: ApiResponse.success({
+        getAttendanceLogsStub: const ApiResponse.success({
           'errorCode': 0,
           'statusCode': 200,
           'message': 'OK',

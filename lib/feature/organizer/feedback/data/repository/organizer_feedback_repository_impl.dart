@@ -55,7 +55,6 @@ class OrganizerFeedbackRepositoryImpl implements OrganizerFeedbackRepository {
     return response.toEither().fold(
       (failure) => Left(failure),
       (data) {
-        if (data is! Map<String, dynamic>) return const Right([]);
         final content = data['content'] as List<dynamic>? ?? [];
         return Right(content
             .map((e) =>

@@ -80,13 +80,15 @@ void main() {
       );
     });
 
-    test('trả về unexpected khi errorCode != 0 và object có thể parse (null-safe parser)', () {
+    test(
+        'trả về unexpected khi errorCode != 0 và object có thể parse (null-safe parser)',
+        () {
       // Dùng null-tolerant parser để tránh FormatException che khuất lỗi backend
-      final response = ApiResponse<Map<String, dynamic>>.success({
+      const response = ApiResponse<Map<String, dynamic>>.success({
         'errorCode': -1,
         'statusCode': 400,
         'message': 'Something went wrong',
-        'object': {'id': 0, 'name': ''},  // object hợp lệ nhưng errorCode != 0
+        'object': {'id': 0, 'name': ''}, // object hợp lệ nhưng errorCode != 0
       });
 
       final result = forwardEnvelopeResponse<_TestModel>(
@@ -111,24 +113,28 @@ void main() {
         serviceUnavailable: () => fail('Expected unexpected'),
         gatewayTimeout: () => fail('Expected unexpected'),
         canceled: () => fail('Expected unexpected'),
-        responseParsing: () => fail('Expected unexpected — parser should not fail when errorCode != 0'),
+        responseParsing: () => fail(
+            'Expected unexpected — parser should not fail when errorCode != 0'),
       );
     });
 
-    test('trả về responseParsing khi errorCode != 0 và object null gây FormatException', () {
+    test(
+        'trả về responseParsing khi errorCode != 0 và object null gây FormatException',
+        () {
       // Đây là behavior thực: object=null, parser throw FormatException → responseParsing
       final response = _backendError(errorCode: -1, message: 'Backend error');
 
       final result = forwardEnvelopeResponse<_TestModel>(
         response,
-        _parseModel,  // throws FormatException khi object=null
+        _parseModel, // throws FormatException khi object=null
         fallbackError: 'fallback',
       );
 
       expect(isResponseParsing(result), isTrue);
     });
 
-    test('trả về responseParsing khi object không parse được (FormatException)', () {
+    test('trả về responseParsing khi object không parse được (FormatException)',
+        () {
       final response = _successWith('not-a-map');
 
       final result = forwardEnvelopeResponse<_TestModel>(
@@ -141,7 +147,7 @@ void main() {
     });
 
     test('forward lỗi HTTP 401 → unauthorized', () {
-      final response = ApiResponse<Map<String, dynamic>>.unauthorized(
+      const response = ApiResponse<Map<String, dynamic>>.unauthorized(
         ApiResponseError(code: '401', message: 'Unauthorized', errors: []),
       );
 
@@ -155,7 +161,7 @@ void main() {
     });
 
     test('forward lỗi HTTP 403 → forbidden', () {
-      final response = ApiResponse<Map<String, dynamic>>.forbidden(
+      const response = ApiResponse<Map<String, dynamic>>.forbidden(
         ApiResponseError(code: '403', message: 'Forbidden', errors: []),
       );
 
@@ -169,7 +175,7 @@ void main() {
     });
 
     test('forward lỗi HTTP 404 → notFound', () {
-      final response = ApiResponse<Map<String, dynamic>>.notFound(
+      const response = ApiResponse<Map<String, dynamic>>.notFound(
         ApiResponseError(code: '404', message: 'Not found', errors: []),
       );
 
@@ -183,7 +189,7 @@ void main() {
     });
 
     test('forward lỗi HTTP 500 → internalServerError', () {
-      final response = ApiResponse<Map<String, dynamic>>.internalServerError();
+      const response = ApiResponse<Map<String, dynamic>>.internalServerError();
 
       final result = forwardEnvelopeResponse<_TestModel>(
         response,
@@ -195,7 +201,7 @@ void main() {
     });
 
     test('forward lỗi badGateway → badGateway', () {
-      final response = ApiResponse<Map<String, dynamic>>.badGateway();
+      const response = ApiResponse<Map<String, dynamic>>.badGateway();
 
       final result = forwardEnvelopeResponse<_TestModel>(
         response,
@@ -207,7 +213,7 @@ void main() {
     });
 
     test('forward canceled → canceled', () {
-      final response = ApiResponse<Map<String, dynamic>>.canceled();
+      const response = ApiResponse<Map<String, dynamic>>.canceled();
 
       final result = forwardEnvelopeResponse<_TestModel>(
         response,
@@ -218,13 +224,18 @@ void main() {
       expect(isCanceled(result), isTrue);
     });
 
-    test('trả về unexpected với fallbackError khi errorCode != 0 và message null (với object parse được)', () {
+    test(
+        'trả về unexpected với fallbackError khi errorCode != 0 và message null (với object parse được)',
+        () {
       // Khi message null, fallbackError được dùng
-      final response = ApiResponse<Map<String, dynamic>>.success({
+      const response = ApiResponse<Map<String, dynamic>>.success({
         'errorCode': -1,
         'statusCode': 400,
         'message': null,
-        'object': {'id': 1, 'name': 'dummy'},  // object hợp lệ để tránh FormatException
+        'object': {
+          'id': 1,
+          'name': 'dummy'
+        }, // object hợp lệ để tránh FormatException
       });
 
       final result = forwardEnvelopeResponse<_TestModel>(
@@ -234,7 +245,8 @@ void main() {
       );
 
       result.when(
-        unexpected: (error) => expect(error.message, equals('Custom fallback error')),
+        unexpected: (error) =>
+            expect(error.message, equals('Custom fallback error')),
         success: (_) => fail('Expected unexpected'),
         badRequest: (_) => fail('Expected unexpected'),
         unauthorized: (_) => fail('Expected unexpected'),
@@ -254,7 +266,7 @@ void main() {
   // ─── ApiEnvelope ─────────────────────────────────────────────────────────────
   group('ApiEnvelope', () {
     test('isSuccess = true khi errorCode = 0', () {
-      final envelope = ApiEnvelope<String>(
+      const envelope = ApiEnvelope<String>(
         errorCode: 0,
         statusCode: 200,
         message: 'OK',
@@ -265,7 +277,7 @@ void main() {
     });
 
     test('isSuccess = false khi errorCode != 0', () {
-      final envelope = ApiEnvelope<String>(
+      const envelope = ApiEnvelope<String>(
         errorCode: -1,
         statusCode: 400,
         message: 'Error',
@@ -276,7 +288,7 @@ void main() {
     });
 
     test('isSuccess = false khi errorCode = null', () {
-      final envelope = ApiEnvelope<String>(
+      const envelope = ApiEnvelope<String>(
         errorCode: null,
         statusCode: 200,
         message: 'OK',
@@ -309,7 +321,7 @@ void main() {
   // ─── toEither extension ───────────────────────────────────────────────────────
   group('ApiResponse.toEither()', () {
     test('success → Right(model)', () {
-      final response = ApiResponse<int>.success(42);
+      const response = ApiResponse<int>.success(42);
 
       final result = response.toEither();
 
@@ -317,7 +329,7 @@ void main() {
     });
 
     test('unauthorized → Left(serverFailure(401))', () {
-      final response = ApiResponse<Map<String, dynamic>>.unauthorized(
+      const response = ApiResponse<Map<String, dynamic>>.unauthorized(
         ApiResponseError(code: '401', message: 'Unauthorized', errors: []),
       );
 
@@ -339,7 +351,7 @@ void main() {
     });
 
     test('forbidden → Left(serverFailure(403))', () {
-      final response = ApiResponse<Map<String, dynamic>>.forbidden(
+      const response = ApiResponse<Map<String, dynamic>>.forbidden(
         ApiResponseError(code: '403', message: 'Forbidden', errors: []),
       );
 
@@ -358,7 +370,7 @@ void main() {
     });
 
     test('internalServerError → Left(serverFailure(500))', () {
-      final response = ApiResponse<Map<String, dynamic>>.internalServerError();
+      const response = ApiResponse<Map<String, dynamic>>.internalServerError();
 
       final result = response.toEither();
 
@@ -375,25 +387,25 @@ void main() {
     });
 
     test('badGateway → Left(serverFailure(502))', () {
-      final response = ApiResponse<Map<String, dynamic>>.badGateway();
+      const response = ApiResponse<Map<String, dynamic>>.badGateway();
       final result = response.toEither();
       expect(result.isLeft(), isTrue);
     });
 
     test('serviceUnavailable → Left(serverFailure(503))', () {
-      final response = ApiResponse<Map<String, dynamic>>.serviceUnavailable();
+      const response = ApiResponse<Map<String, dynamic>>.serviceUnavailable();
       final result = response.toEither();
       expect(result.isLeft(), isTrue);
     });
 
     test('gatewayTimeout → Left(serverFailure(504))', () {
-      final response = ApiResponse<Map<String, dynamic>>.gatewayTimeout();
+      const response = ApiResponse<Map<String, dynamic>>.gatewayTimeout();
       final result = response.toEither();
       expect(result.isLeft(), isTrue);
     });
 
     test('canceled → Left(serverFailure(CANCEL))', () {
-      final response = ApiResponse<Map<String, dynamic>>.canceled();
+      const response = ApiResponse<Map<String, dynamic>>.canceled();
 
       final result = response.toEither();
 
@@ -410,7 +422,7 @@ void main() {
     });
 
     test('responseParsing → Left(dataParsingFailure)', () {
-      final response = ApiResponse<Map<String, dynamic>>.responseParsing();
+      const response = ApiResponse<Map<String, dynamic>>.responseParsing();
 
       final result = response.toEither();
 
@@ -427,8 +439,9 @@ void main() {
     });
 
     test('unexpected → Left(serverFailure với code và message)', () {
-      final response = ApiResponse<Map<String, dynamic>>.unexpected(
-        ApiResponseError(code: 'CUSTOM_CODE', message: 'Custom error', errors: null),
+      const response = ApiResponse<Map<String, dynamic>>.unexpected(
+        ApiResponseError(
+            code: 'CUSTOM_CODE', message: 'Custom error', errors: null),
       );
 
       final result = response.toEither();
@@ -449,7 +462,7 @@ void main() {
     });
 
     test('notFound → Left(serverFailure(404))', () {
-      final response = ApiResponse<Map<String, dynamic>>.notFound(
+      const response = ApiResponse<Map<String, dynamic>>.notFound(
         ApiResponseError(code: '404', message: 'Not found', errors: []),
       );
 
@@ -462,7 +475,8 @@ void main() {
   // ─── toEitherUnit extension ────────────────────────────────────────────────
   group('ApiResponse.toEitherUnit()', () {
     test('success → Right(unit) bất kể payload là gì', () {
-      final response = ApiResponse<Map<String, dynamic>>.success({'ignored': true});
+      const response =
+          ApiResponse<Map<String, dynamic>>.success({'ignored': true});
 
       final result = response.toEitherUnit();
 
@@ -470,7 +484,7 @@ void main() {
     });
 
     test('internalServerError → Left(serverFailure(500))', () {
-      final response = ApiResponse<Map<String, dynamic>>.internalServerError();
+      const response = ApiResponse<Map<String, dynamic>>.internalServerError();
 
       final result = response.toEitherUnit();
 
@@ -487,7 +501,7 @@ void main() {
     });
 
     test('unauthorized → Left', () {
-      final response = ApiResponse<Map<String, dynamic>>.unauthorized(
+      const response = ApiResponse<Map<String, dynamic>>.unauthorized(
         ApiResponseError(code: '401', message: 'Unauth', errors: []),
       );
       final result = response.toEitherUnit();
@@ -498,7 +512,7 @@ void main() {
   // ─── forwardOnSuccess ────────────────────────────────────────────────────────
   group('forwardOnSuccess', () {
     test('gọi onSuccess khi response là success', () async {
-      final response = ApiResponse<int>.success(10);
+      const response = ApiResponse<int>.success(10);
 
       final result = await forwardOnSuccess<int, String>(
         response,
@@ -522,9 +536,10 @@ void main() {
       );
     });
 
-    test('không gọi onSuccess khi response là failure — forward nguyên lỗi', () async {
+    test('không gọi onSuccess khi response là failure — forward nguyên lỗi',
+        () async {
       bool onSuccessCalled = false;
-      final response = ApiResponse<int>.unauthorized(
+      const response = ApiResponse<int>.unauthorized(
         ApiResponseError(code: '401', message: 'Auth error', errors: []),
       );
 
@@ -532,7 +547,7 @@ void main() {
         response,
         (value) async {
           onSuccessCalled = true;
-          return ApiResponse<String>.success('ok');
+          return const ApiResponse<String>.success('ok');
         },
       );
 
@@ -541,11 +556,11 @@ void main() {
     });
 
     test('forward lỗi internalServerError qua onSuccess', () async {
-      final response = ApiResponse<int>.internalServerError();
+      const response = ApiResponse<int>.internalServerError();
 
       final result = await forwardOnSuccess<int, String>(
         response,
-        (value) async => ApiResponse<String>.success('ok'),
+        (value) async => const ApiResponse<String>.success('ok'),
       );
 
       expect(isInternalServerError(result), isTrue);

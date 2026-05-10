@@ -8,6 +8,7 @@ import 'package:events_app/feature/recruitment/domain/entity/ctv_recruitment_ent
 import 'package:events_app/feature/organizer/presentation/page/recruitment/organizer_recruitment_list_page.dart';
 import 'package:events_app/feature/organizer/recruitment/domain/usecase/organizer_recruitment_usecase.dart';
 import 'package:events_app/feature/organizer/recruitment/domain/usecase/organizer_recruitment_params.dart';
+import 'package:events_app/feature/organizer/presentation/controller/organizer_recruitment_list_controller.dart';
 
 class OrganizerRecruitmentFormController extends GetxController {
   GetOrganizerRecruitmentByIdUsecase get _getByIdUsecase =>
@@ -211,6 +212,10 @@ class OrganizerRecruitmentFormController extends GetxController {
           'Thành công',
           isEditMode ? 'Cập nhật tuyển dụng thành công' : 'Tạo tuyển dụng thành công',
         );
+        try {
+          final listCtrl = Get.find<OrganizerRecruitmentListController>();
+          listCtrl.loadRecruitments(refresh: true);
+        } catch (_) {}
         Get.until((route) => route.isFirst);
         Get.to(() => const OrganizerRecruitmentListPage());
         isSubmitting.value = false;

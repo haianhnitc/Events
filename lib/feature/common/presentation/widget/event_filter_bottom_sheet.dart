@@ -295,7 +295,7 @@ class _PillChip extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (isSelected) ...[
-              Icon(Icons.check, size: 14, color: Colors.white),
+              const Icon(Icons.check, size: 14, color: Colors.white),
               const SizedBox(width: 4),
             ],
             Text(

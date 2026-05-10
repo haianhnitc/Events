@@ -157,7 +157,7 @@ class TermsOfServiceDialog extends StatelessWidget {
                     '• Hotline: 1900 xxxx\n'
                     '• Địa chỉ: [Địa chỉ công ty]',
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
             ],
           ),
         ),
@@ -175,7 +175,8 @@ class TermsOfServiceDialog extends StatelessWidget {
               ),
               padding: const EdgeInsets.symmetric(vertical: 14),
             ),
-            child: const Text('Đã đọc và đồng ý', style: TextStyle(fontWeight: FontWeight.w600)),
+            child: const Text('Đã đọc và đồng ý',
+                style: TextStyle(fontWeight: FontWeight.w600)),
           ),
         ),
       ],
@@ -266,8 +267,7 @@ class PrivacyPolicyDialog extends StatelessWidget {
               _SectionGap(),
               _TermsSection(
                 title: '3. Cơ sở pháp lý cho việc xử lý dữ liệu',
-                content:
-                    'Chúng tôi xử lý dữ liệu của bạn dựa trên:\n\n'
+                content: 'Chúng tôi xử lý dữ liệu của bạn dựa trên:\n\n'
                     '• Sự đồng ý của bạn khi đăng ký và sử dụng ứng dụng.\n'
                     '• Việc thực hiện hợp đồng giữa bạn và chúng tôi (cung cấp dịch vụ).\n'
                     '• Lợi ích hợp pháp của chúng tôi trong việc vận hành và cải thiện dịch vụ.\n'
@@ -312,8 +312,7 @@ class PrivacyPolicyDialog extends StatelessWidget {
               _SectionGap(),
               _TermsSection(
                 title: '7. Bảo mật dữ liệu',
-                content:
-                    'Chúng tôi áp dụng các biện pháp bảo mật sau:\n\n'
+                content: 'Chúng tôi áp dụng các biện pháp bảo mật sau:\n\n'
                     '• Mã hóa dữ liệu: Dữ liệu nhạy cảm (mật khẩu) được mã hóa bằng thuật toán một chiều (bcrypt). Dữ liệu truyền tải qua mạng được mã hóa bằng SSL/TLS.\n'
                     '• Kiểm soát truy cập: Chỉ nhân viên được ủy quyền mới có thể truy cập dữ liệu người dùng.\n'
                     '• Xác thực: Firebase Authentication để xác thực người dùng.\n'
@@ -355,7 +354,7 @@ class PrivacyPolicyDialog extends StatelessWidget {
                     '• Địa chỉ: [Địa chỉ công ty]\n\n'
                     'Chúng tôi sẽ phản hồi trong vòng 72 giờ làm việc.',
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
             ],
           ),
         ),
@@ -373,7 +372,8 @@ class PrivacyPolicyDialog extends StatelessWidget {
               ),
               padding: const EdgeInsets.symmetric(vertical: 14),
             ),
-            child: const Text('Đã đọc', style: TextStyle(fontWeight: FontWeight.w600)),
+            child: const Text('Đã đọc',
+                style: TextStyle(fontWeight: FontWeight.w600)),
           ),
         ),
       ],

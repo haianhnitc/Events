@@ -22,18 +22,19 @@ void main() {
   });
 
   setUpAll(() {
-    registerFallbackValue(OrganizerEventListParams(
+    registerFallbackValue(const OrganizerEventListParams(
       organizerId: 1,
       page: 0,
       size: 20,
     ));
-    registerFallbackValue(EventCreateParams(title: 'Test'));
-    registerFallbackValue(EventUpdateParams());
-    registerFallbackValue(EventCategoryOptionCreateParams(
+    registerFallbackValue(const EventCreateParams(title: 'Test'));
+    registerFallbackValue(const EventUpdateParams());
+    registerFallbackValue(const EventCategoryOptionCreateParams(
       eventId: 1,
       categoryOptionId: 1,
     ));
-    registerFallbackValue(EventCategoryOptionUpdateParams(categoryOptionId: 1));
+    registerFallbackValue(
+        const EventCategoryOptionUpdateParams(categoryOptionId: 1));
   });
 
   group('GetOrganizerEventListUsecase', () {
@@ -53,7 +54,7 @@ void main() {
         )),
       );
 
-      final params = OrganizerEventListParams(
+      const params = OrganizerEventListParams(
         organizerId: 1,
         page: 0,
         size: 20,
@@ -65,14 +66,14 @@ void main() {
 
     test('empty', () async {
       when(() => mockRepository.getOrganizerEventList(any())).thenAnswer(
-        (_) async => Right((
+        (_) async => const Right((
           items: <EventSummaryEntity>[],
           totalElements: 0,
           totalPages: 0,
         )),
       );
 
-      final params = OrganizerEventListParams(
+      const params = OrganizerEventListParams(
         organizerId: 1,
         page: 0,
         size: 20,
@@ -88,10 +89,11 @@ void main() {
 
     test('failure', () async {
       when(() => mockRepository.getOrganizerEventList(any())).thenAnswer(
-        (_) async => Left(FailureEntity.serverFailure('500', 'Server error')),
+        (_) async =>
+            const Left(FailureEntity.serverFailure('500', 'Server error')),
       );
 
-      final params = OrganizerEventListParams(
+      const params = OrganizerEventListParams(
         organizerId: 1,
         page: 0,
         size: 20,
@@ -114,7 +116,7 @@ void main() {
         (_) async => Right(EventEntity()),
       );
 
-      final params = EventCreateParams(title: 'New Event');
+      const params = EventCreateParams(title: 'New Event');
       final result = await usecase(params);
 
       expect(result.isRight(), true);
@@ -122,10 +124,11 @@ void main() {
 
     test('400 returns Left', () async {
       when(() => mockRepository.createEvent(any())).thenAnswer(
-        (_) async => Left(FailureEntity.serverFailure('400', 'Invalid data')),
+        (_) async =>
+            const Left(FailureEntity.serverFailure('400', 'Invalid data')),
       );
 
-      final params = EventCreateParams(title: '');
+      const params = EventCreateParams(title: '');
       final result = await usecase(params);
 
       expect(result.isLeft(), true);
@@ -144,7 +147,8 @@ void main() {
         (_) async => Right(EventEntity()),
       );
 
-      final result = await usecase(UpdateOrganizerEventParams(eventId: 1, params: EventUpdateParams(title: 'Updated')));
+      final result = await usecase(const UpdateOrganizerEventParams(
+          eventId: 1, params: EventUpdateParams(title: 'Updated')));
 
       expect(result.isRight(), true);
     });
@@ -173,7 +177,8 @@ void main() {
 
     test('404 returns Left', () async {
       when(() => mockRepository.deleteEvent(any())).thenAnswer(
-        (_) async => Left(FailureEntity.serverFailure('404', 'Not found')),
+        (_) async =>
+            const Left(FailureEntity.serverFailure('404', 'Not found')),
       );
 
       final result = await usecase(999);
@@ -266,7 +271,7 @@ void main() {
         (_) async => const Right(unit),
       );
 
-      final params = EventCategoryOptionCreateParams(
+      const params = EventCategoryOptionCreateParams(
         eventId: 1,
         categoryOptionId: 5,
       );
@@ -290,7 +295,7 @@ void main() {
             any(),
           )).thenAnswer((_) async => const Right(unit));
 
-      final params = EventCategoryOptionUpdateParams(categoryOptionId: 5);
+      const params = EventCategoryOptionUpdateParams(categoryOptionId: 5);
       final result = await usecase(UpdateOrganizerEventCategoryOptionParams(
         eventId: 1,
         categoryOptionId: 5,
@@ -314,7 +319,9 @@ void main() {
             any(),
           )).thenAnswer((_) async => const Right(unit));
 
-      final result = await usecase(DeleteOrganizerEventCategoryOptionParams(eventId: 1, categoryOptionId: 5));
+      final result = await usecase(
+          const DeleteOrganizerEventCategoryOptionParams(
+              eventId: 1, categoryOptionId: 5));
 
       expect(result.isRight(), true);
     });

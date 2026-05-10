@@ -1,8 +1,10 @@
 import 'package:events_app/feature/event_management/domain/entity/event_summary_entity.dart';
+import 'package:events_app/feature/event_management/presentation/controller/event_controller.dart';
 import 'package:events_app/feature/event_management/presentation/page/event_detail_page.dart';
 import 'package:events_app/feature/event_management/presentation/utils/event_action_utils.dart';
 import 'package:events_app/feature/event_management/presentation/widget/event_or_ctv_card.dart';
 import 'package:events_app/feature/recruitment/domain/entity/ctv_recruitment_entity.dart';
+import 'package:events_app/feature/recruitment/presentation/controller/ctv_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -17,6 +19,7 @@ class EventOrCtvList extends StatelessWidget {
       required this.isLoadingMore,
       required this.onLoadMore,
       this.isInitialLoading = false,
+      this.isLoading = false,
       this.onTap,
       this.onPrimaryActionTap,
       this.resolveActionState});
@@ -29,6 +32,7 @@ class EventOrCtvList extends StatelessWidget {
   final bool isLoadingMore;
   final VoidCallback onLoadMore;
   final bool isInitialLoading;
+  final bool isLoading;
   final Function? onTap;
   final Function(CtvRecruitmentEntity recruitment)? onPrimaryActionTap;
   final ActionButtonState Function(CtvRecruitmentEntity recruitment)?
@@ -87,49 +91,57 @@ class EventOrCtvList extends StatelessWidget {
       );
     }
 
-    final showLoader = hasMore || isLoadingMore;
-    return GridView.builder(
-      controller: scrollController,
-      itemCount: listEvent.length + (showLoader ? 1 : 0),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 12,
-          childAspectRatio: 0.65),
-      itemBuilder: (context, index) {
-        if (index == listEvent.length && showLoader) {
-          if (hasMore && !isLoadingMore) {
-            WidgetsBinding.instance.addPostFrameCallback((_) => onLoadMore());
-          }
-
-          return const Center(
-            child: Padding(
-              padding: EdgeInsets.all(16),
-              child: CircularProgressIndicator(strokeWidth: 2),
-            ),
-          );
+    return RefreshIndicator(
+      onRefresh: () async {
+        final ctrl = EventController();
+        if (Get.isRegistered<EventController>()) {
+          ctrl.loadEvents(refresh: true);
         }
-
-        if (index >= listEvent.length) {
-          return const SizedBox.shrink();
-        }
-
-        final event = listEvent[index];
-        return GestureDetector(
-            onTap: () {
-              if (onTap != null) {
-                onTap!.call(event);
-                return;
-              }
-
-              Get.to(() => EventDetailPage(eventId: event.eventId));
-            },
-            child: EventOrCtvCard(isEvent: true, event: event));
+        await Future.delayed(const Duration(milliseconds: 500));
       },
+      notificationPredicate: (notification) => notification.depth == 1,
+      child: NotificationListener<ScrollNotification>(
+        onNotification: (notification) {
+          if (notification is ScrollEndNotification &&
+              notification.metrics.extentAfter < 80 &&
+              !isLoadingMore &&
+              hasMore) {
+            onLoadMore();
+          }
+          return false;
+        },
+        child: GridView.builder(
+          controller: scrollController,
+          itemCount: listEvent.length,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              childAspectRatio: 0.65),
+          itemBuilder: (context, index) {
+            final event = listEvent[index];
+            return GestureDetector(
+              onTap: () {
+                if (onTap != null) {
+                  onTap!.call(event);
+                  return;
+                }
+                Get.to(() => EventDetailPage(eventId: event.eventId));
+              },
+              child: EventOrCtvCard(isEvent: true, event: event),
+            );
+          },
+        ),
+      ),
     );
   }
 
   _buildCtvList(List<CtvRecruitmentEntity> listCtv) {
+    if (isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(color: Color(0xff06B6D4)),
+      );
+    }
     if (listCtv.isEmpty) {
       return const Center(
         child: Text(
@@ -143,49 +155,52 @@ class EventOrCtvList extends StatelessWidget {
       );
     }
 
-    final showLoader = hasMore || isLoadingMore;
-    return GridView.builder(
-      controller: scrollController,
-      padding: const EdgeInsets.only(bottom: 24),
-      itemCount: listCtv.length + (showLoader ? 1 : 0),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 12,
-          childAspectRatio: 0.65),
-      itemBuilder: (context, index) {
-        if (index == listCtv.length && showLoader) {
-          if (hasMore && !isLoadingMore) {
-            WidgetsBinding.instance.addPostFrameCallback((_) => onLoadMore());
-          }
-
-          return const Center(
-            child: Padding(
-              padding: EdgeInsets.all(16),
-              child: CircularProgressIndicator(strokeWidth: 2),
-            ),
-          );
+    return RefreshIndicator(
+      onRefresh: () async {
+        final ctrl = CtvController();
+        if (Get.isRegistered<CtvController>()) {
+          ctrl.loadRecruitments(refresh: true);
         }
-
-        if (index >= listCtv.length) {
-          return const SizedBox.shrink();
-        }
-
-        final ctv = listCtv[index];
-        return GestureDetector(
-          onTap: () {
-            if (onTap != null) {
-              onTap!.call(ctv);
-            }
-          },
-          child: EventOrCtvCard(
-            isEvent: false,
-            ctv: ctv,
-            actionStateOverride: resolveActionState?.call(ctv),
-            onApplyTap: () => onPrimaryActionTap?.call(ctv),
-          ),
-        );
+        await Future.delayed(const Duration(milliseconds: 500));
       },
+      notificationPredicate: (notification) => notification.depth == 1,
+      child: NotificationListener<ScrollNotification>(
+        onNotification: (notification) {
+          if (notification is ScrollEndNotification &&
+              notification.metrics.extentAfter < 80 &&
+              !isLoadingMore &&
+              hasMore) {
+            onLoadMore();
+          }
+          return false;
+        },
+        child: GridView.builder(
+          controller: scrollController,
+          padding: const EdgeInsets.only(bottom: 24),
+          itemCount: listCtv.length,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              childAspectRatio: 0.65),
+          itemBuilder: (context, index) {
+            final ctv = listCtv[index];
+            return GestureDetector(
+              onTap: () {
+                if (onTap != null) {
+                  onTap!.call(ctv);
+                }
+              },
+              child: EventOrCtvCard(
+                isEvent: false,
+                ctv: ctv,
+                actionStateOverride: resolveActionState?.call(ctv),
+                onApplyTap: () => onPrimaryActionTap?.call(ctv),
+              ),
+            );
+          },
+        ),
+      ),
     );
   }
 }

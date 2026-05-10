@@ -39,7 +39,8 @@ class TestCoinDatasource extends CoinDatasourceImpl {
         final contentList = object['content'] as List<dynamic>? ?? [];
         return CoinPage(
           items: contentList
-              .map((e) => CoinTransactionModel.fromJson(e as Map<String, dynamic>))
+              .map((e) =>
+                  CoinTransactionModel.fromJson(e as Map<String, dynamic>))
               .toList(),
           totalElements: object['totalElements'] as int? ?? 0,
           totalPages: object['totalPages'] as int? ?? 0,
@@ -98,7 +99,7 @@ void main() {
 
     test('trả về list rỗng khi content rỗng', () async {
       final datasource = TestCoinDatasource(
-        getCoinHistoryStub: ApiResponse.success({
+        getCoinHistoryStub: const ApiResponse.success({
           'errorCode': 0,
           'statusCode': 200,
           'message': 'OK',

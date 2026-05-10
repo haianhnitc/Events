@@ -53,7 +53,7 @@ class OrganizerAttendanceRepositoryImpl
     final response = await _datasource.getAttendanceLogs(
         eventId: params.eventId, page: params.page, size: params.size);
     return response.toEitherNullable().map((payload) {
-      final content = payload?['content'] as List<dynamic>? ?? [];
+      final content = payload['content'] as List<dynamic>? ?? [];
       return content
           .map((e) =>
               EventAttendanceLogModel.fromJson(e as Map<String, dynamic>)

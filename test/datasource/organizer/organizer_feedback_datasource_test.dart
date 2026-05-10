@@ -49,7 +49,8 @@ class TestOrganizerFeedbackDatasource extends OrganizerFeedbackDatasourceImpl {
   }
 
   @override
-  Future<ApiResponse<FeedbackQuestionModel>> getFeedbackQuestionById(int id) async {
+  Future<ApiResponse<FeedbackQuestionModel>> getFeedbackQuestionById(
+      int id) async {
     final envelope = getQuestionByIdStub ??
         ApiResponse.success({
           'errorCode': 0,
@@ -84,13 +85,15 @@ class TestOrganizerFeedbackDatasource extends OrganizerFeedbackDatasourceImpl {
       (object) {
         if (object is List<dynamic>) {
           return object
-              .map((e) => FeedbackQuestionModel.fromJson(e as Map<String, dynamic>))
+              .map((e) =>
+                  FeedbackQuestionModel.fromJson(e as Map<String, dynamic>))
               .toList();
         }
         if (object is Map<String, dynamic>) {
           final content = object['content'] as List<dynamic>? ?? [];
           return content
-              .map((e) => FeedbackQuestionModel.fromJson(e as Map<String, dynamic>))
+              .map((e) =>
+                  FeedbackQuestionModel.fromJson(e as Map<String, dynamic>))
               .toList();
         }
         throw const FormatException('Invalid object payload');
@@ -100,13 +103,15 @@ class TestOrganizerFeedbackDatasource extends OrganizerFeedbackDatasourceImpl {
   }
 
   @override
-  Future<ApiResponse<void>> deleteFeedbackQuestions(List<int> questionIds) async {
-    final envelope = deleteQuestionsStub ?? ApiResponse.success({
-      'errorCode': 0,
-      'statusCode': 200,
-      'message': 'OK',
-      'object': null,
-    });
+  Future<ApiResponse<void>> deleteFeedbackQuestions(
+      List<int> questionIds) async {
+    final envelope = deleteQuestionsStub ??
+        const ApiResponse.success({
+          'errorCode': 0,
+          'statusCode': 200,
+          'message': 'OK',
+          'object': null,
+        });
     return forwardEnvelopeResponse<void>(
       envelope,
       (_) {},
@@ -181,7 +186,7 @@ void main() {
       );
 
       final result = await datasource.createFeedbackQuestion(
-        CreateFeedbackQuestionParams(
+        const CreateFeedbackQuestionParams(
           eventId: 1,
           questionContent: 'How was the event?',
           questionType: FeedbackQuestionType.rating,
@@ -216,7 +221,7 @@ void main() {
       );
 
       final result = await datasource.createFeedbackQuestion(
-        CreateFeedbackQuestionParams(
+        const CreateFeedbackQuestionParams(
           eventId: 1,
           questionContent: '',
           questionType: FeedbackQuestionType.text,
@@ -340,7 +345,7 @@ void main() {
 
     test('empty', () async {
       final datasource = TestOrganizerFeedbackDatasource(
-        getQuestionsStub: ApiResponse.success({
+        getQuestionsStub: const ApiResponse.success({
           'errorCode': 0,
           'statusCode': 200,
           'message': 'OK',
@@ -373,7 +378,7 @@ void main() {
   group('deleteFeedbackQuestions', () {
     test('success', () async {
       final datasource = TestOrganizerFeedbackDatasource(
-        deleteQuestionsStub: ApiResponse.success({
+        deleteQuestionsStub: const ApiResponse.success({
           'errorCode': 0,
           'statusCode': 200,
           'message': 'OK',

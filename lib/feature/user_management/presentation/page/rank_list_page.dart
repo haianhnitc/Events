@@ -237,51 +237,54 @@ class RankListPage extends StatelessWidget {
           child: CircularProgressIndicator(color: Color(0xFF06B6D4)),
         );
       }
+      return _buildRankListContent(ctrl);
+    });
+  }
 
-      if (ctrl.ranks.isEmpty) {
-        return Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.leaderboard_outlined,
-                  size: 64, color: Colors.grey.shade300),
-              const SizedBox(height: 12),
-              Text(
-                'Chưa có dữ liệu xếp hạng',
-                style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
-              ),
-            ],
-          ),
-        );
-      }
-
-      return RefreshIndicator(
-        onRefresh: () => ctrl.loadRanks(refresh: true),
-        child: ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: ctrl.ranks.length + (ctrl.hasMore.value ? 1 : 0),
-          itemBuilder: (context, index) {
-            if (index >= ctrl.ranks.length) {
-              ctrl.loadRanks();
-              return const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(16),
-                  child: SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Color(0xFF06B6D4),
-                    ),
-                  ),
-                ),
-              );
-            }
-            return _buildRankItem(ctrl.ranks[index], ctrl);
-          },
+  Widget _buildRankListContent(RankListController ctrl) {
+    if (ctrl.ranks.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.leaderboard_outlined,
+                size: 64, color: Colors.grey.shade300),
+            const SizedBox(height: 12),
+            Text(
+              'Chưa có dữ liệu xếp hạng',
+              style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
+            ),
+          ],
         ),
       );
-    });
+    }
+
+    return RefreshIndicator(
+      onRefresh: () => ctrl.loadRanks(refresh: true),
+      child: ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: ctrl.ranks.length + (ctrl.hasMore.value ? 1 : 0),
+        itemBuilder: (context, index) {
+          if (index >= ctrl.ranks.length) {
+            ctrl.loadRanks();
+            return const Center(
+              child: Padding(
+                padding: EdgeInsets.all(16),
+                child: SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Color(0xFF06B6D4),
+                  ),
+                ),
+              ),
+            );
+          }
+          return _buildRankItem(ctrl.ranks[index], ctrl);
+        },
+      ),
+    );
   }
 
   Widget _buildRankItem(RankEntity rank, RankListController ctrl) {

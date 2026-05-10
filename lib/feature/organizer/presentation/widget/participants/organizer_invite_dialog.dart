@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:events_app/feature/common/domain/enum/app_enum.dart';
 import 'package:events_app/feature/organizer/presentation/controller/organizer_invite_manual_controller.dart';
 import 'package:flutter/material.dart';
@@ -195,8 +194,8 @@ class _OrganizerInviteDialogState extends State<_OrganizerInviteDialog> {
                       color: Colors.white.withOpacity(0.2),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.close,
-                        size: 18, color: Colors.white),
+                    child:
+                        const Icon(Icons.close, size: 18, color: Colors.white),
                   ),
                 ),
         ),
@@ -231,8 +230,7 @@ class _OrganizerInviteDialogState extends State<_OrganizerInviteDialog> {
       ),
       child: Row(
         children: [
-          const Icon(Icons.event_outlined,
-              size: 16, color: Color(0xFF14B8A6)),
+          const Icon(Icons.event_outlined, size: 16, color: Color(0xFF14B8A6)),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
@@ -255,8 +253,9 @@ class _OrganizerInviteDialogState extends State<_OrganizerInviteDialog> {
     final canSelectAttendee =
         widget.recruitmentType == EventRecruitmentType.attendeeOnly ||
             widget.recruitmentType == EventRecruitmentType.both;
-    final canSelectCtv = widget.recruitmentType == EventRecruitmentType.ctvOnly ||
-        widget.recruitmentType == EventRecruitmentType.both;
+    final canSelectCtv =
+        widget.recruitmentType == EventRecruitmentType.ctvOnly ||
+            widget.recruitmentType == EventRecruitmentType.both;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -423,16 +422,18 @@ class _OrganizerInviteDialogState extends State<_OrganizerInviteDialog> {
           decoration: InputDecoration(
             hintText: 'Nhập email người được mời',
             hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 13),
-            prefixIcon:
-                Icon(Icons.mail_outline_rounded, size: 20, color: Colors.grey.shade400),
+            prefixIcon: Icon(Icons.mail_outline_rounded,
+                size: 20, color: Colors.grey.shade400),
             errorText: _emailError,
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFFEF4444), width: 1.2),
+              borderSide:
+                  const BorderSide(color: Color(0xFFEF4444), width: 1.2),
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFFEF4444), width: 1.5),
+              borderSide:
+                  const BorderSide(color: Color(0xFFEF4444), width: 1.5),
             ),
             filled: true,
             fillColor: const Color(0xFFF8FAFC),
@@ -442,9 +443,11 @@ class _OrganizerInviteDialogState extends State<_OrganizerInviteDialog> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFF06B6D4), width: 1.5),
+              borderSide:
+                  const BorderSide(color: Color(0xFF06B6D4), width: 1.5),
             ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           ),
           onChanged: (_) {
             if (_emailError != null) setState(() {});
@@ -507,8 +510,7 @@ class _OrganizerInviteDialogState extends State<_OrganizerInviteDialog> {
           Expanded(
             flex: 2,
             child: ElevatedButton(
-              onPressed:
-                  _inviteCtrl.isSubmitting.value ? null : _handleInvite,
+              onPressed: _inviteCtrl.isSubmitting.value ? null : _handleInvite,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF06B6D4),
                 disabledBackgroundColor: const Color(0xFFBAE6FD),

@@ -64,11 +64,11 @@ void main() {
     registerFallbackValue(FakeNoParams());
     registerFallbackValue(FakeSignupParams());
     registerFallbackValue(const NoParams());
-    registerFallbackValue(SigninWithEmailAndPasswordParams(
+    registerFallbackValue(const SigninWithEmailAndPasswordParams(
       email: 'test@example.com',
       password: 'password123',
     ));
-    registerFallbackValue(SignupWithEmailAndPasswordParams(
+    registerFallbackValue(const SignupWithEmailAndPasswordParams(
       password: 'password123',
       signupParams: SignupParams(
         idToken: 'token',
@@ -282,7 +282,7 @@ void main() {
     test('clearRegisterForm resets all fields and googleAuthResult', () {
       controller.registerFullNameController.text = 'Test User';
       controller.registerEmailController.text = 'test@example.com';
-      controller.googleAuthResult.value = GoogleAuthSession(
+      controller.googleAuthResult.value = const GoogleAuthSession(
         firebaseUid: 'test-uid',
         idToken: 'test-token',
         email: 'test@example.com',

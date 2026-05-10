@@ -26,11 +26,11 @@ void main() {
   setUpAll(() {
     registerFallbackValue(FakeSignupParams());
     registerFallbackValue(const NoParams());
-    registerFallbackValue(SigninWithEmailAndPasswordParams(
+    registerFallbackValue(const SigninWithEmailAndPasswordParams(
       email: 'test@example.com',
       password: 'password123',
     ));
-    registerFallbackValue(SignupWithEmailAndPasswordParams(
+    registerFallbackValue(const SignupWithEmailAndPasswordParams(
       password: 'password123',
       signupParams: SignupParams(
         idToken: 'token',
@@ -38,7 +38,8 @@ void main() {
         email: 'test@example.com',
       ),
     ));
-    registerFallbackValue(const SendPasswordResetEmailParams(email: 'test@example.com'));
+    registerFallbackValue(
+        const SendPasswordResetEmailParams(email: 'test@example.com'));
   });
 
   setUp(() {
@@ -72,10 +73,12 @@ void main() {
 
       final result = await usecase(const NoParams());
 
-      expect(result.fold(
-        (failure) => null,
-        (user) => user,
-      ), fakeUser);
+      expect(
+          result.fold(
+            (failure) => null,
+            (user) => user,
+          ),
+          fakeUser);
       verify(() => mockRepository.getCurrentUser()).called(1);
     });
 
@@ -103,7 +106,7 @@ void main() {
 
     test('tra ve user khi dang nhap thanh cong', () async {
       final fakeUser = createFakeUser();
-      final params = SigninWithEmailAndPasswordParams(
+      const params = SigninWithEmailAndPasswordParams(
         email: 'user@example.com',
         password: 'password123',
       );
@@ -114,10 +117,12 @@ void main() {
 
       final result = await usecase(params);
 
-      expect(result.fold(
-        (failure) => null,
-        (user) => user,
-      ), fakeUser);
+      expect(
+          result.fold(
+            (failure) => null,
+            (user) => user,
+          ),
+          fakeUser);
       verify(() => mockRepository.signInWithEmailAndPassword(
             params.email,
             params.password,
@@ -126,7 +131,7 @@ void main() {
 
     test('propagate failure khi dang nhap that bai', () async {
       const failure = FailureEntity.serverFailure('401', 'Invalid credentials');
-      final params = SigninWithEmailAndPasswordParams(
+      const params = SigninWithEmailAndPasswordParams(
         email: 'user@example.com',
         password: 'wrongpassword',
       );
@@ -153,7 +158,7 @@ void main() {
 
     test('tra ve user khi dang ky thanh cong', () async {
       final fakeUser = createFakeUser(userId: 2);
-      final signupParams = SignupParams(
+      const signupParams = SignupParams(
         idToken: 'id-token',
         isUser: true,
         email: 'newuser@example.com',
@@ -170,15 +175,18 @@ void main() {
 
       final result = await usecase(params);
 
-      expect(result.fold(
-        (failure) => null,
-        (user) => user,
-      ), fakeUser);
+      expect(
+          result.fold(
+            (failure) => null,
+            (user) => user,
+          ),
+          fakeUser);
     });
 
     test('propagate failure khi dang ky that bai', () async {
-      const failure = FailureEntity.serverFailure('409', 'Email already exists');
-      final signupParams = SignupParams(
+      const failure =
+          FailureEntity.serverFailure('409', 'Email already exists');
+      const signupParams = SignupParams(
         idToken: 'id-token',
         isUser: true,
         email: 'existing@example.com',
@@ -247,7 +255,8 @@ void main() {
       final result = await usecase(params);
 
       expect(result.isRight(), true);
-      verify(() => mockRepository.sendPasswordResetEmail(params.email)).called(1);
+      verify(() => mockRepository.sendPasswordResetEmail(params.email))
+          .called(1);
     });
 
     test('propagate failure khi gui email that bai', () async {
@@ -296,7 +305,8 @@ void main() {
     });
 
     test('tra ve failure khi dang nhap Google that bai', () async {
-      const failure = FailureEntity.serverFailure('GOOGLE_ERROR', 'Google sign in failed');
+      const failure =
+          FailureEntity.serverFailure('GOOGLE_ERROR', 'Google sign in failed');
       when(() => mockRepository.signInWithGoogleOnly())
           .thenAnswer((_) async => const Left(failure));
 
@@ -331,7 +341,7 @@ void main() {
 
     test('tra ve user khi dang ky Google thanh cong', () async {
       final fakeUser = createFakeUser(userId: 3);
-      final signupParams = SignupParams(
+      const signupParams = SignupParams(
         idToken: 'google-token',
         isUser: true,
         email: 'google-new@example.com',
@@ -341,15 +351,18 @@ void main() {
 
       final result = await usecase(signupParams);
 
-      expect(result.fold(
-        (failure) => null,
-        (user) => user,
-      ), fakeUser);
+      expect(
+          result.fold(
+            (failure) => null,
+            (user) => user,
+          ),
+          fakeUser);
     });
 
     test('propagate failure khi dang ky Google that bai', () async {
-      const failure = FailureEntity.serverFailure('GOOGLE_SIGNUP_ERROR', 'Signup failed');
-      final signupParams = SignupParams(
+      const failure =
+          FailureEntity.serverFailure('GOOGLE_SIGNUP_ERROR', 'Signup failed');
+      const signupParams = SignupParams(
         idToken: 'google-token',
         isUser: true,
         email: 'google@example.com',

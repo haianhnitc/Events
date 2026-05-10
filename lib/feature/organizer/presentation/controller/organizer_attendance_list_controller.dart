@@ -1,5 +1,4 @@
 import 'package:events_app/feature/common/domain/enum/app_enum.dart';
-import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
 import 'package:get/get.dart';
 import 'package:events_app/api_template/services/failure.dart';
 import 'package:events_app/authentication/presentation/controller/auth_controller.dart';

@@ -18,7 +18,8 @@ class TestAttendanceDatasource extends AttendanceDatasourceImpl {
       : super(client: StubRestClient());
 
   @override
-  Future<ApiResponse<AttendanceQrModel>> getParticipantQr(int eventParticipantId) async {
+  Future<ApiResponse<AttendanceQrModel>> getParticipantQr(
+      int eventParticipantId) async {
     final envelope = getStub ??
         ApiResponse.success({
           'errorCode': 0,
@@ -39,7 +40,8 @@ class TestAttendanceDatasource extends AttendanceDatasourceImpl {
   }
 
   @override
-  Future<ApiResponse<AttendanceScanResultModel>> scanQr(ScanQrParams params) async {
+  Future<ApiResponse<AttendanceScanResultModel>> scanQr(
+      ScanQrParams params) async {
     final envelope = scanStub ??
         ApiResponse.success({
           'errorCode': 0,
@@ -60,12 +62,14 @@ class TestAttendanceDatasource extends AttendanceDatasourceImpl {
   }
 
   @override
-  Future<ApiResponse<AttendanceQrModel>> getEventQr(int eventId, String action) async {
+  Future<ApiResponse<AttendanceQrModel>> getEventQr(
+      int eventId, String action) async {
     return getParticipantQr(eventId);
   }
 
   @override
-  Future<ApiResponse<AttendanceScanResultModel>> selfCheckin(ScanQrParams params) async {
+  Future<ApiResponse<AttendanceScanResultModel>> selfCheckin(
+      ScanQrParams params) async {
     final envelope = selfCheckinStub ??
         ApiResponse.success({
           'errorCode': 0,
@@ -84,7 +88,6 @@ class TestAttendanceDatasource extends AttendanceDatasourceImpl {
       fallbackError: 'Self check-in thất bại',
     );
   }
-
 }
 
 void main() {
@@ -183,7 +186,7 @@ void main() {
 
     test('trả về responseParsing khi object không phải Map', () async {
       final datasource = TestAttendanceDatasource(
-        getStub: ApiResponse.success({
+        getStub: const ApiResponse.success({
           'errorCode': 0,
           'statusCode': 200,
           'message': 'OK',
@@ -253,7 +256,7 @@ void main() {
         }),
       );
 
-      final params = ScanQrParams(
+      const params = ScanQrParams(
         qrContent: 'QR_CONTENT_ABC',
         eventParticipantId: 42,
       );
@@ -290,7 +293,7 @@ void main() {
         }),
       );
 
-      final params = ScanQrParams(
+      const params = ScanQrParams(
         qrContent: 'QR_CONTENT_ABC',
         eventParticipantId: 42,
       );
@@ -323,7 +326,7 @@ void main() {
         ),
       );
 
-      final params = ScanQrParams(
+      const params = ScanQrParams(
         qrContent: 'INVALID_QR',
         eventParticipantId: 42,
       );
@@ -357,7 +360,7 @@ void main() {
         ),
       );
 
-      final params = ScanQrParams(
+      const params = ScanQrParams(
         qrContent: 'QR_CONTENT_ABC',
         eventParticipantId: 42,
       );
@@ -391,7 +394,7 @@ void main() {
         ),
       );
 
-      final params = ScanQrParams(
+      const params = ScanQrParams(
         qrContent: 'QR_CONTENT_ABC',
         eventParticipantId: 42,
       );
@@ -420,7 +423,7 @@ void main() {
 
     test('trả về responseParsing khi object không phải Map', () async {
       final datasource = TestAttendanceDatasource(
-        scanStub: ApiResponse.success({
+        scanStub: const ApiResponse.success({
           'errorCode': 0,
           'statusCode': 200,
           'message': 'OK',
@@ -428,7 +431,7 @@ void main() {
         }),
       );
 
-      final params = ScanQrParams(
+      const params = ScanQrParams(
         qrContent: 'QR_CONTENT_ABC',
         eventParticipantId: 42,
       );
@@ -460,7 +463,7 @@ void main() {
         scanStub: const ApiResponse.serviceUnavailable(),
       );
 
-      final params = ScanQrParams(
+      const params = ScanQrParams(
         qrContent: 'QR_CONTENT_ABC',
         eventParticipantId: 42,
       );

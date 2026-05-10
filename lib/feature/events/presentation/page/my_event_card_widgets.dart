@@ -64,7 +64,9 @@ class EventCard extends StatelessWidget {
     if (participant.participantType != ParticipantType.attendee) return false;
     if (participant.hasCheckedIn == true) return false;
     if (participant.status == ParticipantStatus.attended ||
-        participant.status == ParticipantStatus.noShow) return false;
+        participant.status == ParticipantStatus.noShow) {
+      return false;
+    }
     final myId = AuthController.to.currentUser.value?.userId;
     final isOwner = participant.user?.userId == myId;
     final role = AuthController.to.currentUser.value?.role;
@@ -124,7 +126,8 @@ class EventCard extends StatelessWidget {
   Widget _buildCardHeader() {
     final isCtv = participant.participantType == ParticipantType.ctv;
     final hasTicket = participant.ticketId != null;
-    final isPaid = participant.participantType == ParticipantType.attendee && hasTicket;
+    final isPaid =
+        participant.participantType == ParticipantType.attendee && hasTicket;
 
     return Padding(
       padding: const EdgeInsets.all(14),
@@ -490,18 +493,19 @@ class _QrActionRow extends StatelessWidget {
                         const SizedBox(height: 12),
                         const Text(
                           'Người tổ chức sự kiện quét mã này để checkin cho bạn',
-                          style: TextStyle(fontSize: 12, color: Color(0xff67688C)),
+                          style:
+                              TextStyle(fontSize: 12, color: Color(0xff67688C)),
                         ),
                       ],
                     )
-                  : Center(
+                  : const Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Icons.qr_code_2,
+                          Icon(Icons.qr_code_2,
                               size: 48, color: Color(0xffB0B4C0)),
-                          const SizedBox(height: 12),
-                          const Text(
+                          SizedBox(height: 12),
+                          Text(
                             'Chưa có mã QR',
                             style: TextStyle(
                               fontSize: 14,
@@ -509,10 +513,11 @@ class _QrActionRow extends StatelessWidget {
                               color: Color(0xff273143),
                             ),
                           ),
-                          const SizedBox(height: 4),
-                          const Text(
+                          SizedBox(height: 4),
+                          Text(
                             'QR sẽ có khi sự kiện bắt đầu',
-                            style: TextStyle(fontSize: 12, color: Color(0xff67688C)),
+                            style: TextStyle(
+                                fontSize: 12, color: Color(0xff67688C)),
                           ),
                         ],
                       ),
@@ -549,12 +554,12 @@ class _FeedbackActionRow extends StatelessWidget {
     }
 
     if (isAttended && hasFeedback) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14),
+      return const Padding(
+        padding: EdgeInsets.symmetric(horizontal: 14),
         child: _QrButton(
           label: 'Đã đánh giá',
           icon: Icons.check_circle_outline,
-          color: const Color(0xff22C55E),
+          color: Color(0xff22C55E),
           filled: false,
           onTap: null,
         ),

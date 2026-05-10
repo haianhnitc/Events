@@ -1,11 +1,9 @@
-import 'package:events_app/feature/common/utils/app_date_utils.dart';
 import 'package:events_app/feature/event_management/domain/entity/event_summary_entity.dart';
 import 'package:events_app/feature/participant/domain/entity/participant_entity.dart';
 import 'package:events_app/feature/organizer/presentation/controller/organizer_event_list_controller.dart';
 import 'package:events_app/feature/organizer/presentation/controller/organizer_manual_checkin_controller.dart';
 import 'package:events_app/feature/organizer/presentation/controller/organizer_participant_list_controller.dart';
 import 'package:events_app/feature/organizer/presentation/page/attendance/organizer_barcode_format_page.dart';
-import 'package:events_app/feature/organizer/presentation/page/attendance/organizer_qr_scanner_page.dart';
 import 'package:events_app/feature/organizer/presentation/widget/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -38,8 +36,8 @@ class _OrganizerBarcodeScannerPageState
     _checkInCtrl = Get.put(OrganizerManualCheckinController());
 
     if (widget.eventId != null) {
-      final event = _eventCtrl.events.firstWhereOrNull(
-          (e) => e.eventId == widget.eventId);
+      final event = _eventCtrl.events
+          .firstWhereOrNull((e) => e.eventId == widget.eventId);
       if (event != null) {
         _selectedEvent = event;
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -47,8 +45,8 @@ class _OrganizerBarcodeScannerPageState
         });
       } else {
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          final found = _eventCtrl.events.firstWhereOrNull(
-              (e) => e.eventId == widget.eventId);
+          final found = _eventCtrl.events
+              .firstWhereOrNull((e) => e.eventId == widget.eventId);
           if (found != null && mounted) {
             setState(() => _selectedEvent = found);
             _participantCtrl.setEventFilter(widget.eventId);
@@ -129,6 +127,8 @@ class _OrganizerBarcodeScannerPageState
                                 color: Colors.grey.shade400, fontSize: 14)),
                         isExpanded: true,
                         items: events
+                            .toSet()
+                            .toList()
                             .map((e) => DropdownMenuItem(
                                   value: e,
                                   child: Text(e.title ?? 'N/A',
@@ -197,10 +197,14 @@ class _OrganizerBarcodeScannerPageState
               ),
               child: Stack(
                 children: [
-                  Positioned(top: -1, left: -1, child: _buildCorner(true, true)),
-                  Positioned(top: -1, right: -1, child: _buildCorner(true, false)),
-                  Positioned(bottom: -1, left: -1, child: _buildCorner(false, true)),
-                  Positioned(bottom: -1, right: -1, child: _buildCorner(false, false)),
+                  Positioned(
+                      top: -1, left: -1, child: _buildCorner(true, true)),
+                  Positioned(
+                      top: -1, right: -1, child: _buildCorner(true, false)),
+                  Positioned(
+                      bottom: -1, left: -1, child: _buildCorner(false, true)),
+                  Positioned(
+                      bottom: -1, right: -1, child: _buildCorner(false, false)),
                 ],
               ),
             ),
@@ -211,7 +215,8 @@ class _OrganizerBarcodeScannerPageState
             right: 0,
             child: Center(
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
                   color: const Color(0xFFF59E0B),
                   borderRadius: BorderRadius.circular(20),
@@ -235,10 +240,18 @@ class _OrganizerBarcodeScannerPageState
       height: 20,
       decoration: BoxDecoration(
         border: Border(
-          top: top ? const BorderSide(color: Color(0xFFF59E0B), width: 3) : BorderSide.none,
-          bottom: !top ? const BorderSide(color: Color(0xFFF59E0B), width: 3) : BorderSide.none,
-          left: left ? const BorderSide(color: Color(0xFFF59E0B), width: 3) : BorderSide.none,
-          right: !left ? const BorderSide(color: Color(0xFFF59E0B), width: 3) : BorderSide.none,
+          top: top
+              ? const BorderSide(color: Color(0xFFF59E0B), width: 3)
+              : BorderSide.none,
+          bottom: !top
+              ? const BorderSide(color: Color(0xFFF59E0B), width: 3)
+              : BorderSide.none,
+          left: left
+              ? const BorderSide(color: Color(0xFFF59E0B), width: 3)
+              : BorderSide.none,
+          right: !left
+              ? const BorderSide(color: Color(0xFFF59E0B), width: 3)
+              : BorderSide.none,
         ),
       ),
     );
@@ -251,7 +264,8 @@ class _OrganizerBarcodeScannerPageState
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
         boxShadow: const [
-          BoxShadow(color: Color(0x0F000000), offset: Offset(0, 2), blurRadius: 8)
+          BoxShadow(
+              color: Color(0x0F000000), offset: Offset(0, 2), blurRadius: 8)
         ],
       ),
       child: Column(
@@ -284,7 +298,8 @@ class _OrganizerBarcodeScannerPageState
               ),
               const SizedBox(width: 8),
               Obx(() => OutlinedButton(
-                    onPressed: _manualCodeController.text.isEmpty || _checkInCtrl.isSubmitting.value
+                    onPressed: _manualCodeController.text.isEmpty ||
+                            _checkInCtrl.isSubmitting.value
                         ? null
                         : () => _handleManualCheckOut(),
                     style: OutlinedButton.styleFrom(
@@ -296,14 +311,16 @@ class _OrganizerBarcodeScannerPageState
                     ),
                     child: _checkInCtrl.isSubmitting.value
                         ? const SizedBox(
-                            width: 16, height: 16,
+                            width: 16,
+                            height: 16,
                             child: CircularProgressIndicator(
                                 strokeWidth: 2, color: Color(0xFFF59E0B)),
                           )
                         : const Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.logout, size: 16, color: Color(0xFFF59E0B)),
+                              Icon(Icons.logout,
+                                  size: 16, color: Color(0xFFF59E0B)),
                               SizedBox(width: 4),
                               Text('Check-out',
                                   style: TextStyle(
@@ -315,7 +332,8 @@ class _OrganizerBarcodeScannerPageState
                   )),
               const SizedBox(width: 8),
               Obx(() => ElevatedButton(
-                    onPressed: _manualCodeController.text.isEmpty || _checkInCtrl.isSubmitting.value
+                    onPressed: _manualCodeController.text.isEmpty ||
+                            _checkInCtrl.isSubmitting.value
                         ? null
                         : () => _handleManualCheckin(),
                     style: ElevatedButton.styleFrom(
@@ -328,7 +346,8 @@ class _OrganizerBarcodeScannerPageState
                     ),
                     child: _checkInCtrl.isSubmitting.value
                         ? const SizedBox(
-                            width: 16, height: 16,
+                            width: 16,
+                            height: 16,
                             child: CircularProgressIndicator(
                                 strokeWidth: 2, color: Colors.white),
                           )
@@ -359,7 +378,9 @@ class _OrganizerBarcodeScannerPageState
     if (code.isEmpty) return;
 
     final participant = _participantCtrl.participants.firstWhereOrNull(
-      (p) => p.participantQrContent == code || p.participantQrContent?.contains(code) == true,
+      (p) =>
+          p.participantQrContent == code ||
+          p.participantQrContent?.contains(code) == true,
     );
 
     if (participant == null) {
@@ -386,7 +407,9 @@ class _OrganizerBarcodeScannerPageState
     if (code.isEmpty) return;
 
     final participant = _participantCtrl.participants.firstWhereOrNull(
-      (p) => p.participantQrContent == code || p.participantQrContent?.contains(code) == true,
+      (p) =>
+          p.participantQrContent == code ||
+          p.participantQrContent?.contains(code) == true,
     );
 
     if (participant == null) {
@@ -408,51 +431,60 @@ class _OrganizerBarcodeScannerPageState
 
   Widget _buildParticipantList() {
     return Obx(() {
-      if (_participantCtrl.isLoading.value && _participantCtrl.participants.isEmpty) {
-        return const Center(child: CircularProgressIndicator());
+      if (_participantCtrl.isLoading.value &&
+          _participantCtrl.participants.isEmpty) {
+        return const Center(
+          child: CircularProgressIndicator(color: Color(0xff06B6D4)),
+        );
       }
-      final participants = _participantCtrl.participants;
-      return Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          boxShadow: const [
-            BoxShadow(color: Color(0x0F000000), offset: Offset(0, 2), blurRadius: 8)
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Icon(Icons.people_outline, size: 18, color: Color(0xff64748B)),
-                const SizedBox(width: 8),
-                const Text('Danh sách người tham gia',
-                    style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xff273143))),
-                const Spacer(),
-                Text('${participants.length} người',
-                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
-              ],
-            ),
-            const SizedBox(height: 8),
-            if (participants.isEmpty)
-              const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Text('Chưa có người tham gia nào',
-                      style: TextStyle(color: Color(0xff94A3B8))),
-                ),
-              )
-            else
-              ...participants.map((p) => _buildParticipantItem(p)),
-          ],
-        ),
-      );
+      return _buildParticipantListContent();
     });
+  }
+
+  Widget _buildParticipantListContent() {
+    final participants = _participantCtrl.participants;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: const [
+          BoxShadow(
+              color: Color(0x0F000000), offset: Offset(0, 2), blurRadius: 8)
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.people_outline,
+                  size: 18, color: Color(0xff64748B)),
+              const SizedBox(width: 8),
+              const Text('Danh sách người tham gia',
+                  style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xff273143))),
+              const Spacer(),
+              Text('${participants.length} người',
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+            ],
+          ),
+          const SizedBox(height: 8),
+          if (participants.isEmpty)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.all(16),
+                child: Text('Chưa có người tham gia nào',
+                    style: TextStyle(color: Color(0xff94A3B8))),
+              ),
+            )
+          else
+            ...participants.map((p) => _buildParticipantItem(p)),
+        ],
+      ),
+    );
   }
 
   Widget _buildParticipantItem(ParticipantEntity p) {
@@ -489,7 +521,8 @@ class _OrganizerBarcodeScannerPageState
                         fontWeight: FontWeight.w600,
                         color: Color(0xff273143))),
                 Text(code,
-                    style: TextStyle(fontSize: 11, color: Colors.grey.shade600)),
+                    style:
+                        TextStyle(fontSize: 11, color: Colors.grey.shade600)),
               ],
             ),
           ),

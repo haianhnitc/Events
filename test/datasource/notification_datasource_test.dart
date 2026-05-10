@@ -72,7 +72,7 @@ class TestNotificationDatasource extends NotificationDatasourceImpl {
   @override
   Future<ApiResponse<void>> markAsRead(int id) async {
     final envelope = markAsReadStub ??
-        ApiResponse.success({
+        const ApiResponse.success({
           'errorCode': 0,
           'statusCode': 200,
           'message': 'OK',
@@ -80,7 +80,7 @@ class TestNotificationDatasource extends NotificationDatasourceImpl {
         });
     return forwardEnvelopeResponse<void>(
       envelope,
-      (_) => null,
+      (_) {},
       fallbackError: 'Cập nhật trạng thái thất bại',
     );
   }
@@ -88,7 +88,7 @@ class TestNotificationDatasource extends NotificationDatasourceImpl {
   @override
   Future<ApiResponse<void>> markAllAsRead() async {
     final envelope = markAllAsReadStub ??
-        ApiResponse.success({
+        const ApiResponse.success({
           'errorCode': 0,
           'statusCode': 200,
           'message': 'OK',
@@ -96,7 +96,7 @@ class TestNotificationDatasource extends NotificationDatasourceImpl {
         });
     return forwardEnvelopeResponse<void>(
       envelope,
-      (_) => null,
+      (_) {},
       fallbackError: 'Cập nhật trạng thái thất bại',
     );
   }
@@ -143,7 +143,7 @@ void main() {
 
     test('trả về list rỗng khi không có notification', () async {
       final datasource = TestNotificationDatasource(
-        listStub: ApiResponse.success({
+        listStub: const ApiResponse.success({
           'errorCode': 0,
           'statusCode': 200,
           'message': 'OK',
@@ -323,7 +323,7 @@ void main() {
   group('markAsRead', () {
     test('trả về success khi đánh dấu thành công', () async {
       final datasource = TestNotificationDatasource(
-        markAsReadStub: ApiResponse.success({
+        markAsReadStub: const ApiResponse.success({
           'errorCode': 0,
           'statusCode': 200,
           'message': 'OK',
@@ -415,7 +415,7 @@ void main() {
   group('markAllAsRead', () {
     test('trả về success khi đánh dấu tất cả thành công', () async {
       final datasource = TestNotificationDatasource(
-        markAllAsReadStub: ApiResponse.success({
+        markAllAsReadStub: const ApiResponse.success({
           'errorCode': 0,
           'statusCode': 200,
           'message': 'OK',

@@ -112,6 +112,10 @@ class OrganizerCreateEventController extends GetxController {
         }
       }
     }
+
+    if (event.eventId != null) {
+      _loadFeedbackQuestions(event.eventId!);
+    }
   }
 
   void initForCreate() {
@@ -402,9 +406,10 @@ class OrganizerCreateEventController extends GetxController {
 
   String? validateStartTime(DateTime? value) {
     if (value == null) return 'Vui lòng chọn thời gian bắt đầu';
-    if (value.isBefore(DateTime.now())) {
-      return 'Thời gian bắt đầu phải sau thời điểm hiện tại';
-    }
+    // TODO: uncomment when server time sync is available
+    // if (value.isBefore(DateTime.now())) {
+    //   return 'Thời gian bắt đầu phải sau thời điểm hiện tại';
+    // }
     return null;
   }
 

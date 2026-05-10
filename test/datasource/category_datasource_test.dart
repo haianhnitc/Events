@@ -80,7 +80,7 @@ void main() {
 
     test('trả về list rỗng khi không có category', () async {
       final datasource = TestCategoryDatasource(
-        categoriesStub: ApiResponse.success({
+        categoriesStub: const ApiResponse.success({
           'errorCode': 0,
           'statusCode': 200,
           'message': 'OK',
@@ -165,7 +165,7 @@ void main() {
 
     test('trả về responseParsing khi object không phải Map', () async {
       final datasource = TestCategoryDatasource(
-        categoriesStub: ApiResponse.success({
+        categoriesStub: const ApiResponse.success({
           'errorCode': 0,
           'statusCode': 200,
           'message': 'OK',

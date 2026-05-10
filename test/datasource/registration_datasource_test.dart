@@ -99,7 +99,7 @@ class TestRegistrationDatasource extends RegistrationDatasourceImpl {
   @override
   Future<ApiResponse<void>> cancelRegistration(int id) async {
     final envelope = cancelStub ??
-        ApiResponse.success({
+        const ApiResponse.success({
           'errorCode': 0,
           'statusCode': 200,
           'message': 'OK',
@@ -107,7 +107,7 @@ class TestRegistrationDatasource extends RegistrationDatasourceImpl {
         });
     return forwardEnvelopeResponse<void>(
       envelope,
-      (_) => null,
+      (_) {},
       fallbackError: 'Hủy đăng ký thất bại',
     );
   }
@@ -169,7 +169,8 @@ void main() {
     test('trả về conflict khi đã đăng ký rồi', () async {
       final datasource = TestRegistrationDatasource(
         createStub: const ApiResponse.conflict(
-          ApiResponseError(code: '409', message: 'Already registered', errors: null),
+          ApiResponseError(
+              code: '409', message: 'Already registered', errors: null),
         ),
       );
 
@@ -301,7 +302,7 @@ void main() {
 
     test('trả về list rỗng khi content rỗng', () async {
       final datasource = TestRegistrationDatasource(
-        getMyRegistrationsStub: ApiResponse.success({
+        getMyRegistrationsStub: const ApiResponse.success({
           'errorCode': 0,
           'statusCode': 200,
           'message': 'OK',
@@ -394,7 +395,7 @@ void main() {
   group('cancelRegistration', () {
     test('trả về void khi thành công', () async {
       final datasource = TestRegistrationDatasource(
-        cancelStub: ApiResponse.success({
+        cancelStub: const ApiResponse.success({
           'errorCode': 0,
           'statusCode': 200,
           'message': 'OK',
@@ -453,7 +454,8 @@ void main() {
     test('trả về badRequest khi đăng ký đã bị hủy rồi', () async {
       final datasource = TestRegistrationDatasource(
         cancelStub: const ApiResponse.badRequest(
-          ApiResponseError(code: '400', message: 'Already cancelled', errors: []),
+          ApiResponseError(
+              code: '400', message: 'Already cancelled', errors: []),
         ),
       );
 

@@ -79,6 +79,7 @@ class OrganizerEventStatisticsController extends GetxController {
     isLoadingAnalytics.value = false;
   }
 
+  @override
   Future<void> refresh() async {
     if (isRefreshing.value) return;
     isRefreshing.value = true;

@@ -1,7 +1,7 @@
 import 'package:events_app/feature/common/domain/enum/app_enum.dart';
 import 'package:events_app/feature/common/utils/app_date_utils.dart';
-import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
 import 'package:events_app/feature/organizer/presentation/controller/organizer_staff_application_detail_controller.dart';
+import 'package:events_app/feature/organizer/presentation/page/events/organizer_event_detail_page.dart';
 import 'package:events_app/feature/organizer/presentation/widget/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -131,10 +131,23 @@ class _OrganizerStaffApplicationDetailPageState
                   children: [
                     Icon(Icons.event, size: 13, color: Colors.grey.shade600),
                     const SizedBox(width: 4),
-                    Text(
-                      app.eventTitle ?? 'N/A',
-                      style:
-                          TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () {
+                          if (app.eventId != null) {
+                            Get.to(() => OrganizerEventDetailPage(eventId: app.eventId!));
+                          }
+                        },
+                        child: Text(
+                          app.eventTitle ?? 'N/A',
+                          style: TextStyle(
+                              fontSize: 12,
+                              color: const Color(0xFF06B6D4),
+                              fontWeight: FontWeight.w500,
+                              decoration: TextDecoration.underline,
+                              decorationColor: const Color(0xFF06B6D4)),
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -225,8 +238,8 @@ class _OrganizerStaffApplicationDetailPageState
     );
   }
 
-  Widget _buildAnswerItem(
-      String num, String question, String answer, RequirementQuestionType? type) {
+  Widget _buildAnswerItem(String num, String question, String answer,
+      RequirementQuestionType? type) {
     IconData typeIcon;
     Color typeColor;
 
@@ -307,7 +320,7 @@ class _OrganizerStaffApplicationDetailPageState
         Obx(() => SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                onPressed: _ctrl.isActionLoading.value
+                onPressed: _ctrl.isApproveLoading.value || _ctrl.isRejectLoading.value
                     ? null
                     : () => _ctrl.showApproveDialog(),
                 style: ElevatedButton.styleFrom(
@@ -317,7 +330,7 @@ class _OrganizerStaffApplicationDetailPageState
                       borderRadius: BorderRadius.circular(10)),
                   elevation: 0,
                 ),
-                icon: _ctrl.isActionLoading.value
+                icon: _ctrl.isApproveLoading.value
                     ? const SizedBox(
                         width: 18,
                         height: 18,
@@ -327,7 +340,7 @@ class _OrganizerStaffApplicationDetailPageState
                     : const Icon(Icons.check_circle_outline,
                         color: Colors.white, size: 18),
                 label: Text(
-                  _ctrl.isActionLoading.value ? 'Đang xử lý...' : 'Duyệt đơn',
+                  _ctrl.isApproveLoading.value ? 'Đang xử lý...' : 'Duyệt đơn',
                   style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
@@ -336,22 +349,38 @@ class _OrganizerStaffApplicationDetailPageState
               ),
             )),
         const SizedBox(height: 10),
-        SizedBox(
-          width: double.infinity,
-          child: OutlinedButton.icon(
-            onPressed: () => _ctrl.showRejectDialog(),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: const Color(0xFFEF4444),
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              side: const BorderSide(color: Color(0xFFEF4444)),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)),
-            ),
-            icon: const Icon(Icons.cancel_outlined, size: 18),
-            label: const Text('Từ chối đơn',
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-          ),
-        ),
+        Obx(() => SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: _ctrl.isApproveLoading.value || _ctrl.isRejectLoading.value
+                    ? null
+                    : () => _ctrl.showRejectDialog(),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFFEF4444),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  side: const BorderSide(color: Color(0xFFEF4444)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
+                ),
+                icon: _ctrl.isRejectLoading.value
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: Color(0xFFEF4444)),
+                      )
+                    : const Icon(Icons.cancel_outlined, size: 18),
+                label: Text(
+                  _ctrl.isRejectLoading.value ? 'Đang xử lý...' : 'Từ chối đơn',
+                  style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: _ctrl.isRejectLoading.value
+                          ? const Color(0xFFEF4444).withOpacity(0.6)
+                          : const Color(0xFFEF4444)),
+                ),
+              ),
+            )),
       ],
     );
   }

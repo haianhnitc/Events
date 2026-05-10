@@ -24,7 +24,8 @@ void main() {
   });
 
   group('getFeedbackQuestions', () {
-    test('trả về list feedback question entity khi datasource thành công', () async {
+    test('trả về list feedback question entity khi datasource thành công',
+        () async {
       final models = [
         FeedbackQuestionModel.fromJson(fakeFeedbackQuestionJson(id: 1)),
         FeedbackQuestionModel.fromJson(fakeFeedbackQuestionJson(id: 2)),
@@ -52,10 +53,12 @@ void main() {
 
     test('trả về empty list khi datasource trả empty', () async {
       when(() => mockDatasource.getFeedbackQuestions(
-            any(),
-            page: any(named: 'page'),
-            size: any(named: 'size'),
-          )).thenAnswer((_) async => successResponse<List<FeedbackQuestionModel>>([]));
+                any(),
+                page: any(named: 'page'),
+                size: any(named: 'size'),
+              ))
+          .thenAnswer(
+              (_) async => successResponse<List<FeedbackQuestionModel>>([]));
 
       final result = await repository.getFeedbackQuestions(
         const GetFeedbackQuestionsParams(eventId: 1),
@@ -69,11 +72,12 @@ void main() {
 
     test('trả về FailureEntity khi datasource trả unauthorized', () async {
       when(() => mockDatasource.getFeedbackQuestions(
-            any(),
-            page: any(named: 'page'),
-            size: any(named: 'size'),
-          )).thenAnswer(
-          (_) async => errorResponse<List<FeedbackQuestionModel>>(unauthorizedResponse()));
+                any(),
+                page: any(named: 'page'),
+                size: any(named: 'size'),
+              ))
+          .thenAnswer((_) async => errorResponse<List<FeedbackQuestionModel>>(
+              unauthorizedResponse()));
 
       final result = await repository.getFeedbackQuestions(
         const GetFeedbackQuestionsParams(eventId: 1),
@@ -112,7 +116,7 @@ void main() {
       when(() => mockDatasource.submitFeedback(any()))
           .thenAnswer((_) async => successResponse(model));
 
-      final params = SubmitFeedbackParams(eventId: 1, answers: []);
+      const params = SubmitFeedbackParams(eventId: 1, answers: []);
       final result = await repository.submitFeedback(params);
 
       expect(result.isRight(), isTrue);
@@ -123,10 +127,10 @@ void main() {
     });
 
     test('trả về FailureEntity khi datasource trả badRequest', () async {
-      when(() => mockDatasource.submitFeedback(any()))
-          .thenAnswer((_) async => errorResponse<FeedbackModel>(badRequestResponse()));
+      when(() => mockDatasource.submitFeedback(any())).thenAnswer(
+          (_) async => errorResponse<FeedbackModel>(badRequestResponse()));
 
-      final params = SubmitFeedbackParams(eventId: 1, answers: []);
+      const params = SubmitFeedbackParams(eventId: 1, answers: []);
       final result = await repository.submitFeedback(params);
 
       expect(result.isLeft(), isTrue);
@@ -137,7 +141,7 @@ void main() {
       when(() => mockDatasource.submitFeedback(any()))
           .thenAnswer((_) async => successResponse(model));
 
-      final params = SubmitFeedbackParams(eventId: 1, answers: []);
+      const params = SubmitFeedbackParams(eventId: 1, answers: []);
       final result = await repository.submitFeedback(params);
 
       result.fold(

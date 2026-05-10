@@ -26,6 +26,27 @@ class OrganizerRecruitmentListController extends GetxController {
   final Rx<int?> filterEventId = Rx<int?>(null);
   final RxString searchQuery = ''.obs;
 
+  static final Rx<(int, bool?)> recruitmentStateUpdate =
+      Rx<(int, bool?)>((0, null));
+
+  @override
+  void onInit() {
+    super.onInit();
+    loadRecruitments(refresh: true);
+    _watchRecruitmentUpdates();
+  }
+
+  void _watchRecruitmentUpdates() {
+    ever(recruitmentStateUpdate, (tuple) {
+      final (updatedId, newIsOpen) = tuple;
+      final index = recruitments.indexWhere(
+          (r) => r.ctvRecruitmentId == updatedId);
+      if (index >= 0) {
+        recruitments[index] = recruitments[index].copyWith(isOpen: newIsOpen);
+      }
+    });
+  }
+
   Future<void> loadRecruitments({bool refresh = false}) async {
     if (isLoading.value) return;
     if (refresh) {
@@ -112,68 +133,10 @@ class OrganizerRecruitmentListController extends GetxController {
       (failure) => _handleFailure(failure),
       (_) {
         AppSnackbarUtils.showSuccess('Thành công', 'Đóng tuyển CTV thành công');
+        recruitmentStateUpdate.value = (recruitmentId, false);
         final index = recruitments.indexWhere((r) => r.ctvRecruitmentId == recruitmentId);
         if (index >= 0) {
           recruitments[index] = recruitments[index].copyWith(isOpen: false);
-        }
-      },
-    );
-  }
-
-  Future<void> reopenRecruitment(int recruitmentId) async {
-    final confirmed = await Get.dialog<bool>(
-      AlertDialog(
-        title: const Text('Xác nhận mở lại tuyển'),
-        content: const Text('Bạn có chắc muốn mở lại tuyển CTV không?'),
-        actions: [
-          TextButton(onPressed: () => Get.back(result: false), child: const Text('Hủy')),
-          TextButton(onPressed: () => Get.back(result: true), child: const Text('Mở lại')),
-        ],
-      ),
-    );
-    if (confirmed != true) return;
-
-    final recruitment = recruitments.firstWhereOrNull((r) => r.ctvRecruitmentId == recruitmentId);
-    if (recruitment == null) return;
-
-    final params = CreateRecruitmentParams(
-      eventId: recruitment.eventId ?? 0,
-      title: recruitment.title,
-      description: recruitment.description,
-      roleName: recruitment.roleName,
-      quantity: recruitment.quantity,
-      rewardCoin: recruitment.rewardCoin,
-      youthUnionPoint: recruitment.youthUnionPoint,
-      cashRewardAmount: recruitment.cashRewardAmount,
-      certificateName: recruitment.certificateName,
-      startTime: recruitment.startTime,
-      isOpen: true,
-    );
-
-    final result = await _updateRecruitmentUsecase(
-      UpdateRecruitmentParamsWrapper(
-        id: recruitmentId,
-        params: UpdateRecruitmentParams(
-          title: recruitment.title,
-          description: recruitment.description,
-          roleName: recruitment.roleName,
-          quantity: recruitment.quantity,
-          rewardCoin: recruitment.rewardCoin,
-          youthUnionPoint: recruitment.youthUnionPoint,
-          cashRewardAmount: recruitment.cashRewardAmount,
-          certificateName: recruitment.certificateName,
-          startTime: recruitment.startTime,
-          isOpen: true,
-        ),
-      ),
-    );
-    result.fold(
-      (failure) => _handleFailure(failure),
-      (updated) {
-        AppSnackbarUtils.showSuccess('Thành công', 'Mở lại tuyển CTV thành công');
-        final index = recruitments.indexWhere((r) => r.ctvRecruitmentId == recruitmentId);
-        if (index >= 0) {
-          recruitments[index] = recruitments[index].copyWith(isOpen: true);
         }
       },
     );

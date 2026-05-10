@@ -7,7 +7,8 @@ import 'package:events_app/feature/staff_application/domain/usecase/staff_applic
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
-class MockStaffApplicationRepository extends Mock implements StaffApplicationRepository {}
+class MockStaffApplicationRepository extends Mock
+    implements StaffApplicationRepository {}
 
 class FakeApplyCtvParams extends Fake implements ApplyCtvParams {}
 
@@ -22,8 +23,10 @@ void main() {
 
   setUp(() {
     mockRepository = MockStaffApplicationRepository();
-    createStaffApplicationUsecase = CreateStaffApplicationUsecase(mockRepository);
-    getStaffApplicationByIdUsecase = GetStaffApplicationByIdUsecase(mockRepository);
+    createStaffApplicationUsecase =
+        CreateStaffApplicationUsecase(mockRepository);
+    getStaffApplicationByIdUsecase =
+        GetStaffApplicationByIdUsecase(mockRepository);
   });
 
   group('CreateStaffApplicationUsecase', () {
@@ -35,7 +38,7 @@ void main() {
       when(() => mockRepository.createApplication(any()))
           .thenAnswer((_) async => Right(entity));
 
-      final params = ApplyCtvParams(eventId: 1, answers: []);
+      const params = ApplyCtvParams(eventId: 1, answers: []);
       final result = await createStaffApplicationUsecase(params);
 
       expect(result.isRight(), isTrue);
@@ -46,22 +49,22 @@ void main() {
     });
 
     test('trả về Left khi repository trả conflict', () async {
-      when(() => mockRepository.createApplication(any()))
-          .thenAnswer((_) async =>
+      when(() => mockRepository.createApplication(any())).thenAnswer(
+          (_) async =>
               const Left(FailureEntity.serverFailure('409', 'Conflict')));
 
-      final params = ApplyCtvParams(eventId: 1, answers: []);
+      const params = ApplyCtvParams(eventId: 1, answers: []);
       final result = await createStaffApplicationUsecase(params);
 
       expect(result.isLeft(), isTrue);
     });
 
     test('trả về Left khi repository thất bại', () async {
-      when(() => mockRepository.createApplication(any()))
-          .thenAnswer((_) async =>
+      when(() => mockRepository.createApplication(any())).thenAnswer(
+          (_) async =>
               const Left(FailureEntity.serverFailure('500', 'Server error')));
 
-      final params = ApplyCtvParams(eventId: 1, answers: []);
+      const params = ApplyCtvParams(eventId: 1, answers: []);
       final result = await createStaffApplicationUsecase(params);
 
       expect(result.isLeft(), isTrue);
@@ -87,8 +90,8 @@ void main() {
     });
 
     test('trả về Left khi repository trả notFound', () async {
-      when(() => mockRepository.getApplicationById(any()))
-          .thenAnswer((_) async =>
+      when(() => mockRepository.getApplicationById(any())).thenAnswer(
+          (_) async =>
               const Left(FailureEntity.serverFailure('404', 'Not found')));
 
       final result = await getStaffApplicationByIdUsecase(9999);

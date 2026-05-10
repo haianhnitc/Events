@@ -9,14 +9,17 @@ import 'package:events_app/feature/registration/domain/usecase/registration_usec
 import 'package:injectable/injectable.dart';
 
 abstract class RegistrationDatasource {
-  Future<ApiResponse<ParticipantModel>> createRegistration(CreateRegistrationParams params);
-  Future<ApiResponse<List<ParticipantModel>>> getMyRegistrations(int userId, {int page, int size});
+  Future<ApiResponse<ParticipantModel>> createRegistration(
+      CreateRegistrationParams params);
+  Future<ApiResponse<List<ParticipantModel>>> getMyRegistrations(int userId,
+      {int page, int size});
   Future<ApiResponse<ParticipantModel>> getRegistrationById(int id);
   Future<ApiResponse<void>> cancelRegistration(int id);
 }
 
 @Injectable(as: RegistrationDatasource)
-class RegistrationDatasourceImpl extends ApiProvider implements RegistrationDatasource {
+class RegistrationDatasourceImpl extends ApiProvider
+    implements RegistrationDatasource {
   RegistrationDatasourceImpl({RestClient? client})
       : super(client: client ?? NRDRestClient());
 
@@ -104,12 +107,14 @@ class RegistrationDatasourceImpl extends ApiProvider implements RegistrationData
     try {
       final response = await delete<Map<String, dynamic>>(
         ApiPath.registrationCancel(id),
-        (data) => data == null ? <String, dynamic>{} : Map<String, dynamic>.from(data as Map),
+        (data) => data == null
+            ? <String, dynamic>{}
+            : Map<String, dynamic>.from(data as Map),
         requireAuth: true,
       );
       return forwardEnvelopeResponse<void>(
         response,
-        (_) => null,
+        (_) {},
         fallbackError: 'Hủy đăng ký thất bại',
       );
     } catch (e) {

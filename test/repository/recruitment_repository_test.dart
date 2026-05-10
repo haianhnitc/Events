@@ -1,5 +1,3 @@
-import 'package:dartz/dartz.dart';
-import 'package:events_app/api_template/services/failure.dart';
 import 'package:events_app/feature/recruitment/data/datasource/ctv_recruitment_datasource.dart';
 import 'package:events_app/feature/recruitment/data/model/ctv_recruitment_model.dart';
 import 'package:events_app/feature/recruitment/data/repository/ctv_recruitment_repository_impl.dart';
@@ -10,7 +8,8 @@ import 'package:mocktail/mocktail.dart';
 import '../helpers/fake_data.dart';
 import '../helpers/mock_rest_client.dart';
 
-class MockCtvRecruitmentDatasource extends Mock implements CtvRecruitmentDatasource {}
+class MockCtvRecruitmentDatasource extends Mock
+    implements CtvRecruitmentDatasource {}
 
 void main() {
   late MockCtvRecruitmentDatasource mockDatasource;
@@ -22,7 +21,8 @@ void main() {
   });
 
   group('getRecruitments', () {
-    test('trả về list CtvRecruitmentEntity khi datasource thành công', () async {
+    test('trả về list CtvRecruitmentEntity khi datasource thành công',
+        () async {
       final models = [
         CtvRecruitmentModel.fromJson(fakeCtvRecruitmentJson(id: 1)),
         CtvRecruitmentModel.fromJson(fakeCtvRecruitmentJson(id: 2)),
@@ -50,11 +50,12 @@ void main() {
 
     test('trả về empty list khi datasource trả rỗng', () async {
       when(() => mockDatasource.getRecruitments(
-            eventId: any(named: 'eventId'),
-            page: any(named: 'page'),
-            size: any(named: 'size'),
-          )).thenAnswer(
-          (_) async => successResponse<List<CtvRecruitmentModel>>([]));
+                eventId: any(named: 'eventId'),
+                page: any(named: 'page'),
+                size: any(named: 'size'),
+              ))
+          .thenAnswer(
+              (_) async => successResponse<List<CtvRecruitmentModel>>([]));
 
       final result = await repository.getRecruitments(
         const GetRecruitmentsParams(page: 0, size: 20),
@@ -68,11 +69,12 @@ void main() {
 
     test('trả về FailureEntity khi datasource trả error', () async {
       when(() => mockDatasource.getRecruitments(
-            eventId: any(named: 'eventId'),
-            page: any(named: 'page'),
-            size: any(named: 'size'),
-          )).thenAnswer(
-          (_) async => errorResponse<List<CtvRecruitmentModel>>(serverErrorResponse()));
+                eventId: any(named: 'eventId'),
+                page: any(named: 'page'),
+                size: any(named: 'size'),
+              ))
+          .thenAnswer((_) async =>
+              errorResponse<List<CtvRecruitmentModel>>(serverErrorResponse()));
 
       final result = await repository.getRecruitments(
         const GetRecruitmentsParams(page: 0, size: 20),
@@ -121,8 +123,8 @@ void main() {
     });
 
     test('trả về Left khi datasource trả notFound', () async {
-      when(() => mockDatasource.getRecruitmentById(any()))
-          .thenAnswer((_) async => errorResponse<CtvRecruitmentModel>(notFoundResponse()));
+      when(() => mockDatasource.getRecruitmentById(any())).thenAnswer(
+          (_) async => errorResponse<CtvRecruitmentModel>(notFoundResponse()));
 
       final result = await repository.getRecruitmentById(9999);
 

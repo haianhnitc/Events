@@ -8,7 +8,8 @@ import 'package:events_app/feature/user_management/domain/entity/organization_pr
 import 'package:events_app/feature/user_management/domain/entity/organization_dashboard_entity.dart';
 import 'package:events_app/feature/organizer/organization/domain/usecase/organization_params.dart';
 
-class FakeOrganizationProfileUpdateParams extends Fake implements OrganizationProfileUpdateParams {}
+class FakeOrganizationProfileUpdateParams extends Fake
+    implements OrganizationProfileUpdateParams {}
 
 class MockOrganizerOrganizationRepository extends Mock
     implements OrganizerOrganizationRepository {}
@@ -22,7 +23,8 @@ void main() {
 
   setUpAll(() {
     registerFallbackValue(FakeOrganizationProfileUpdateParams());
-    registerFallbackValue(UpdateOrganizerProfileParams(organizationId: 1, params: const OrganizationProfileUpdateParams()));
+    registerFallbackValue(const UpdateOrganizerProfileParams(
+        organizationId: 1, params: OrganizationProfileUpdateParams()));
   });
 
   group('UpdateOrganizerProfileUsecase', () {
@@ -37,9 +39,10 @@ void main() {
         (_) async => Right(OrganizationProfileEntity()),
       );
 
-      final params = UpdateOrganizerProfileParams(
+      const params = UpdateOrganizerProfileParams(
         organizationId: 1,
-        params: const OrganizationProfileUpdateParams(organizationName: 'Updated Org'),
+        params: const OrganizationProfileUpdateParams(
+            organizationName: 'Updated Org'),
       );
       final result = await usecase(params);
 
@@ -48,10 +51,11 @@ void main() {
 
     test('400 returns Left', () async {
       when(() => mockRepository.updateProfile(any(), any())).thenAnswer(
-        (_) async => Left(FailureEntity.serverFailure('400', 'Invalid data')),
+        (_) async =>
+            const Left(FailureEntity.serverFailure('400', 'Invalid data')),
       );
 
-      final params = UpdateOrganizerProfileParams(
+      const params = UpdateOrganizerProfileParams(
         organizationId: 1,
         params: const OrganizationProfileUpdateParams(organizationName: ''),
       );
@@ -80,7 +84,8 @@ void main() {
 
     test('401 returns Left', () async {
       when(() => mockRepository.getDashboard(any())).thenAnswer(
-        (_) async => Left(FailureEntity.serverFailure('401', 'Unauthorized')),
+        (_) async =>
+            const Left(FailureEntity.serverFailure('401', 'Unauthorized')),
       );
 
       final result = await usecase(1);

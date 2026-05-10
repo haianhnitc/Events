@@ -9,6 +9,10 @@ import 'package:events_app/feature/user_management/domain/repository/user_reposi
 import 'package:events_app/feature/event_management/domain/entity/event_summary_entity.dart';
 import 'package:events_app/feature/common/domain/enum/app_enum.dart';
 import 'package:events_app/api_template/services/failure.dart';
+import 'package:events_app/feature/payment/domain/entity/transaction_entity.dart';
+import 'package:events_app/feature/payment/presentation/page/shared_payment_flow_args.dart';
+import 'package:events_app/feature/payment/presentation/page/shared_payment_flow_page.dart';
+import 'package:events_app/feature/user_management/presentation/controller/portfolio_list_controller.dart';
 
 String _participantTypeName(ParticipantType? type) {
   if (type == null) return 'ATTENDEE';
@@ -144,7 +148,9 @@ class _PortfolioCreatePageState extends State<PortfolioCreatePage> {
             borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
           ),
           padding: EdgeInsets.only(
-            left: 20, right: 20, top: 20,
+            left: 20,
+            right: 20,
+            top: 20,
             bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
           ),
           child: SingleChildScrollView(
@@ -154,7 +160,8 @@ class _PortfolioCreatePageState extends State<PortfolioCreatePage> {
               children: [
                 Center(
                   child: Container(
-                    width: 40, height: 4,
+                    width: 40,
+                    height: 4,
                     decoration: BoxDecoration(
                       color: Colors.grey.shade300,
                       borderRadius: BorderRadius.circular(2),
@@ -162,21 +169,26 @@ class _PortfolioCreatePageState extends State<PortfolioCreatePage> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                const Text('Tuỳ chỉnh hiển thị', style: TextStyle(
-                  fontSize: 17, fontWeight: FontWeight.w700,
-                  color: Color(0xff273143),
-                )),
+                const Text('Tuỳ chỉnh hiển thị',
+                    style: TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xff273143),
+                    )),
                 const SizedBox(height: 4),
-                Text(item.event.title ?? '', style: TextStyle(
-                  fontSize: 13, color: Colors.grey.shade600,
-                )),
+                Text(item.event.title ?? '',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.grey.shade600,
+                    )),
                 const SizedBox(height: 16),
                 TextField(
                   controller: titleCtrl,
                   decoration: InputDecoration(
                     labelText: 'Tiêu đề hiển thị',
                     hintText: 'VD: CTV tại Tech Summit',
-                    filled: true, fillColor: Colors.grey.shade50,
+                    filled: true,
+                    fillColor: Colors.grey.shade50,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide(color: Colors.grey.shade300),
@@ -189,7 +201,8 @@ class _PortfolioCreatePageState extends State<PortfolioCreatePage> {
                   decoration: InputDecoration(
                     labelText: 'Vai trò',
                     hintText: 'VD: Team Lead',
-                    filled: true, fillColor: Colors.grey.shade50,
+                    filled: true,
+                    fillColor: Colors.grey.shade50,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide(color: Colors.grey.shade300),
@@ -203,7 +216,8 @@ class _PortfolioCreatePageState extends State<PortfolioCreatePage> {
                   decoration: InputDecoration(
                     labelText: 'Ghi chú',
                     hintText: 'VD: Phụ trách điều phối 200+ người',
-                    filled: true, fillColor: Colors.grey.shade50,
+                    filled: true,
+                    fillColor: Colors.grey.shade50,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide(color: Colors.grey.shade300),
@@ -212,16 +226,20 @@ class _PortfolioCreatePageState extends State<PortfolioCreatePage> {
                 ),
                 const SizedBox(height: 20),
                 SizedBox(
-                  width: double.infinity, height: 50,
+                  width: double.infinity,
+                  height: 50,
                   child: ElevatedButton(
                     onPressed: () {
                       setState(() {
                         item.displayTitle = titleCtrl.text.trim().isNotEmpty
-                            ? titleCtrl.text.trim() : null;
+                            ? titleCtrl.text.trim()
+                            : null;
                         item.displayRole = roleCtrl.text.trim().isNotEmpty
-                            ? roleCtrl.text.trim() : null;
+                            ? roleCtrl.text.trim()
+                            : null;
                         item.displayNote = noteCtrl.text.trim().isNotEmpty
-                            ? noteCtrl.text.trim() : null;
+                            ? noteCtrl.text.trim()
+                            : null;
                       });
                       Navigator.pop(ctx);
                     },
@@ -232,9 +250,10 @@ class _PortfolioCreatePageState extends State<PortfolioCreatePage> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: const Text('Lưu', style: TextStyle(
-                      fontWeight: FontWeight.w700,
-                    )),
+                    child: const Text('Lưu',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                        )),
                   ),
                 ),
               ],
@@ -248,7 +267,9 @@ class _PortfolioCreatePageState extends State<PortfolioCreatePage> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final selected = _events.where((e) => e.isSelected && e.eventParticipantId != null).toList();
+    final selected = _events
+        .where((e) => e.isSelected && e.eventParticipantId != null)
+        .toList();
     if (selected.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Vui lòng chọn ít nhất 1 sự kiện')),
@@ -258,10 +279,14 @@ class _PortfolioCreatePageState extends State<PortfolioCreatePage> {
 
     _isSubmitting.value = true;
 
+    final title = _titleController.text.trim();
+    final description = _descController.text.trim().isNotEmpty
+        ? _descController.text.trim()
+        : null;
+
     final body = {
-      'title': _titleController.text.trim(),
-      if (_descController.text.trim().isNotEmpty)
-        'description': _descController.text.trim(),
+      'title': title,
+      if (description != null) 'description': description,
       'price': 0,
       'coinUsed': 0,
       'items': selected.asMap().entries.map((entry) {
@@ -287,7 +312,12 @@ class _PortfolioCreatePageState extends State<PortfolioCreatePage> {
       },
       (tx) {
         _isSubmitting.value = false;
-        if (tx != null && tx.status == TransactionStatus.success) {
+        if (tx == null) {
+          Navigator.pop(context, true);
+          return;
+        }
+
+        if (tx.status == TransactionStatus.success) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Tạo hồ sơ hoạt động thành công!'),
@@ -295,16 +325,65 @@ class _PortfolioCreatePageState extends State<PortfolioCreatePage> {
             ),
           );
           Navigator.pop(context, true);
-        } else if (tx != null && tx.status == TransactionStatus.pending) {
-          Navigator.pop(context, true);
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Tạo hồ sơ thành công!')),
-          );
-          Navigator.pop(context, true);
+          return;
         }
+
+        if (tx.status == TransactionStatus.pending) {
+          _navigateToPayment(tx, title, description);
+          return;
+        }
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Tạo hồ sơ thành công!')),
+        );
+        Navigator.pop(context, true);
       },
     );
+  }
+
+  void _navigateToPayment(
+      TransactionEntity tx, String title, String? description) async {
+    if (tx.referenceId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Không xác định được mã hồ sơ')),
+      );
+      Navigator.pop(context, true);
+      return;
+    }
+
+    final price = (tx.originalAmount ?? 0) - (tx.coinUsed ?? 0);
+    if (price <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Tạo hồ sơ hoạt động thành công!'),
+          backgroundColor: Color(0xFF22C55E),
+        ),
+      );
+      Navigator.pop(context, true);
+      return;
+    }
+
+    final args = SharedPaymentFlowArgs.forPortfolio(
+      title: title,
+      description: description,
+      portfolioCode: 'PF-$tx.referenceId',
+      referenceId: tx.referenceId,
+      originalAmount: price,
+      initialCoinUsed: tx.coinUsed ?? 0,
+    );
+
+    final paymentResult = await Get.to<bool>(
+      () => SharedPaymentCheckoutPage(args: args),
+    );
+
+    if (paymentResult == true) {
+      if (Get.isRegistered<PortfolioListController>()) {
+        Get.find<PortfolioListController>().loadAll();
+      }
+    }
+    if (mounted) {
+      Navigator.pop(context, true);
+    }
   }
 
   @override
@@ -340,9 +419,11 @@ class _PortfolioCreatePageState extends State<PortfolioCreatePage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.error_outline, size: 48, color: Colors.grey.shade400),
+                Icon(Icons.error_outline,
+                    size: 48, color: Colors.grey.shade400),
                 const SizedBox(height: 12),
-                Text(_error.value, style: TextStyle(color: Colors.grey.shade600)),
+                Text(_error.value,
+                    style: TextStyle(color: Colors.grey.shade600)),
                 const SizedBox(height: 12),
                 TextButton(
                   onPressed: _loadEvents,
@@ -360,13 +441,17 @@ class _PortfolioCreatePageState extends State<PortfolioCreatePage> {
               children: [
                 Icon(Icons.event_busy, size: 64, color: Colors.grey.shade300),
                 const SizedBox(height: 12),
-                Text('Chưa tham gia sự kiện nào', style: TextStyle(
-                  fontSize: 15, color: Colors.grey.shade600,
-                )),
+                Text('Chưa tham gia sự kiện nào',
+                    style: TextStyle(
+                      fontSize: 15,
+                      color: Colors.grey.shade600,
+                    )),
                 const SizedBox(height: 4),
-                Text('Hãy tham gia sự kiện trước', style: TextStyle(
-                  fontSize: 13, color: Colors.grey.shade500,
-                )),
+                Text('Hãy tham gia sự kiện trước',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.grey.shade500,
+                    )),
               ],
             ),
           );
@@ -413,17 +498,20 @@ class _PortfolioCreatePageState extends State<PortfolioCreatePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Thông tin hồ sơ', style: TextStyle(
-              fontSize: 15, fontWeight: FontWeight.w700,
-              color: Color(0xff273143),
-            )),
+            const Text('Thông tin hồ sơ',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xff273143),
+                )),
             const SizedBox(height: 16),
             TextFormField(
               controller: _titleController,
               decoration: InputDecoration(
                 labelText: 'Tiêu đề hồ sơ *',
                 hintText: 'VD: Hồ sơ CTV Event 2026',
-                filled: true, fillColor: const Color(0xFFF8FAFC),
+                filled: true,
+                fillColor: const Color(0xFFF8FAFC),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(color: Colors.grey.shade300),
@@ -434,7 +522,8 @@ class _PortfolioCreatePageState extends State<PortfolioCreatePage> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFF06B6D4), width: 1.5),
+                  borderSide:
+                      const BorderSide(color: Color(0xFF06B6D4), width: 1.5),
                 ),
                 errorBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -452,7 +541,8 @@ class _PortfolioCreatePageState extends State<PortfolioCreatePage> {
               decoration: InputDecoration(
                 labelText: 'Mô tả',
                 hintText: 'Mô tả ngắn về hồ sơ của bạn...',
-                filled: true, fillColor: const Color(0xFFF8FAFC),
+                filled: true,
+                fillColor: const Color(0xFFF8FAFC),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(color: Colors.grey.shade300),
@@ -463,7 +553,8 @@ class _PortfolioCreatePageState extends State<PortfolioCreatePage> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFF06B6D4), width: 1.5),
+                  borderSide:
+                      const BorderSide(color: Color(0xFF06B6D4), width: 1.5),
                 ),
               ),
             ),
@@ -492,35 +583,39 @@ class _PortfolioCreatePageState extends State<PortfolioCreatePage> {
         children: [
           Row(
             children: [
-              const Text('Chọn sự kiện', style: TextStyle(
-                fontSize: 15, fontWeight: FontWeight.w700,
-                color: Color(0xff273143),
-              )),
+              const Text('Chọn sự kiện',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xff273143),
+                  )),
               const SizedBox(width: 8),
               Obx(() => Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF06B6D4).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  '${_selectedCount.value} đã chọn',
-                  style: const TextStyle(
-                    fontSize: 12, fontWeight: FontWeight.w600,
-                    color: Color(0xFF06B6D4),
-                  ),
-                ),
-              )),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF06B6D4).withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      '${_selectedCount.value} đã chọn',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF06B6D4),
+                      ),
+                    ),
+                  )),
             ],
           ),
           const SizedBox(height: 12),
           Obx(() => Column(
-            children: _events.asMap().entries.map((entry) {
-              final idx = entry.key;
-              final item = entry.value;
-              return _buildEventTile(item, idx);
-            }).toList(),
-          )),
+                children: _events.asMap().entries.map((entry) {
+                  final idx = entry.key;
+                  final item = entry.value;
+                  return _buildEventTile(item, idx);
+                }).toList(),
+              )),
         ],
       ),
     );
@@ -539,9 +634,8 @@ class _PortfolioCreatePageState extends State<PortfolioCreatePage> {
               : const Color(0xFFF8FAFC),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected
-                ? const Color(0xFF06B6D4)
-                : const Color(0xFFE2E8F0),
+            color:
+                isSelected ? const Color(0xFF06B6D4) : const Color(0xFFE2E8F0),
             width: isSelected ? 1.5 : 1,
           ),
         ),
@@ -551,7 +645,8 @@ class _PortfolioCreatePageState extends State<PortfolioCreatePage> {
             Row(
               children: [
                 Container(
-                  width: 24, height: 24,
+                  width: 24,
+                  height: 24,
                   decoration: BoxDecoration(
                     color: isSelected
                         ? const Color(0xFF06B6D4)
@@ -591,12 +686,14 @@ class _PortfolioCreatePageState extends State<PortfolioCreatePage> {
                           if (item.participantType != null) ...[
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 6, vertical: 1,
+                                horizontal: 6,
+                                vertical: 1,
                               ),
                               decoration: BoxDecoration(
-                                color: item.participantType == ParticipantType.ctv
-                                    ? Colors.purple.shade50
-                                    : Colors.blue.shade50,
+                                color:
+                                    item.participantType == ParticipantType.ctv
+                                        ? Colors.purple.shade50
+                                        : Colors.blue.shade50,
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
@@ -604,7 +701,8 @@ class _PortfolioCreatePageState extends State<PortfolioCreatePage> {
                                 style: TextStyle(
                                   fontSize: 10,
                                   fontWeight: FontWeight.w600,
-                                  color: item.participantType == ParticipantType.ctv
+                                  color: item.participantType ==
+                                          ParticipantType.ctv
                                       ? Colors.purple.shade700
                                       : Colors.blue.shade700,
                                 ),
@@ -613,7 +711,8 @@ class _PortfolioCreatePageState extends State<PortfolioCreatePage> {
                             const SizedBox(width: 6),
                           ],
                           if (item.event.youthUnionPoint != null) ...[
-                            Icon(Icons.star, size: 12, color: Colors.amber.shade700),
+                            Icon(Icons.star,
+                                size: 12, color: Colors.amber.shade700),
                             const SizedBox(width: 2),
                             Text(
                               '${item.event.youthUnionPoint} điểm',
@@ -657,7 +756,8 @@ class _PortfolioCreatePageState extends State<PortfolioCreatePage> {
                 child: Text(
                   item.displayRole!,
                   style: const TextStyle(
-                    fontSize: 11, color: Color(0xff64748B),
+                    fontSize: 11,
+                    color: Color(0xff64748B),
                   ),
                 ),
               ),
@@ -671,7 +771,8 @@ class _PortfolioCreatePageState extends State<PortfolioCreatePage> {
   Widget _buildBottomBar() {
     return Container(
       padding: EdgeInsets.only(
-        left: 16, right: 16,
+        left: 16,
+        right: 16,
         top: 12,
         bottom: MediaQuery.of(context).padding.bottom + 12,
       ),
@@ -686,33 +787,36 @@ class _PortfolioCreatePageState extends State<PortfolioCreatePage> {
         ],
       ),
       child: Obx(() => SizedBox(
-        width: double.infinity, height: 50,
-        child: ElevatedButton(
-          onPressed: _isSubmitting.value ? null : _submit,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF06B6D4),
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            disabledBackgroundColor: const Color(0xFF94A3B8),
-          ),
-          child: _isSubmitting.value
-              ? const SizedBox(
-                  width: 20, height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.white,
-                  ),
-                )
-              : const Text(
-                  'Tạo hồ sơ hoạt động',
-                  style: TextStyle(
-                    fontSize: 15, fontWeight: FontWeight.w700,
-                  ),
+            width: double.infinity,
+            height: 50,
+            child: ElevatedButton(
+              onPressed: _isSubmitting.value ? null : _submit,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF06B6D4),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
-        ),
-      )),
+                disabledBackgroundColor: const Color(0xFF94A3B8),
+              ),
+              child: _isSubmitting.value
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Text(
+                      'Tạo hồ sơ hoạt động',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+            ),
+          )),
     );
   }
 }

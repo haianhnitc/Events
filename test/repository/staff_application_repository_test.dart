@@ -10,7 +10,8 @@ import 'package:mocktail/mocktail.dart';
 import '../helpers/fake_data.dart';
 import '../helpers/mock_rest_client.dart';
 
-class MockStaffApplicationDatasource extends Mock implements StaffApplicationDatasource {}
+class MockStaffApplicationDatasource extends Mock
+    implements StaffApplicationDatasource {}
 
 class FakeApplyCtvParams extends Fake implements ApplyCtvParams {}
 
@@ -29,11 +30,12 @@ void main() {
 
   group('createApplication', () {
     test('trả về StaffApplicationEntity khi datasource thành công', () async {
-      final model = StaffApplicationModel.fromJson(fakeStaffApplicationJson(id: 5));
+      final model =
+          StaffApplicationModel.fromJson(fakeStaffApplicationJson(id: 5));
       when(() => mockDatasource.createApplication(any()))
           .thenAnswer((_) async => successResponse(model));
 
-      final params = ApplyCtvParams(eventId: 1, answers: []);
+      const params = ApplyCtvParams(eventId: 1, answers: []);
       final result = await repository.createApplication(params);
 
       expect(result.isRight(), isTrue);
@@ -44,21 +46,23 @@ void main() {
     });
 
     test('trả về Left khi datasource trả conflict', () async {
-      when(() => mockDatasource.createApplication(any()))
-          .thenAnswer((_) async => errorResponse<StaffApplicationModel>(conflictResponse()));
+      when(() => mockDatasource.createApplication(any())).thenAnswer(
+          (_) async =>
+              errorResponse<StaffApplicationModel>(conflictResponse()));
 
-      final params = ApplyCtvParams(eventId: 1, answers: []);
+      const params = ApplyCtvParams(eventId: 1, answers: []);
       final result = await repository.createApplication(params);
 
       expect(result.isLeft(), isTrue);
     });
 
     test('maps model sang entity đúng', () async {
-      final model = StaffApplicationModel.fromJson(fakeStaffApplicationJson(id: 10));
+      final model =
+          StaffApplicationModel.fromJson(fakeStaffApplicationJson(id: 10));
       when(() => mockDatasource.createApplication(any()))
           .thenAnswer((_) async => successResponse(model));
 
-      final params = ApplyCtvParams(eventId: 1, answers: []);
+      const params = ApplyCtvParams(eventId: 1, answers: []);
       final result = await repository.createApplication(params);
 
       result.fold(
@@ -73,7 +77,8 @@ void main() {
 
   group('getApplicationById', () {
     test('trả về StaffApplicationEntity khi datasource thành công', () async {
-      final model = StaffApplicationModel.fromJson(fakeStaffApplicationJson(id: 20));
+      final model =
+          StaffApplicationModel.fromJson(fakeStaffApplicationJson(id: 20));
       when(() => mockDatasource.getApplicationById(any()))
           .thenAnswer((_) async => successResponse(model));
 
@@ -87,8 +92,9 @@ void main() {
     });
 
     test('trả về Left khi datasource trả notFound', () async {
-      when(() => mockDatasource.getApplicationById(any()))
-          .thenAnswer((_) async => errorResponse<StaffApplicationModel>(notFoundResponse()));
+      when(() => mockDatasource.getApplicationById(any())).thenAnswer(
+          (_) async =>
+              errorResponse<StaffApplicationModel>(notFoundResponse()));
 
       final result = await repository.getApplicationById(9999);
 

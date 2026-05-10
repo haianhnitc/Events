@@ -114,9 +114,12 @@ class _OrganizerCreateEventPageState extends State<OrganizerCreateEventPage> {
                       onSave: (q) {
                         _ctrl.addFeedbackQuestion(
                           questionContent: q.questionContent ?? '',
-                          questionType: q.questionType ?? FeedbackQuestionType.text,
+                          questionType:
+                              q.questionType ?? FeedbackQuestionType.text,
                           isRequired: q.isRequired ?? false,
-                          options: q.options?.map((o) => o.optionValue ?? '').toList(),
+                          options: q.options
+                              ?.map((o) => o.optionValue ?? '')
+                              .toList(),
                         );
                       },
                       onRemoveQuestion: _ctrl.removeFeedbackQuestion,
@@ -206,13 +209,13 @@ class _OrganizerCreateEventPageState extends State<OrganizerCreateEventPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           FormSectionCard(children: [
-            FormSectionTitle('Hình ảnh sự kiện'),
+            const FormSectionTitle('Hình ảnh sự kiện'),
             const SizedBox(height: 12),
             _buildBannerUpload(),
           ]),
           const SizedBox(height: 16),
           FormSectionCard(children: [
-            FormSectionTitle('Thông tin cơ bản'),
+            const FormSectionTitle('Thông tin cơ bản'),
             const SizedBox(height: 12),
             FormTextField(
               controller: _ctrl.titleController,
@@ -231,7 +234,7 @@ class _OrganizerCreateEventPageState extends State<OrganizerCreateEventPage> {
           ]),
           const SizedBox(height: 16),
           FormSectionCard(children: [
-            FormSectionTitle('Địa điểm'),
+            const FormSectionTitle('Địa điểm'),
             const SizedBox(height: 12),
             Obx(() {
               final selectedVenue = _ctrl.selectedVenue.value;
@@ -310,7 +313,7 @@ class _OrganizerCreateEventPageState extends State<OrganizerCreateEventPage> {
       child: Column(
         children: [
           FormSectionCard(children: [
-            FormSectionTitle('Thời gian sự kiện'),
+            const FormSectionTitle('Thời gian sự kiện'),
             const SizedBox(height: 12),
             AppDateTimePicker(
               label: 'Thời gian bắt đầu',
@@ -328,7 +331,7 @@ class _OrganizerCreateEventPageState extends State<OrganizerCreateEventPage> {
           ]),
           const SizedBox(height: 16),
           FormSectionCard(children: [
-            FormSectionTitle('Thời gian đăng ký'),
+            const FormSectionTitle('Thời gian đăng ký'),
             const SizedBox(height: 12),
             AppDateTimePicker(
               label: 'Mở đăng ký từ',
@@ -340,7 +343,7 @@ class _OrganizerCreateEventPageState extends State<OrganizerCreateEventPage> {
           ]),
           const SizedBox(height: 16),
           FormSectionCard(children: [
-            FormSectionTitle('Giá vé'),
+            const FormSectionTitle('Giá vé'),
             const SizedBox(height: 12),
             FormTextField(
               controller: _ctrl.priceController,
@@ -361,7 +364,7 @@ class _OrganizerCreateEventPageState extends State<OrganizerCreateEventPage> {
       child: Column(
         children: [
           FormSectionCard(children: [
-            FormSectionTitle('Hình thức tuyển người tham gia'),
+            const FormSectionTitle('Hình thức tuyển người tham gia'),
             const SizedBox(height: 12),
             Obx(() => _buildRecruitmentTypeOption(
                   EventRecruitmentType.attendeeOnly,
@@ -395,7 +398,7 @@ class _OrganizerCreateEventPageState extends State<OrganizerCreateEventPage> {
       child: Column(
         children: [
           FormSectionCard(children: [
-            FormSectionTitle('Phần thưởng cho người hoàn thành'),
+            const FormSectionTitle('Phần thưởng cho người hoàn thành'),
             const SizedBox(height: 12),
             FormTextField(
               controller: _ctrl.rewardCoinController,
@@ -434,7 +437,7 @@ class _OrganizerCreateEventPageState extends State<OrganizerCreateEventPage> {
         children: [
           Obx(() {
             return FormSectionCard(children: [
-              FormSectionTitle('Xem lại thông tin'),
+              const FormSectionTitle('Xem lại thông tin'),
               const SizedBox(height: 12),
               if (_ctrl.bannerPreviewUrl.value != null) ...[
                 ClipRRect(

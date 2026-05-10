@@ -4,6 +4,7 @@ import 'package:events_app/feature/common/utils/app_date_utils.dart';
 import 'package:events_app/feature/common/utils/app_image_utils.dart';
 import 'package:events_app/feature/common/utils/app_map_utils.dart';
 import 'package:events_app/feature/event_management/presentation/controller/event_detail_page_controller.dart';
+import 'package:events_app/feature/event_management/presentation/utils/event_action_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
@@ -25,6 +26,7 @@ class EventDetailPage extends StatefulWidget {
 class _EventDetailPageState extends State<EventDetailPage> {
   late final String _controllerTag;
   late final EventDetailPageController _controller;
+  bool _controllerWasRegistered = false;
 
   static const int _bannerLogicalWidth = 368;
   static const int _bannerLogicalHeight = 224;
@@ -36,15 +38,21 @@ class _EventDetailPageState extends State<EventDetailPage> {
   void initState() {
     super.initState();
     _controllerTag = 'event_detail_${widget.eventId ?? 'unknown'}';
-    _controller = Get.put(
-      EventDetailPageController(eventId: widget.eventId),
-      tag: _controllerTag,
-    );
+    _controllerWasRegistered =
+        Get.isRegistered<EventDetailPageController>(tag: _controllerTag);
+    if (_controllerWasRegistered) {
+      _controller = Get.find<EventDetailPageController>(tag: _controllerTag);
+    } else {
+      _controller = Get.put(
+        EventDetailPageController(eventId: widget.eventId),
+        tag: _controllerTag,
+      );
+    }
   }
 
   @override
   void dispose() {
-    if (Get.isRegistered<EventDetailPageController>(tag: _controllerTag)) {
+    if (!_controllerWasRegistered) {
       Get.delete<EventDetailPageController>(tag: _controllerTag);
     }
     super.dispose();
@@ -54,7 +62,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
   Widget build(BuildContext context) {
     return Obx(
       () {
-        if (_controller.isLoading.value) {
+        if (_controller.isLoading) {
           return const Scaffold(
             backgroundColor: Color(0xffF5F5F5),
             body: Center(
@@ -541,7 +549,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                         fontSize: 16,
                         height: 24 / 16,
                         fontWeight: FontWeight.w400,
-                        color: const Color(0xff273143),
+                        color: Color(0xff273143),
                       ),
                     )
                   : Column(
@@ -668,53 +676,67 @@ class _EventDetailPageState extends State<EventDetailPage> {
   }
 
   Widget _buildRegisterButton() {
-    final actionState = _controller.actionState;
-    final isSubmitting = _controller.isSubmittingRegistration.value;
-    final canTap = actionState.isEnabled && !isSubmitting;
+    return Obx(() {
+      final ev = _controller.event.value;
+      debugPrint(
+          '[UI] _buildRegisterButton — ev.eventId=${ev?.eventId}, userEventState=${ev?.userEventState}, totalParticipants=${ev?.totalParticipants}');
+      final userState = ev?.userEventState;
+      final actionState = EventActionUtils.getEventRegisterState(
+        status: ev?.status,
+        registerOpenTime: ev?.registerOpenTime,
+        endTime: ev?.endTime,
+        capacity: ev?.venue?.capacity,
+        totalParticipants: ev?.totalParticipants,
+        userEventState: userState,
+      );
+      final isSubmitting = _controller.isSubmittingRegistration.value;
+      final canTap = actionState.isEnabled && !isSubmitting;
 
-    return GestureDetector(
-      onTap: canTap ? _controller.registerAndHandlePayment : null,
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16),
-        height: 42,
-        decoration: BoxDecoration(
-          color: canTap ? const Color(0xff06B6D4) : const Color(0xffB0B4C0),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Stack(
-          children: [
-            Center(
-              child: isSubmitting
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+      return GestureDetector(
+        onTap: canTap ? _controller.registerAndHandlePayment : null,
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16),
+          height: 42,
+          decoration: BoxDecoration(
+            color: canTap ? const Color(0xff06B6D4) : const Color(0xffB0B4C0),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Stack(
+            children: [
+              Center(
+                child: isSubmitting
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      )
+                    : Text(
+                        actionState.label,
+                        style: const TextStyle(
+                            fontSize: 14,
+                            height: 20 / 14,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white),
                       ),
-                    )
-                  : Text(
-                      actionState.label,
-                      style: const TextStyle(
-                          fontSize: 14,
-                          height: 20 / 14,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.white),
-                    ),
-            ),
-            Positioned(
-              top: 12,
-              left: 28,
-              child: SvgPicture.asset(
-                AssetPath.tickIcon,
-                height: 16,
-                width: 16,
-                color: Colors.white,
               ),
-            )
-          ],
+              Positioned(
+                top: 12,
+                left: 28,
+                child: SvgPicture.asset(
+                  AssetPath.tickIcon,
+                  height: 16,
+                  width: 16,
+                  color: Colors.white,
+                ),
+              )
+            ],
+          ),
         ),
-      ),
-    );
+      );
+    });
   }
 }

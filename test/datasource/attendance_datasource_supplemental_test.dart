@@ -19,7 +19,8 @@ class TestAttendanceDatasourceSupplemental extends AttendanceDatasourceImpl {
       : super(client: StubRestClient());
 
   @override
-  Future<ApiResponse<AttendanceQrModel>> getEventQr(int eventId, String action) async {
+  Future<ApiResponse<AttendanceQrModel>> getEventQr(
+      int eventId, String action) async {
     final envelope = getEventQrStub ??
         ApiResponse.success({
           'errorCode': 0,
@@ -40,7 +41,8 @@ class TestAttendanceDatasourceSupplemental extends AttendanceDatasourceImpl {
   }
 }
 
-class TestOrganizerAttendanceDatasourceForManual extends OrganizerAttendanceDatasourceImpl {
+class TestOrganizerAttendanceDatasourceForManual
+    extends OrganizerAttendanceDatasourceImpl {
   ApiResponse<Map<String, dynamic>>? checkInStub;
   ApiResponse<Map<String, dynamic>>? checkOutStub;
   ApiResponse<Map<String, dynamic>>? logsStub;
@@ -238,7 +240,7 @@ void main() {
 
     test('trả về responseParsing khi object null', () async {
       final datasource = TestAttendanceDatasourceSupplemental(
-        getEventQrStub: ApiResponse.success({
+        getEventQrStub: const ApiResponse.success({
           'errorCode': 0,
           'statusCode': 200,
           'message': 'OK',
@@ -438,13 +440,17 @@ void main() {
           'statusCode': 200,
           'message': 'OK',
           'object': {
-            'content': [fakeAttendanceLogJson(id: 1), fakeAttendanceLogJson(id: 2)],
+            'content': [
+              fakeAttendanceLogJson(id: 1),
+              fakeAttendanceLogJson(id: 2)
+            ],
             'totalElements': 2,
           },
         }),
       );
 
-      final result = await datasource.getAttendanceLogs(eventId: 1, page: 0, size: 20);
+      final result =
+          await datasource.getAttendanceLogs(eventId: 1, page: 0, size: 20);
 
       result.when(
         success: (data) {
@@ -470,7 +476,7 @@ void main() {
 
     test('trả về empty content khi không có log', () async {
       final datasource = TestOrganizerAttendanceDatasourceForManual(
-        logsStub: ApiResponse.success({
+        logsStub: const ApiResponse.success({
           'errorCode': 0,
           'statusCode': 200,
           'message': 'OK',

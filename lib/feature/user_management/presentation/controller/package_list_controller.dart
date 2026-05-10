@@ -1,5 +1,4 @@
 import 'package:events_app/feature/common/domain/enum/app_enum.dart';
-import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:events_app/api_template/services/failure.dart';
@@ -11,6 +10,24 @@ import 'package:events_app/feature/payment/presentation/page/shared_payment_flow
 import 'package:events_app/feature/payment/presentation/page/shared_payment_flow_page.dart';
 import 'package:events_app/feature/user_management/domain/repository/user_repository.dart';
 
+class PackageRefreshHelper {
+  static void refreshByPackageId(int packageId) {
+    try {
+      final ctrl = Get.find<PackageListController>(tag: 'package_list');
+      ctrl.loadMyPackages(refresh: true);
+    } catch (_) {}
+  }
+
+  static void refreshPackageList() {
+    try {
+      final ctrl = Get.find<PackageListController>(tag: 'package_list');
+      ctrl.loadMyPackages(refresh: true);
+      ctrl.loadExpiredPackages(refresh: true);
+      ctrl.loadAvailablePackages(refresh: true);
+    } catch (_) {}
+  }
+}
+
 class PackageListController extends GetxController {
   UserRepository get _userRepo => networkGetIt<UserRepository>();
 
@@ -21,6 +38,9 @@ class PackageListController extends GetxController {
   final RxBool isLoadingAvailable = false.obs;
   final RxBool isLoadingMyPackages = false.obs;
   final RxBool isLoadingExpired = false.obs;
+
+  final RxBool isReloadingMyPackages = false.obs;
+  final RxBool isReloadingExpired = false.obs;
 
   final RxBool hasMoreAvailable = true.obs;
   final RxBool hasMoreMyPackages = true.obs;
@@ -182,6 +202,18 @@ class PackageListController extends GetxController {
         p.packageId == packageId && p.status == UserPackageStatus.active);
   }
 
+  Future<void> reloadMyPackages() async {
+    isReloadingMyPackages.value = true;
+    await loadMyPackages(refresh: true);
+    isReloadingMyPackages.value = false;
+  }
+
+  Future<void> reloadExpiredPackages() async {
+    isReloadingExpired.value = true;
+    await loadExpiredPackages(refresh: true);
+    isReloadingExpired.value = false;
+  }
+
   void onPurchasePackage(PackageEntity package) {
     final pkgId = package.packageId;
     final price = package.price ?? 0;
@@ -195,7 +227,11 @@ class PackageListController extends GetxController {
       package: package,
     );
 
-    Get.to(() => SharedPaymentCheckoutPage(args: args));
+    Get.to(() => SharedPaymentCheckoutPage(args: args))?.then((result) {
+      if (result == true) {
+        reloadMyPackages();
+      }
+    });
   }
 
   void onRenewPackage(UserPackageEntity userPackage) {
@@ -209,7 +245,12 @@ class PackageListController extends GetxController {
       userPackage: userPackage,
     );
 
-    Get.to(() => SharedPaymentCheckoutPage(args: args));
+    Get.to(() => SharedPaymentCheckoutPage(args: args))?.then((result) {
+      if (result == true) {
+        reloadExpiredPackages();
+        reloadMyPackages();
+      }
+    });
   }
 
   void _handleFailure(FailureEntity failure) {

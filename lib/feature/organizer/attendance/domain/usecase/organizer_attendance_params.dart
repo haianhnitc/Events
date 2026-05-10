@@ -1,5 +1,3 @@
-import 'package:events_app/feature/common/domain/enum/app_enum.dart';
-
 class OrganizerManualAttendanceParams {
   final int eventParticipantId;
 
@@ -24,5 +22,6 @@ class GetOrganizerEventQrParams {
   final int eventId;
   final String action;
 
-  const GetOrganizerEventQrParams({required this.eventId, required this.action});
+  const GetOrganizerEventQrParams(
+      {required this.eventId, required this.action});
 }

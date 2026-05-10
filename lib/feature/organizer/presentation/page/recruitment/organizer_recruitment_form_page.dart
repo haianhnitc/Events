@@ -4,9 +4,11 @@ import 'package:events_app/feature/common/presentation/widget/app_date_time_pick
 import 'package:events_app/feature/common/utils/app_date_utils.dart';
 import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
 import 'package:events_app/feature/event_management/domain/entity/event_summary_entity.dart';
+import 'package:events_app/feature/organizer/presentation/widget/recruitment/requirement_question_sheet.dart';
 import 'package:events_app/feature/organizer/recruitment/domain/usecase/organizer_recruitment_params.dart';
 import 'package:events_app/feature/organizer/presentation/controller/organizer_event_list_controller.dart';
 import 'package:events_app/feature/organizer/presentation/controller/organizer_recruitment_form_controller.dart';
+import 'package:events_app/feature/organizer/presentation/widget/organizer_event_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -146,32 +148,45 @@ class _OrganizerRecruitmentFormPageState
                   color: Color(0xff273143))),
           const SizedBox(height: 12),
           Obx(() {
-            final events = _eventCtrl.events;
-            if (_eventCtrl.isLoading.value && events.isEmpty) {
+            if (_eventCtrl.isLoading.value && _eventCtrl.events.isEmpty) {
               return const Center(child: CircularProgressIndicator());
             }
-            return Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade50,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Colors.grey.shade200),
-              ),
-              child: DropdownButtonHideUnderline(
-                child: DropdownButton<EventSummaryEntity>(
-                  value: _selectedEvent,
-                  hint: Text('Chọn sự kiện',
-                      style:
-                          TextStyle(color: Colors.grey.shade400, fontSize: 14)),
-                  isExpanded: true,
-                  items: events
-                      .map((e) => DropdownMenuItem(
-                            value: e,
-                            child: Text(e.title ?? 'N/A',
-                                overflow: TextOverflow.ellipsis),
-                          ))
+            return GestureDetector(
+              onTap: () {
+                OrganizerEventPickerSheet.show(
+                  context: context,
+                  events: _eventCtrl.events
+                      .where((e) => e.status == EventStatus.published)
                       .toList(),
-                  onChanged: (e) => setState(() => _selectedEvent = e),
+                  title: 'Chọn sự kiện tuyển CTV',
+                  onSelected: (e) => setState(() => _selectedEvent = e),
+                );
+              },
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade50,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.grey.shade200),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        _selectedEvent?.title ?? 'Chọn sự kiện',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: _selectedEvent != null
+                              ? const Color(0xff273143)
+                              : Colors.grey.shade400,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    Icon(Icons.keyboard_arrow_down,
+                        color: Colors.grey.shade400, size: 20),
+                  ],
                 ),
               ),
             );
@@ -219,11 +234,11 @@ class _OrganizerRecruitmentFormPageState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          const Row(
             children: [
-              const Icon(Icons.event, size: 16, color: Color(0xFF06B6D4)),
-              const SizedBox(width: 6),
-              const Text('Thông tin sự kiện liên kết',
+              Icon(Icons.event, size: 16, color: Color(0xFF06B6D4)),
+              SizedBox(width: 6),
+              Text('Thông tin sự kiện liên kết',
                   style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
@@ -586,7 +601,10 @@ class _OrganizerRecruitmentFormPageState
                               fontSize: 13, color: Colors.grey.shade500)),
                       const SizedBox(height: 12),
                       ElevatedButton.icon(
-                        onPressed: () => _showAddQuestionDialog(),
+                        onPressed: () => RequirementQuestionSheet.show(
+                          context,
+                          onSave: (q) => _formCtrl.addRequirementQuestion(q),
+                        ),
                         icon: const Icon(Icons.add, size: 16),
                         label: const Text('Thêm câu hỏi'),
                         style: ElevatedButton.styleFrom(
@@ -608,100 +626,23 @@ class _OrganizerRecruitmentFormPageState
               children: [
                 ...List.generate(_formCtrl.requirementQuestions.length, (i) {
                   final q = _formCtrl.requirementQuestions[i];
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 10),
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade50,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: Colors.grey.shade200),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF06B6D4).withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Text(
-                                _getQuestionTypeLabel(q.questionType),
-                                style: const TextStyle(
-                                    fontSize: 10,
-                                    color: Color(0xFF06B6D4),
-                                    fontWeight: FontWeight.w600),
-                              ),
-                            ),
-                            if (q.isRequired) ...[
-                              const SizedBox(width: 6),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 6, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: Colors.red.shade50,
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: const Text('Bắt buộc',
-                                    style: TextStyle(
-                                        fontSize: 10,
-                                        color: Colors.red,
-                                        fontWeight: FontWeight.w600)),
-                              ),
-                            ],
-                            const Spacer(),
-                            GestureDetector(
-                              onTap: () =>
-                                  _showAddQuestionDialog(index: i, existing: q),
-                              child: const Icon(Icons.edit,
-                                  size: 16, color: Color(0xff64748B)),
-                            ),
-                            const SizedBox(width: 8),
-                            GestureDetector(
-                              onTap: () =>
-                                  _formCtrl.removeRequirementQuestion(i),
-                              child: const Icon(Icons.delete_outline,
-                                  size: 16, color: Colors.red),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Text(q.questionText,
-                            style: const TextStyle(
-                                fontSize: 13,
-                                color: Color(0xff273143),
-                                fontWeight: FontWeight.w500)),
-                        if (q.options != null && q.options!.isNotEmpty) ...[
-                          const SizedBox(height: 6),
-                          Wrap(
-                            spacing: 6,
-                            runSpacing: 4,
-                            children: q.options!
-                                .map((o) => Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 8, vertical: 3),
-                                      decoration: BoxDecoration(
-                                        color: Colors.grey.shade200,
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: Text(o.optionValue,
-                                          style: const TextStyle(
-                                              fontSize: 11,
-                                              color: Color(0xff64748B))),
-                                    ))
-                                .toList(),
-                          ),
-                        ],
-                      ],
+                  return RequirementQuestionCard(
+                    question: q,
+                    onRemove: () => _formCtrl.removeRequirementQuestion(i),
+                    onEdit: () => RequirementQuestionSheet.show(
+                      context,
+                      existing: q,
+                      onSave: (updated) =>
+                          _formCtrl.updateRequirementQuestion(i, updated),
                     ),
                   );
                 }),
                 const SizedBox(height: 8),
                 TextButton.icon(
-                  onPressed: () => _showAddQuestionDialog(),
+                  onPressed: () => RequirementQuestionSheet.show(
+                    context,
+                    onSave: (q) => _formCtrl.addRequirementQuestion(q),
+                  ),
                   icon: const Icon(Icons.add, size: 16),
                   label: const Text('Thêm câu hỏi'),
                   style: TextButton.styleFrom(
@@ -713,239 +654,6 @@ class _OrganizerRecruitmentFormPageState
           }),
         ],
       ),
-    );
-  }
-
-  String _getQuestionTypeLabel(RequirementQuestionType type) {
-    switch (type) {
-      case RequirementQuestionType.text:
-        return 'TEXT';
-      case RequirementQuestionType.singleChoice:
-        return '1 CHỌN';
-      case RequirementQuestionType.multipleChoice:
-        return 'NHIỀU CHỌN';
-      case RequirementQuestionType.rating:
-        return 'ĐÁNH GIÁ';
-    }
-  }
-
-  void _showAddQuestionDialog(
-      {int? index, RequirementQuestionCreateParams? existing}) {
-    final contentCtrl =
-        TextEditingController(text: existing?.questionText ?? '');
-    final isRequired = existing?.isRequired ?? false;
-    final selectedType = existing?.questionType ?? RequirementQuestionType.text;
-    final optionCtrls = <TextEditingController>[];
-    if (existing?.options != null) {
-      for (final o in existing!.options!) {
-        optionCtrls.add(TextEditingController(text: o.optionValue ?? ''));
-      }
-    }
-    if (optionCtrls.isEmpty) {
-      optionCtrls.add(TextEditingController());
-      optionCtrls.add(TextEditingController());
-    }
-    final typeRx = selectedType.obs;
-    final requiredRx = isRequired.obs;
-
-    Get.dialog(
-      AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text(index == null ? 'Thêm câu hỏi' : 'Sửa câu hỏi'),
-        content: StatefulBuilder(
-          builder: (ctx, setDialogState) {
-            return SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  TextField(
-                    controller: contentCtrl,
-                    decoration: const InputDecoration(
-                      labelText: 'Nội dung câu hỏi',
-                      hintText: 'VD: Bạn có kinh nghiệm tham gia sự kiện?',
-                      border: OutlineInputBorder(),
-                    ),
-                    maxLines: 2,
-                  ),
-                  const SizedBox(height: 16),
-                  const Text('Loại câu hỏi',
-                      style:
-                          TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
-                  const SizedBox(height: 8),
-                  Obx(() => Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
-                          _buildReqTypeChip(
-                              typeRx, RequirementQuestionType.text, 'Text'),
-                          _buildReqTypeChip(typeRx,
-                              RequirementQuestionType.singleChoice, '1 chọn'),
-                          _buildReqTypeChip(
-                              typeRx,
-                              RequirementQuestionType.multipleChoice,
-                              'Nhiều chọn'),
-                          _buildReqTypeChip(typeRx,
-                              RequirementQuestionType.rating, 'Đánh giá'),
-                        ],
-                      )),
-                  const SizedBox(height: 16),
-                  Obx(() {
-                    final type = typeRx.value;
-                    if (type == RequirementQuestionType.text ||
-                        type == RequirementQuestionType.rating) {
-                      return const SizedBox.shrink();
-                    }
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text('Tùy chọn',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.w600, fontSize: 13)),
-                            TextButton.icon(
-                              onPressed: () {
-                                optionCtrls.add(TextEditingController());
-                              },
-                              icon: const Icon(Icons.add, size: 14),
-                              label: const Text('Thêm'),
-                              style: TextButton.styleFrom(
-                                  foregroundColor: const Color(0xFF06B6D4)),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        ...List.generate(optionCtrls.length, (i) {
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 8),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: TextField(
-                                    controller: optionCtrls[i],
-                                    decoration: InputDecoration(
-                                      hintText: 'Tùy chọn ${i + 1}',
-                                      border: const OutlineInputBorder(),
-                                      contentPadding:
-                                          const EdgeInsets.symmetric(
-                                              horizontal: 12, vertical: 10),
-                                    ),
-                                  ),
-                                ),
-                                if (optionCtrls.length > 2)
-                                  IconButton(
-                                    icon: const Icon(Icons.close, size: 18),
-                                    onPressed: () {
-                                      optionCtrls[i].dispose();
-                                      optionCtrls.removeAt(i);
-                                    },
-                                  ),
-                              ],
-                            ),
-                          );
-                        }),
-                      ],
-                    );
-                  }),
-                  const SizedBox(height: 12),
-                  Obx(() => CheckboxListTile(
-                        value: requiredRx.value,
-                        onChanged: (v) => requiredRx.value = v ?? false,
-                        title: const Text('Bắt buộc trả lời',
-                            style: TextStyle(fontSize: 13)),
-                        controlAffinity: ListTileControlAffinity.leading,
-                        contentPadding: EdgeInsets.zero,
-                        activeColor: const Color(0xFF06B6D4),
-                      )),
-                ],
-              ),
-            );
-          },
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              for (final c in optionCtrls) {
-                c.dispose();
-              }
-              Get.back();
-            },
-            child: const Text('Hủy'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              if (contentCtrl.text.trim().isEmpty) return;
-              final type = typeRx.value;
-              final needsOptions =
-                  type == RequirementQuestionType.singleChoice ||
-                      type == RequirementQuestionType.multipleChoice;
-              final options = needsOptions
-                  ? optionCtrls
-                      .where((c) => c.text.trim().isNotEmpty)
-                      .map((c) => QuestionOptionCreateParams(
-                          optionValue: c.text.trim()))
-                      .toList()
-                  : null;
-
-              final question = RequirementQuestionCreateParams(
-                questionText: contentCtrl.text.trim(),
-                questionType: type,
-                isRequired: requiredRx.value,
-                options: options,
-              );
-
-              if (index != null) {
-                _formCtrl.updateRequirementQuestion(index, question);
-              } else {
-                _formCtrl.addRequirementQuestion(question);
-              }
-
-              for (final c in optionCtrls) {
-                c.dispose();
-              }
-              Get.back();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF06B6D4),
-            ),
-            child: Text(index == null ? 'Thêm' : 'Lưu'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildReqTypeChip(Rx<RequirementQuestionType> rx,
-      RequirementQuestionType type, String label) {
-    return GestureDetector(
-      onTap: () => rx.value = type,
-      child: Obx(() {
-        final isSelected = rx.value == type;
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(
-            color: isSelected
-                ? const Color(0xFF06B6D4).withOpacity(0.1)
-                : Colors.grey.shade100,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color:
-                  isSelected ? const Color(0xFF06B6D4) : Colors.grey.shade300,
-            ),
-          ),
-          child: Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              color:
-                  isSelected ? const Color(0xFF06B6D4) : Colors.grey.shade600,
-              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-            ),
-          ),
-        );
-      }),
     );
   }
 

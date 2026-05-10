@@ -10,7 +10,9 @@ import 'package:mocktail/mocktail.dart';
 
 class MockFeedbackRepository extends Mock implements FeedbackRepository {}
 
-class FakeGetFeedbackQuestionsParams extends Fake implements GetFeedbackQuestionsParams {}
+class FakeGetFeedbackQuestionsParams extends Fake
+    implements GetFeedbackQuestionsParams {}
+
 class FakeSubmitFeedbackParams extends Fake implements SubmitFeedbackParams {}
 
 void main() {
@@ -30,7 +32,8 @@ void main() {
   });
 
   group('GetFeedbackQuestionsUsecase', () {
-    test('trả về list feedback question entity khi repository thành công', () async {
+    test('trả về list feedback question entity khi repository thành công',
+        () async {
       final entities = [
         FeedbackQuestionEntity(
           feedbackQuestionId: 1,
@@ -81,10 +84,11 @@ void main() {
 
     test('trả về failure khi repository thất bại', () async {
       when(() => mockRepository.getFeedbackQuestions(
-            any(),
-            page: any(named: 'page'),
-            size: any(named: 'size'),
-          )).thenAnswer((_) async =>
+                any(),
+                page: any(named: 'page'),
+                size: any(named: 'size'),
+              ))
+          .thenAnswer((_) async =>
               const Left(FailureEntity.serverFailure('500', 'Server error')));
 
       final result = await getFeedbackQuestionsUsecase(
@@ -101,7 +105,7 @@ void main() {
       when(() => mockRepository.submitFeedback(any()))
           .thenAnswer((_) async => Right(entity));
 
-      final params = SubmitFeedbackParams(eventId: 1, answers: []);
+      const params = SubmitFeedbackParams(eventId: 1, answers: []);
       final result = await submitFeedbackUsecase(params);
 
       expect(result.isRight(), isTrue);
@@ -112,22 +116,20 @@ void main() {
     });
 
     test('trả về Left khi repository trả badRequest', () async {
-      when(() => mockRepository.submitFeedback(any()))
-          .thenAnswer((_) async =>
-              const Left(FailureEntity.serverFailure('400', 'Bad request')));
+      when(() => mockRepository.submitFeedback(any())).thenAnswer((_) async =>
+          const Left(FailureEntity.serverFailure('400', 'Bad request')));
 
-      final params = SubmitFeedbackParams(eventId: 1, answers: []);
+      const params = SubmitFeedbackParams(eventId: 1, answers: []);
       final result = await submitFeedbackUsecase(params);
 
       expect(result.isLeft(), isTrue);
     });
 
     test('trả về Left khi repository trả notFound', () async {
-      when(() => mockRepository.submitFeedback(any()))
-          .thenAnswer((_) async =>
-              const Left(FailureEntity.serverFailure('404', 'Not found')));
+      when(() => mockRepository.submitFeedback(any())).thenAnswer((_) async =>
+          const Left(FailureEntity.serverFailure('404', 'Not found')));
 
-      final params = SubmitFeedbackParams(eventId: 9999, answers: []);
+      const params = SubmitFeedbackParams(eventId: 9999, answers: []);
       final result = await submitFeedbackUsecase(params);
 
       expect(result.isLeft(), isTrue);

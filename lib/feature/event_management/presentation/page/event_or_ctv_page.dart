@@ -157,6 +157,7 @@ class _EventOrCtvPageState extends State<EventOrCtvPage> {
                 hasMore: hasMore,
                 isLoadingMore: isLoadingMore,
                 isInitialLoading: isLoading,
+                isLoading: isLoading,
                 onLoadMore: widget.isEvent
                     ? eventController.loadMore
                     : ctvController.loadMore,

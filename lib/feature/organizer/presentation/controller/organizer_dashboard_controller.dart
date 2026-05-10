@@ -1,7 +1,6 @@
 import 'package:get/get.dart';
 import 'package:events_app/api_template/services/failure.dart';
 import 'package:events_app/authentication/presentation/controller/auth_controller.dart';
-import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
 import 'package:events_app/dependency_injection/injection.dart';
 import 'package:events_app/feature/user_management/domain/entity/organization_dashboard_entity.dart';
 import 'package:events_app/feature/organizer/organization/domain/usecase/organizer_organization_usecase.dart';

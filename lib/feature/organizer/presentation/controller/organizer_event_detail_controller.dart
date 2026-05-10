@@ -5,8 +5,10 @@ import 'package:events_app/feature/common/domain/enum/app_enum.dart';
 import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
 import 'package:events_app/dependency_injection/injection.dart';
 import 'package:events_app/feature/event_management/domain/entity/event_entity.dart';
+import 'package:events_app/feature/registration/presentation/controller/registration_controller.dart';
 import 'package:events_app/feature/organizer/event/domain/usecase/organizer_event_usecase.dart';
 import 'package:events_app/feature/organizer/event/domain/usecase/event_params.dart';
+import 'package:events_app/feature/organizer/presentation/controller/organizer_event_list_controller.dart';
 
 class OrganizerEventDetailController extends GetxController {
   GetOrganizerEventByIdUsecase get _getEventByIdUsecase =>
@@ -28,6 +30,28 @@ class OrganizerEventDetailController extends GetxController {
   void onInit() {
     super.onInit();
     if (_eventId != null) loadEvent(_eventId!);
+    _watchEventUpdates();
+  }
+
+  void _watchEventUpdates() {
+    ever(OrganizerEventListController.eventStateUpdate, (tuple) {
+      final (updatedEventId, newStatus) = tuple;
+      if (_eventId == updatedEventId) {
+        event.value = event.value?.copyWith(status: newStatus);
+      }
+    });
+
+    ever(_registrationStateUpdate, (tuple) {
+      final (updatedEventId, _) = tuple;
+      if (_eventId == updatedEventId) {
+        refreshEvent();
+      }
+    });
+  }
+
+  Rx<(int, UserEventState)> get _registrationStateUpdate {
+    RegistrationController.ensureInstance();
+    return RegistrationController.to.eventStateUpdate;
   }
 
   Future<void> loadEvent(int eventId) async {
@@ -53,9 +77,10 @@ class OrganizerEventDetailController extends GetxController {
   Future<void> publishEvent() async {
     if (_eventId == null || isActionLoading.value) return;
     final currentStatus = event.value?.status;
-    if (currentStatus != EventStatus.draft) {
-      AppSnackbarUtils.showError(
-          'Không hợp lệ', 'Chỉ sự kiện ở trạng thái nháp mới có thể xuất bản.');
+    if (currentStatus != EventStatus.draft &&
+        currentStatus != EventStatus.cancelled) {
+      AppSnackbarUtils.showError('Không hợp lệ',
+          'Chỉ sự kiện ở trạng thái nháp hoặc hủy mới có thể xuất bản.');
       return;
     }
     isActionLoading.value = true;
@@ -69,6 +94,8 @@ class OrganizerEventDetailController extends GetxController {
         AppSnackbarUtils.showSuccess(
             'Thành công', 'Xuất bản sự kiện thành công');
         event.value = updatedEvent;
+        OrganizerEventListController.eventStateUpdate.value =
+            (_eventId!, updatedEvent.status);
         isActionLoading.value = false;
       },
     );
@@ -83,7 +110,7 @@ class OrganizerEventDetailController extends GetxController {
       return;
     }
     isActionLoading.value = true;
-    final params = EventUpdateParams(status: EventStatus.closed);
+    const params = EventUpdateParams(status: EventStatus.closed);
     final result = await _updateEventUsecase(UpdateOrganizerEventParams(
       eventId: _eventId!,
       params: params,
@@ -96,6 +123,8 @@ class OrganizerEventDetailController extends GetxController {
       (updatedEvent) {
         AppSnackbarUtils.showSuccess('Thành công', 'Đóng sự kiện thành công');
         event.value = updatedEvent;
+        OrganizerEventListController.eventStateUpdate.value =
+            (_eventId!, updatedEvent.status);
         isActionLoading.value = false;
       },
     );
@@ -111,7 +140,7 @@ class OrganizerEventDetailController extends GetxController {
       return;
     }
     isCancelling.value = true;
-    final params = EventUpdateParams(status: EventStatus.cancelled);
+    const params = EventUpdateParams(status: EventStatus.cancelled);
     final result = await _updateEventUsecase(UpdateOrganizerEventParams(
       eventId: _eventId!,
       params: params,
@@ -124,6 +153,8 @@ class OrganizerEventDetailController extends GetxController {
       (updatedEvent) {
         AppSnackbarUtils.showSuccess('Thành công', 'Hủy sự kiện thành công');
         event.value = updatedEvent;
+        OrganizerEventListController.eventStateUpdate.value =
+            (_eventId!, updatedEvent.status);
         isCancelling.value = false;
       },
     );

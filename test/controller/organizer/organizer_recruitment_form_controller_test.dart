@@ -45,9 +45,9 @@ void main() {
   });
 
   setUpAll(() {
-    registerFallbackValue(CreateRecruitmentParams(eventId: 1));
-    registerFallbackValue(
-        UpdateRecruitmentParamsWrapper(id: 1, params: UpdateRecruitmentParams()));
+    registerFallbackValue(const CreateRecruitmentParams(eventId: 1));
+    registerFallbackValue(const UpdateRecruitmentParamsWrapper(
+        id: 1, params: UpdateRecruitmentParams()));
   });
 
   group('Initial state', () {
@@ -71,7 +71,7 @@ void main() {
       controller.roleNameController.text = 'Volunteer';
       controller.quantityController.text = '10';
 
-      final params = CreateRecruitmentParams(
+      const params = CreateRecruitmentParams(
         eventId: 1,
         title: 'Test Recruitment',
         description: 'Description',
@@ -86,7 +86,8 @@ void main() {
 
     test('400 returns Left', () async {
       when(() => mockCreateUsecase(any())).thenAnswer(
-        (_) async => Left(FailureEntity.serverFailure('400', 'Invalid data')),
+        (_) async =>
+            const Left(FailureEntity.serverFailure('400', 'Invalid data')),
       );
 
       controller.titleController.text = '';
@@ -132,7 +133,8 @@ void main() {
 
     test('404 returns Left', () async {
       when(() => mockUpdateUsecase(any())).thenAnswer(
-        (_) async => Left(FailureEntity.serverFailure('404', 'Not found')),
+        (_) async =>
+            const Left(FailureEntity.serverFailure('404', 'Not found')),
       );
 
       controller.initForEdit(CtvRecruitmentEntity(ctvRecruitmentId: 999));

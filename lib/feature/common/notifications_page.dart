@@ -42,7 +42,7 @@ class _NotificationsPageState extends State<NotificationsPage>
     } else if (filter == 'system') {
       return items.where((i) => i.category == 'system').length;
     }
-    return items.length; 
+    return items.length;
   }
 
   Widget _buildTabWithBadge(String text, int count) {
@@ -374,12 +374,12 @@ class _NotificationsPageState extends State<NotificationsPage>
                 CircleAvatar(
                   radius: 22,
                   backgroundColor: color,
+                  backgroundImage:
+                      it.imageUrl != null ? NetworkImage(it.imageUrl!) : null,
                   child: it.imageUrl == null
                       ? Icon(it.category == 'event' ? Icons.event : Icons.info,
                           color: Colors.white)
                       : null,
-                  backgroundImage:
-                      it.imageUrl != null ? NetworkImage(it.imageUrl!) : null,
                 ),
                 const SizedBox(width: 12),
                 Expanded(

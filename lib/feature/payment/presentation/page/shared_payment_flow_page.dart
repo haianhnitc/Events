@@ -1,17 +1,20 @@
 import 'package:events_app/feature/common/domain/enum/app_enum.dart';
 import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
+import 'package:events_app/feature/event_management/presentation/controller/event_detail_page_controller.dart';
 import 'package:events_app/feature/payment/domain/entity/payment_url_entity.dart';
 import 'package:events_app/feature/payment/domain/entity/transaction_entity.dart';
 import 'package:events_app/feature/payment/presentation/controller/sepay_payment_controller.dart';
 import 'package:events_app/feature/payment/presentation/controller/shared_payment_checkout_controller.dart';
+import 'package:events_app/feature/payment/presentation/controller/package_refresh_helper.dart';
 import 'package:events_app/feature/payment/presentation/page/shared_payment_flow_args.dart';
 import 'package:events_app/feature/payment/presentation/widget/coin_input_section.dart';
 import 'package:events_app/feature/payment/presentation/widget/payment_item_info_card.dart';
 import 'package:events_app/feature/payment/presentation/widget/payment_summary_section.dart';
+import 'package:events_app/feature/registration/presentation/controller/registration_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-class SharedPaymentCheckoutPage extends StatelessWidget {
+class SharedPaymentCheckoutPage extends StatefulWidget {
   final SharedPaymentFlowArgs args;
 
   const SharedPaymentCheckoutPage({
@@ -20,12 +23,24 @@ class SharedPaymentCheckoutPage extends StatelessWidget {
   });
 
   @override
+  State<SharedPaymentCheckoutPage> createState() =>
+      _SharedPaymentCheckoutPageState();
+}
+
+class _SharedPaymentCheckoutPageState
+    extends State<SharedPaymentCheckoutPage> {
+  late final SharedPaymentCheckoutController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = SharedPaymentCheckoutController(args: widget.args);
+    _controller.init();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final controller = SharedPaymentCheckoutController(args: args)..init();
-    return GetBuilder<SharedPaymentCheckoutController>(
-      init: controller,
-      builder: (ctrl) => _CheckoutView(controller: ctrl),
-    );
+    return _CheckoutView(controller: _controller);
   }
 }
 
@@ -36,18 +51,36 @@ class _CheckoutView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final itemInfo = controller.args.itemInfo ?? controller.args.parseItemInfo();
+    final itemInfo =
+        controller.args.itemInfo ?? controller.args.parseItemInfo();
 
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Color(0xff64748B)),
+          onPressed: () => Navigator.of(context).maybePop(),
+        ),
         title: const Text('Xác nhận thanh toán'),
         backgroundColor: Colors.white,
         foregroundColor: const Color(0xff273143),
         elevation: 0,
         surfaceTintColor: Colors.transparent,
+        automaticallyImplyLeading: false,
       ),
       backgroundColor: const Color(0xffF3F4F6),
-      body: ListView(
+      body: PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, result) {
+          if (didPop) return;
+          if (controller.args.referenceType == TransactionReferenceType.packagePurchase ||
+              controller.args.referenceType == TransactionReferenceType.packageRenewal) {
+            PackageRefreshHelper.refreshPackageList();
+            Navigator.of(context).pop(false);
+          } else {
+            Navigator.of(context).pop(false);
+          }
+        },
+        child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           Text(
@@ -75,7 +108,7 @@ class _CheckoutView extends StatelessWidget {
           const SizedBox(height: 16),
           Obx(
             () {
-              controller.coinUsedTrigger.value; 
+              controller.coinUsedTrigger.value;
               return CoinInputSection(
                 controller: controller.coinController,
                 currentCoin: controller.currentCoin,
@@ -109,7 +142,8 @@ class _CheckoutView extends StatelessWidget {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xff06B6D4),
                   foregroundColor: Colors.white,
-                  disabledBackgroundColor: const Color(0xff06B6D4).withValues(alpha: 0.5),
+                  disabledBackgroundColor:
+                      const Color(0xff06B6D4).withValues(alpha: 0.5),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -121,7 +155,8 @@ class _CheckoutView extends StatelessWidget {
                         height: 22,
                         child: CircularProgressIndicator(
                           strokeWidth: 2.5,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.white),
                         ),
                       )
                     : const Text(
@@ -137,25 +172,67 @@ class _CheckoutView extends StatelessWidget {
           const SizedBox(height: 12),
         ],
       ),
+      ),
     );
   }
 
-  Future<void> _onPay(BuildContext context, SharedPaymentCheckoutController controller) async {
+  void _onPay(
+      BuildContext context, SharedPaymentCheckoutController controller) async {
     FocusScope.of(context).unfocus();
     if (controller.finalAmount <= 0) {
       AppSnackbarUtils.showSuccess('Thành công', 'Thanh toán hoàn tất!');
-      Get.back(result: true);
+      if (controller.args.referenceType == TransactionReferenceType.packagePurchase ||
+          controller.args.referenceType == TransactionReferenceType.packageRenewal) {
+        _doPackageRefresh(controller);
+      }
+      _checkoutEmitEventStateUpdate(controller.args);
+      if (context.mounted) {
+        Navigator.of(context).pop(true);
+      }
       return;
     }
     final payment = await controller.createPayment();
     if (payment == null) return;
-    Get.off(
+    final result = await Get.to(
       () => SharedPaymentQrPage(
         args: controller.args,
         payment: payment,
         coinUsed: controller.coinUsed,
       ),
     );
+    if (result == true && context.mounted) {
+      debugPrint('[Checkout] result=true — calling _checkoutEmitEventStateUpdate');
+      _checkoutEmitEventStateUpdate(controller.args);
+      debugPrint('[Checkout] calling Navigator.pop(true)');
+      Navigator.of(context).pop(true);
+    }
+  }
+
+  void _doPackageRefresh(SharedPaymentCheckoutController controller) {
+    if (controller.argsForView.referenceType == TransactionReferenceType.packagePurchase) {
+      final itemInfo = controller.argsForView.itemInfo ?? controller.argsForView.parseItemInfo();
+      final pkgId = itemInfo?.package?.packageId;
+      if (pkgId != null) {
+        PackageRefreshHelper.refreshByPackageId(pkgId);
+      }
+    } else if (controller.argsForView.referenceType == TransactionReferenceType.packageRenewal) {
+      PackageRefreshHelper.refreshPackageList();
+    }
+  }
+
+  void _checkoutEmitEventStateUpdate(SharedPaymentFlowArgs args) {
+    debugPrint('[Checkout] _checkoutEmitEventStateUpdate — referenceType=${args.referenceType}');
+    if (args.referenceType == TransactionReferenceType.ticket) {
+      final itemInfo = args.itemInfo ?? args.parseItemInfo();
+      final eventId = itemInfo?.event?.eventId ?? args.referenceId;
+      debugPrint('[Checkout] ticket flow — eventId=$eventId');
+      if (eventId != null) {
+        RegistrationController.ensureInstance().eventStateUpdate.value =
+            (eventId, UserEventState.attendee);
+        debugPrint('[Checkout] eventStateUpdate set to ($eventId, attendee)');
+        EventDetailPageController.refreshByEventId(eventId);
+      }
+    }
   }
 }
 
@@ -178,6 +255,7 @@ class SharedPaymentQrPage extends StatefulWidget {
 class _SharedPaymentQrPageState extends State<SharedPaymentQrPage> {
   late final SePayPaymentController _paymentController;
   TransactionStatus? _status;
+  bool _handledSuccess = false;
 
   int get _finalAmount => (widget.args.originalAmount - widget.coinUsed).clamp(
         0,
@@ -187,8 +265,8 @@ class _SharedPaymentQrPageState extends State<SharedPaymentQrPage> {
   @override
   void initState() {
     super.initState();
-    Get.lazyPut(() => SePayPaymentController());
-    _paymentController = Get.find<SePayPaymentController>();
+    Get.lazyPut(() => SePayPaymentController(), tag: 'qr');
+    _paymentController = Get.find<SePayPaymentController>(tag: 'qr');
     _status = TransactionStatus.pending;
     _startPolling();
   }
@@ -200,24 +278,52 @@ class _SharedPaymentQrPageState extends State<SharedPaymentQrPage> {
       transactionId: transactionId,
       onSuccess: _onPaymentSuccess,
       onFailure: _onPaymentFailed,
+      onTimeout: _onPaymentTimeout,
     );
   }
 
-  void _onPaymentSuccess(TransactionEntity transaction) {
-    setState(() => _status = transaction.status ?? TransactionStatus.success);
+  Future<void> _onPaymentSuccess(TransactionEntity transaction) async {
+    debugPrint('[QRPage] _onPaymentSuccess called');
+
+    if (!mounted || _handledSuccess) return;
+    _handledSuccess = true;
+
+    setState(() => _status = TransactionStatus.success);
+    _paymentController.stopPolling();
+
+    if (!mounted) return;
+
     AppSnackbarUtils.showSuccess('Thành công', 'Thanh toán hoàn tất!');
-    Future.delayed(const Duration(milliseconds: 800), () {
-      if (mounted) Get.back(result: true);
-    });
+
+    if (!mounted) return;
+
+    debugPrint('[QRPage] BEFORE POP');
+    Navigator.of(context).pop(true);
+    debugPrint('[QRPage] AFTER POP — result=true sent back to checkout');
+  }
+
+  void _onPaymentTimeout() {
+    debugPrint('[QRPage] _onPaymentTimeout called');
+    if (!mounted) return;
+    setState(() => _status = TransactionStatus.pending);
+    _paymentController.stopPolling();
+    AppSnackbarUtils.showError('Quá hạn', 'Đã hết thời gian thanh toán. Vui lòng thử lại.');
+    if (mounted) Navigator.of(context).pop(false);
   }
 
   void _onPaymentFailed(TransactionEntity transaction) {
+    debugPrint('[QRPage] _onPaymentFailed called — status=${transaction.status}');
+    if (!mounted) return;
     setState(() => _status = TransactionStatus.failed);
+    _paymentController.stopPolling();
   }
 
   @override
   void dispose() {
     _paymentController.stopPolling();
+    if (Get.isRegistered<SePayPaymentController>(tag: 'qr')) {
+      Get.delete<SePayPaymentController>(tag: 'qr');
+    }
     super.dispose();
   }
 
@@ -428,7 +534,8 @@ class _QrSummaryRow extends StatelessWidget {
           style: TextStyle(
             fontSize: isEmphasis ? 18 : 14,
             fontWeight: isEmphasis ? FontWeight.w700 : FontWeight.w500,
-            color: isEmphasis ? const Color(0xff06B6D4) : const Color(0xff273143),
+            color:
+                isEmphasis ? const Color(0xff06B6D4) : const Color(0xff273143),
           ),
         ),
       ],

@@ -1,15 +1,14 @@
-import 'package:dartz/dartz.dart';
 import 'package:events_app/api_template/services/failure.dart';
 import 'package:events_app/authentication/presentation/controller/auth_controller.dart';
 import 'package:events_app/dependency_injection/injection.dart';
-import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
 import 'package:events_app/feature/news/domain/entity/news_entity.dart';
 import 'package:events_app/feature/news/domain/usecase/news_usecase.dart';
 import 'package:get/get.dart';
 
 class NewsPageController extends GetxController {
   NewsPageController({GetNewsListUsecase? getNewsListUsecase})
-      : _getNewsListUsecase = getNewsListUsecase ?? networkGetIt<GetNewsListUsecase>();
+      : _getNewsListUsecase =
+            getNewsListUsecase ?? networkGetIt<GetNewsListUsecase>();
 
   final GetNewsListUsecase _getNewsListUsecase;
 

@@ -22,7 +22,8 @@ import '../helpers/mock_rest_client.dart';
 
 class MockUserDatasource extends Mock implements UserDatasource {}
 
-class FakeUpdateCurrentUserParams extends Fake implements UpdateCurrentUserParams {}
+class FakeUpdateCurrentUserParams extends Fake
+    implements UpdateCurrentUserParams {}
 
 void main() {
   late MockUserDatasource mockDatasource;
@@ -71,7 +72,8 @@ void main() {
       );
     });
 
-    test('trả về Left(FailureEntity) khi datasource trả unauthorized', () async {
+    test('trả về Left(FailureEntity) khi datasource trả unauthorized',
+        () async {
       when(() => mockDatasource.getCurrentUser()).thenAnswer(
           (_) async => errorResponse<UserModel?>(unauthorizedResponse()));
 
@@ -81,17 +83,18 @@ void main() {
     });
 
     test('trả về Left(FailureEntity) khi datasource trả notFound', () async {
-      when(() => mockDatasource.getCurrentUser())
-          .thenAnswer((_) async => errorResponse<UserModel?>(notFoundResponse()));
+      when(() => mockDatasource.getCurrentUser()).thenAnswer(
+          (_) async => errorResponse<UserModel?>(notFoundResponse()));
 
       final result = await repository.getCurrentUser();
 
       expect(result.isLeft(), isTrue);
     });
 
-    test('trả về Left(FailureEntity) khi datasource trả internalServerError', () async {
-      when(() => mockDatasource.getCurrentUser())
-          .thenAnswer((_) async => errorResponse<UserModel?>(serverErrorResponse()));
+    test('trả về Left(FailureEntity) khi datasource trả internalServerError',
+        () async {
+      when(() => mockDatasource.getCurrentUser()).thenAnswer(
+          (_) async => errorResponse<UserModel?>(serverErrorResponse()));
 
       final result = await repository.getCurrentUser();
 
@@ -115,17 +118,18 @@ void main() {
     });
 
     test('trả về Left(FailureEntity) khi datasource trả notFound', () async {
-      when(() => mockDatasource.getUserById(9999))
-          .thenAnswer((_) async => errorResponse<UserModel?>(notFoundResponse()));
+      when(() => mockDatasource.getUserById(9999)).thenAnswer(
+          (_) async => errorResponse<UserModel?>(notFoundResponse()));
 
       final result = await repository.getUserById(9999);
 
       expect(result.isLeft(), isTrue);
     });
 
-    test('trả về Left(FailureEntity) khi datasource trả unauthorized', () async {
-      when(() => mockDatasource.getUserById(1))
-          .thenAnswer((_) async => errorResponse<UserModel?>(unauthorizedResponse()));
+    test('trả về Left(FailureEntity) khi datasource trả unauthorized',
+        () async {
+      when(() => mockDatasource.getUserById(1)).thenAnswer(
+          (_) async => errorResponse<UserModel?>(unauthorizedResponse()));
 
       final result = await repository.getUserById(1);
 
@@ -136,7 +140,7 @@ void main() {
   group('updateCurrentUser', () {
     test('trả về UserEntity khi datasource trả success', () async {
       final model = UserModel.fromJson(fakeUserJson(id: 1));
-      final params = UpdateCurrentUserParams(fullName: 'New Name');
+      const params = UpdateCurrentUserParams(fullName: 'New Name');
       when(() => mockDatasource.updateCurrentUser(params))
           .thenAnswer((_) async => successResponse<UserModel?>(model));
 
@@ -151,7 +155,7 @@ void main() {
 
     test('truyền đúng params xuống datasource', () async {
       final model = UserModel.fromJson(fakeUserJson(id: 1));
-      final params = UpdateCurrentUserParams(fullName: 'Updated Name');
+      const params = UpdateCurrentUserParams(fullName: 'Updated Name');
       when(() => mockDatasource.updateCurrentUser(params))
           .thenAnswer((_) async => successResponse<UserModel?>(model));
 
@@ -161,7 +165,7 @@ void main() {
     });
 
     test('trả về Left(FailureEntity) khi datasource trả badRequest', () async {
-      final params = UpdateCurrentUserParams(fullName: '');
+      const params = UpdateCurrentUserParams(fullName: '');
       when(() => mockDatasource.updateCurrentUser(params)).thenAnswer(
           (_) async => errorResponse<UserModel?>(badRequestResponse()));
 
@@ -170,8 +174,9 @@ void main() {
       expect(result.isLeft(), isTrue);
     });
 
-    test('trả về Left(FailureEntity) khi datasource trả unauthorized', () async {
-      final params = UpdateCurrentUserParams(fullName: 'Name');
+    test('trả về Left(FailureEntity) khi datasource trả unauthorized',
+        () async {
+      const params = UpdateCurrentUserParams(fullName: 'Name');
       when(() => mockDatasource.updateCurrentUser(params)).thenAnswer(
           (_) async => errorResponse<UserModel?>(unauthorizedResponse()));
 
@@ -189,7 +194,10 @@ void main() {
             page: any(named: 'page'),
             size: any(named: 'size'),
           )).thenAnswer((_) async => successResponse<Map<String, dynamic>>({
-            'content': [fakeEventSummaryJson(id: 1), fakeEventSummaryJson(id: 2)],
+            'content': [
+              fakeEventSummaryJson(id: 1),
+              fakeEventSummaryJson(id: 2)
+            ],
             'totalElements': 2,
           }));
 
@@ -211,8 +219,7 @@ void main() {
             participantType: any(named: 'participantType'),
             page: any(named: 'page'),
             size: any(named: 'size'),
-          )).thenAnswer(
-          (_) async => successResponse<Map<String, dynamic>>({
+          )).thenAnswer((_) async => successResponse<Map<String, dynamic>>({
             'content': [],
             'totalElements': 0,
           }));
@@ -279,8 +286,7 @@ void main() {
       when(() => mockDatasource.getRegistrations(
             eventId: 1,
             userId: 10,
-          )).thenAnswer(
-          (_) async => successResponse<Map<String, dynamic>>({
+          )).thenAnswer((_) async => successResponse<Map<String, dynamic>>({
             'content': [],
             'totalElements': 0,
           }));
@@ -321,8 +327,7 @@ void main() {
       when(() => mockDatasource.getUserPackages(
             page: any(named: 'page'),
             size: any(named: 'size'),
-          )).thenAnswer(
-          (_) async => successResponse<Map<String, dynamic>>({
+          )).thenAnswer((_) async => successResponse<Map<String, dynamic>>({
             'content': [],
             'totalElements': 0,
           }));
@@ -339,8 +344,8 @@ void main() {
 
   group('getUserRank', () {
     test('trả về RankEntity khi datasource trả success', () async {
-      when(() => mockDatasource.getUserRank(1))
-          .thenAnswer((_) async => successResponse<RankModel?>(RankModel.fromJson(fakeRankJson(id: 1))));
+      when(() => mockDatasource.getUserRank(1)).thenAnswer((_) async =>
+          successResponse<RankModel?>(RankModel.fromJson(fakeRankJson(id: 1))));
 
       final result = await repository.getUserRank(1);
 
@@ -395,8 +400,7 @@ void main() {
             levelName: any(named: 'levelName'),
             page: any(named: 'page'),
             size: any(named: 'size'),
-          )).thenAnswer(
-          (_) async => successResponse<Map<String, dynamic>>({
+          )).thenAnswer((_) async => successResponse<Map<String, dynamic>>({
             'content': [],
             'totalElements': 0,
           }));

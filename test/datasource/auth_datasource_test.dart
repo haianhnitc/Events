@@ -73,9 +73,11 @@ class TestRestClient extends Fake implements RestClient {
     return successEnvelope(null);
   }
 
-  ApiResponse<Model> _cloneResponse<Model>(ApiResponse<Map<String, dynamic>> from) {
+  ApiResponse<Model> _cloneResponse<Model>(
+      ApiResponse<Map<String, dynamic>> from) {
     return from.when(
-      success: (_) => ApiResponse.success(parser(from.whenOrNull(success: (_) => _) ?? {})),
+      success: (_) =>
+          ApiResponse.success(parser(from.whenOrNull(success: (_) => _) ?? {})),
       badRequest: (e) => ApiResponse.badRequest(e),
       unauthorized: (e) => ApiResponse.unauthorized(e),
       forbidden: (e) => ApiResponse.forbidden(e),
@@ -158,7 +160,8 @@ void main() {
             password: any(named: 'password'),
           )).thenAnswer((_) async => mockCred);
       when(() => mockCred.user).thenReturn(mockUser);
-      when(() => mockUser.getIdToken(any())).thenAnswer((_) async => 'fake-token');
+      when(() => mockUser.getIdToken(any()))
+          .thenAnswer((_) async => 'fake-token');
 
       datasource.stubResponse(successEnvelope(fakeUserJson()));
 
@@ -183,7 +186,8 @@ void main() {
       expect(isUnexpected(result), isTrue);
     });
 
-    test('trả về forbidden với organizerPendingCode khi tổ chức chờ duyệt', () async {
+    test('trả về forbidden với organizerPendingCode khi tổ chức chờ duyệt',
+        () async {
       final mockUser = MockFirebaseUser();
       final mockCred = MockUserCredential();
 
@@ -192,7 +196,8 @@ void main() {
             password: any(named: 'password'),
           )).thenAnswer((_) async => mockCred);
       when(() => mockCred.user).thenReturn(mockUser);
-      when(() => mockUser.getIdToken(any())).thenAnswer((_) async => 'fake-token');
+      when(() => mockUser.getIdToken(any()))
+          .thenAnswer((_) async => 'fake-token');
 
       datasource.stubResponse(successEnvelope(fakeUserJson(
         role: 'ORGANIZATION',
@@ -220,7 +225,8 @@ void main() {
       );
     });
 
-    test('trả về forbidden với organizerRejectedCode khi tổ chức bị từ chối', () async {
+    test('trả về forbidden với organizerRejectedCode khi tổ chức bị từ chối',
+        () async {
       final mockUser = MockFirebaseUser();
       final mockCred = MockUserCredential();
 
@@ -229,7 +235,8 @@ void main() {
             password: any(named: 'password'),
           )).thenAnswer((_) async => mockCred);
       when(() => mockCred.user).thenReturn(mockUser);
-      when(() => mockUser.getIdToken(any())).thenAnswer((_) async => 'fake-token');
+      when(() => mockUser.getIdToken(any()))
+          .thenAnswer((_) async => 'fake-token');
 
       datasource.stubResponse(successEnvelope(fakeUserJson(
         role: 'ORGANIZATION',
@@ -257,7 +264,8 @@ void main() {
       );
     });
 
-    test('trả về forbidden với userDisabledCode khi tài khoản bị khóa', () async {
+    test('trả về forbidden với userDisabledCode khi tài khoản bị khóa',
+        () async {
       final mockUser = MockFirebaseUser();
       final mockCred = MockUserCredential();
 
@@ -266,9 +274,11 @@ void main() {
             password: any(named: 'password'),
           )).thenAnswer((_) async => mockCred);
       when(() => mockCred.user).thenReturn(mockUser);
-      when(() => mockUser.getIdToken(any())).thenAnswer((_) async => 'fake-token');
+      when(() => mockUser.getIdToken(any()))
+          .thenAnswer((_) async => 'fake-token');
 
-      datasource.stubResponse(successEnvelope(fakeUserJson(status: 'DISABLED')));
+      datasource
+          .stubResponse(successEnvelope(fakeUserJson(status: 'DISABLED')));
 
       final result = await datasource.signInWithEmailAndPassword(
           'test@example.com', 'password');
@@ -291,7 +301,8 @@ void main() {
       );
     });
 
-    test('trả về unexpected khi Firebase user null (không lấy được token)', () async {
+    test('trả về unexpected khi Firebase user null (không lấy được token)',
+        () async {
       final mockCred = MockUserCredential();
 
       when(() => mockFirebaseAuth.signInWithEmailAndPassword(
@@ -315,7 +326,8 @@ void main() {
             password: any(named: 'password'),
           )).thenAnswer((_) async => mockCred);
       when(() => mockCred.user).thenReturn(mockUser);
-      when(() => mockUser.getIdToken(any())).thenAnswer((_) async => 'fake-token');
+      when(() => mockUser.getIdToken(any()))
+          .thenAnswer((_) async => 'fake-token');
 
       datasource.stubResponse(unauthorizedResponse());
 
@@ -328,7 +340,8 @@ void main() {
 
   // ─── signUpWithEmailAndPassword ──────────────────────────────────────────────
   group('signUpWithEmailAndPassword', () {
-    test('trả về success sau khi Firebase tạo user và backend signup', () async {
+    test('trả về success sau khi Firebase tạo user và backend signup',
+        () async {
       final mockUser = MockFirebaseUser();
       final mockCred = MockUserCredential();
 
@@ -337,13 +350,15 @@ void main() {
             password: any(named: 'password'),
           )).thenAnswer((_) async => mockCred);
       when(() => mockCred.user).thenReturn(mockUser);
-      when(() => mockUser.getIdToken(any())).thenAnswer((_) async => 'fake-token');
+      when(() => mockUser.getIdToken(any()))
+          .thenAnswer((_) async => 'fake-token');
 
       datasource.stubResponse(successEnvelope(fakeUserJson()));
 
       final result = await datasource.signUpWithEmailAndPassword(
         'password123',
-        SignupParams(idToken: 'token', email: 'new@example.com', isUser: true),
+        const SignupParams(
+            idToken: 'token', email: 'new@example.com', isUser: true),
       );
 
       expect(isSuccess(result), isTrue);
@@ -360,7 +375,8 @@ void main() {
 
       final result = await datasource.signUpWithEmailAndPassword(
         'password',
-        SignupParams(idToken: 'token', email: 'existing@example.com', isUser: true),
+        const SignupParams(
+            idToken: 'token', email: 'existing@example.com', isUser: true),
       );
 
       expect(isUnexpected(result), isTrue);
@@ -377,7 +393,8 @@ void main() {
 
       final result = await datasource.signUpWithEmailAndPassword(
         'password',
-        SignupParams(idToken: 'token', email: 'test@example.com', isUser: true),
+        const SignupParams(
+            idToken: 'token', email: 'test@example.com', isUser: true),
       );
 
       expect(isUnexpected(result), isTrue);
@@ -395,7 +412,8 @@ void main() {
     });
 
     test('trả về error khi Google ném exception', () async {
-      when(() => mockGoogleSignIn.signIn()).thenThrow(Exception('Network error'));
+      when(() => mockGoogleSignIn.signIn())
+          .thenThrow(Exception('Network error'));
 
       final result = await datasource.signInWithGoogleOnly();
 
@@ -419,7 +437,8 @@ void main() {
 
     test('trả về unexpected khi Firebase ném exception khi signOut', () async {
       datasource.stubResponse(successEnvelope(null));
-      when(() => mockFirebaseAuth.signOut()).thenThrow(Exception('Firebase error'));
+      when(() => mockFirebaseAuth.signOut())
+          .thenThrow(Exception('Firebase error'));
       when(() => mockGoogleSignIn.signOut()).thenAnswer((_) async => null);
 
       final result = await datasource.signOut();
@@ -452,7 +471,9 @@ void main() {
       );
     });
 
-    test('trả về success(user) khi user đang login và backend verify thành công', () async {
+    test(
+        'trả về success(user) khi user đang login và backend verify thành công',
+        () async {
       final mockUser = MockFirebaseUser();
 
       when(() => mockFirebaseAuth.currentUser).thenReturn(mockUser);
@@ -473,7 +494,8 @@ void main() {
             email: any(named: 'email'),
           )).thenAnswer((_) async {});
 
-      final result = await datasource.sendPasswordResetEmail('test@example.com');
+      final result =
+          await datasource.sendPasswordResetEmail('test@example.com');
 
       expect(isSuccess(result), isTrue);
     });
@@ -486,7 +508,8 @@ void main() {
         message: 'User not found',
       ));
 
-      final result = await datasource.sendPasswordResetEmail('notfound@example.com');
+      final result =
+          await datasource.sendPasswordResetEmail('notfound@example.com');
 
       expect(isUnexpected(result), isTrue);
     });
@@ -496,7 +519,10 @@ void main() {
   group('getMyVerificationDocuments', () {
     test('trả về list document khi thành công', () async {
       datasource.stubResponse(successEnvelope({
-        'content': [fakeVerificationDocumentJson(), fakeVerificationDocumentJson(id: 2)],
+        'content': [
+          fakeVerificationDocumentJson(),
+          fakeVerificationDocumentJson(id: 2)
+        ],
         'totalElements': 2,
       }));
 

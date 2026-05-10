@@ -8,10 +8,11 @@ import 'package:events_app/feature/event_management/domain/entity/event_summary_
 import 'package:events_app/feature/event_management/domain/usecase/get_events_usecase.dart';
 import 'package:events_app/feature/event_management/presentation/utils/category_filter_utils.dart';
 import 'package:events_app/feature/common/presentation/controller/filter_selection_controller.dart';
-import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
+import 'package:events_app/feature/registration/presentation/controller/registration_controller.dart';
 import 'package:get/get.dart';
 
-class EventController extends GetxController implements FilterSelectionController {
+class EventController extends GetxController
+    implements FilterSelectionController {
   EventController() {
     _getEventsUsecase = networkGetIt<GetEventsUsecase>();
   }
@@ -38,8 +39,7 @@ class EventController extends GetxController implements FilterSelectionControlle
   final Rx<EventSummaryEntity?> selectedEvent =
       (null as EventSummaryEntity?).obs;
   @override
-  final RxMap<int, List<String>> selectedFilters =
-      <int, List<String>>{}.obs;
+  final RxMap<int, List<String>> selectedFilters = <int, List<String>>{}.obs;
   final RxString keyword = ''.obs;
   final RxBool hasMore = false.obs;
   final RxBool isLoading = false.obs;
@@ -53,6 +53,20 @@ class EventController extends GetxController implements FilterSelectionControlle
     super.onInit();
     loadEvents();
     _watchCategories();
+    _watchRegistrationUpdates();
+  }
+
+  void _watchRegistrationUpdates() {
+    final regCtrl = RegistrationController.ensureInstance();
+    ever(regCtrl.eventStateUpdate, (tuple) {
+      final (updatedEventId, newState) = tuple;
+      final index = _allEvents.indexWhere((e) => e.eventId == updatedEventId);
+      if (index != -1) {
+        _allEvents[index] =
+            _allEvents[index].copyWith(userEventState: newState);
+        _applyFiltersAndSync();
+      }
+    });
   }
 
   void _watchCategories() {

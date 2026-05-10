@@ -114,38 +114,17 @@ class _OrganizerAttendanceListPageState
                       color: Color(0xff475569)),
                 ),
                 const SizedBox(height: 6),
-                Obx(() {
-                  final events = _eventCtrl.events;
-                  return Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14),
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade50,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: Colors.grey.shade200),
-                    ),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<EventSummaryEntity>(
-                        value: _selectedEvent,
-                        hint: Text('Chọn sự kiện',
-                            style: TextStyle(
-                                color: Colors.grey.shade400, fontSize: 14)),
-                        isExpanded: true,
-                        items: events
-                            .map((e) => DropdownMenuItem(
-                                  value: e,
-                                  child: Text(e.title ?? 'N/A',
-                                      overflow: TextOverflow.ellipsis),
-                                ))
-                            .toList(),
-                        onChanged: (e) {
-                          setState(() => _selectedEvent = e);
-                          _attendanceCtrl.setEventFilter(e?.eventId);
-                          _participantCtrl.setEventFilter(e?.eventId);
-                        },
-                      ),
-                    ),
-                  );
-                }),
+                Obx(() => OrganizerEventDropdownField(
+                  events: _eventCtrl.events.toList(),
+                  selectedEvent: _selectedEvent,
+                  onChanged: (e) {
+                    setState(() => _selectedEvent = e);
+                    _attendanceCtrl.setEventFilter(e?.eventId);
+                    _participantCtrl.setEventFilter(e?.eventId);
+                  },
+                  showAllOption: false,
+                  hint: 'Chọn sự kiện',
+                )),
                 const SizedBox(height: 12),
                 OrganizerSearchField(
                   controller: _searchController,
@@ -176,9 +155,10 @@ class _OrganizerAttendanceListPageState
           ),
           Expanded(
             child: Obx(() {
-              if (_attendanceCtrl.isLoading.value &&
-                  _attendanceCtrl.attendanceLogs.isEmpty) {
-                return const Center(child: CircularProgressIndicator());
+              if (_attendanceCtrl.isLoading.value) {
+                return const Center(
+                  child: CircularProgressIndicator(color: Color(0xff06B6D4)),
+                );
               }
               return TabBarView(
                 controller: _tabController,
@@ -226,10 +206,6 @@ class _OrganizerAttendanceListPageState
   }
 
   Widget _buildLogList(Object? filter, {bool useAll = false}) {
-    if (_attendanceCtrl.isLoading.value &&
-        _attendanceCtrl.attendanceLogs.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
-    }
     final allLogs = useAll
         ? _attendanceCtrl.allParticipantsAndLogs
         : _attendanceCtrl.attendanceLogs;
@@ -238,7 +214,9 @@ class _OrganizerAttendanceListPageState
       filtered = allLogs;
     } else if (filter == 'checkout') {
       filtered = allLogs
-          .where((l) => l.type == AttendanceLogType.checkOut && l.eventAttendanceLogId != null)
+          .where((l) =>
+              l.type == AttendanceLogType.checkOut &&
+              l.eventAttendanceLogId != null)
           .toList();
     } else {
       final isCheckedIn = filter as bool;
@@ -250,7 +228,7 @@ class _OrganizerAttendanceListPageState
     }
 
     if (filtered.isEmpty) {
-      return OrganizerEmptyState(
+      return const OrganizerEmptyState(
         message: 'Không có dữ liệu',
         description: 'Chưa có nhật ký điểm danh',
         icon: Icons.assignment_outlined,
@@ -270,22 +248,17 @@ class _OrganizerAttendanceListPageState
   }
 
   Widget _buildParticipantListUnchecked() {
-    if (_participantCtrl.isLoading.value &&
-        _participantCtrl.participants.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
-    }
     final participants = _participantCtrl.participants;
     final checkedInIds = _attendanceCtrl.attendanceLogs
         .where((l) => l.type == AttendanceLogType.checkIn)
         .map((l) => l.eventParticipant?.eventParticipantId)
-        .toSet();
-
+        .toList();
     final unchecked = participants
         .where((p) => !checkedInIds.contains(p.eventParticipantId))
         .toList();
 
     if (unchecked.isEmpty) {
-      return OrganizerEmptyState(
+      return const OrganizerEmptyState(
         message: 'Tất cả đã check-in',
         description: 'Mọi người đều đã điểm danh',
         icon: Icons.check_circle_outline,
@@ -334,13 +307,17 @@ class _OrganizerAttendanceListPageState
                 CircleAvatar(
                   radius: 22,
                   backgroundColor: const Color(0xFFFEF3C7),
-                  child: Text(
-                    (p.user?.fullName ?? '?')[0],
-                    style: const TextStyle(
-                        fontSize: 16,
-                        color: Color(0xFFF59E0B),
-                        fontWeight: FontWeight.w600),
-                  ),
+                  backgroundImage:
+                      p.user?.avatarUrl != null ? NetworkImage(p.user!.avatarUrl!) : null,
+                  child: p.user?.avatarUrl == null
+                      ? Text(
+                          (p.user?.fullName ?? '?')[0],
+                          style: const TextStyle(
+                              fontSize: 16,
+                              color: Color(0xFFF59E0B),
+                              fontWeight: FontWeight.w600),
+                        )
+                      : null,
                 ),
                 const SizedBox(width: 14),
                 Expanded(
@@ -418,7 +395,7 @@ class _OrganizerAttendanceListPageState
     final isPlaceholder = log.eventAttendanceLogId == null;
     final isCheckIn = log.type == AttendanceLogType.checkIn && !isPlaceholder;
     final isCheckOut = log.type == AttendanceLogType.checkOut && !isPlaceholder;
-    final scanMethodName = _getScanMethodLabel(log.scanMethod?.name ?? '');
+    final scanMethodName = log.scanMethod?.displayName ?? '';
     final scannedByName = log.scannedByUser?.fullName;
     final participant = log.eventParticipant;
     final user = participant?.user;
@@ -454,11 +431,16 @@ class _OrganizerAttendanceListPageState
                     CircleAvatar(
                       radius: 22,
                       backgroundColor: const Color(0xFFE0F2FE),
-                      child: Text(
-                        (userName == 'N/A' ? '?' : userName[0]),
-                        style: const TextStyle(
-                            fontSize: 16, color: Color(0xFF06B6D4)),
-                      ),
+                      backgroundImage: user?.avatarUrl != null
+                          ? NetworkImage(user!.avatarUrl!)
+                          : null,
+                      child: user?.avatarUrl == null
+                          ? Text(
+                              (userName == 'N/A' ? '?' : userName[0]),
+                              style: const TextStyle(
+                                  fontSize: 16, color: Color(0xFF06B6D4)),
+                            )
+                          : null,
                     ),
                     if (isCheckIn)
                       Positioned(

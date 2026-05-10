@@ -629,7 +629,8 @@ class _OrganizerDashboardPageState extends State<OrganizerDashboardPage> {
         OrganizerSectionHeader(
           title: 'Sự kiện gần đây',
           actionLabel: 'Xem tất cả',
-          onActionTap: () => Get.to(() => const OrganizerEventListPage()),
+          onActionTap: () =>
+              Get.find<OrganizerNavBarController>().navigateTo(OrganizerNavOptions.events),
         ),
         Container(
           margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -637,10 +638,7 @@ class _OrganizerDashboardPageState extends State<OrganizerDashboardPage> {
             final events = _eventCtrl.events.take(3).toList();
             if (_eventCtrl.isLoading.value && events.isEmpty) {
               return const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(20),
-                  child: CircularProgressIndicator(),
-                ),
+                child: CircularProgressIndicator(color: Color(0xff06B6D4)),
               );
             }
             if (events.isEmpty) {

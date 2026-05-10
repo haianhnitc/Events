@@ -34,7 +34,7 @@ void main() {
   });
 
   setUpAll(() {
-    registerFallbackValue(GetOrganizerAttendanceLogsParams(
+    registerFallbackValue(const GetOrganizerAttendanceLogsParams(
       eventId: null,
       page: 0,
       size: 20,
@@ -53,7 +53,7 @@ void main() {
   group('loadAttendanceLogs', () {
     test('success populates logs', () async {
       when(() => mockGetAttendanceLogsUsecase(any())).thenAnswer(
-        (_) async => Right(<EventAttendanceLogEntity>[]),
+        (_) async => const Right(<EventAttendanceLogEntity>[]),
       );
 
       await controller.loadAttendanceLogs();

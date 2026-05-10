@@ -117,8 +117,7 @@ class OrganizerProfileController extends GetxController {
                           color: Colors.white,
                         ),
                       )
-                    : const Text('Gửi',
-                        style: TextStyle(color: Colors.white)),
+                    : const Text('Gửi', style: TextStyle(color: Colors.white)),
               )),
         ],
       ),
@@ -139,9 +138,7 @@ class OrganizerProfileController extends GetxController {
     final result = await _updateProfileUsecase(UpdateOrganizerProfileParams(
       organizationId: userId,
       params: OrganizationProfileUpdateParams(
-        address: addressController.text.isEmpty
-            ? null
-            : addressController.text,
+        address: addressController.text.isEmpty ? null : addressController.text,
         logoFileId: logoFileId.value,
         description: descriptionController.text.isEmpty
             ? null
@@ -156,15 +153,12 @@ class OrganizerProfileController extends GetxController {
       },
       (updated) {
         isSubmitting.value = false;
-        if (updated != null) {
-          orgProfile.value = updated;
-          AuthController.to.currentUser.value =
-              AuthController.to.currentUser.value?.copyWith(
-            organizationProfile: updated,
-          );
-          AppSnackbarUtils.showSuccess(
-              'Thành công', 'Cập nhật hồ sơ thành công');
-        }
+        orgProfile.value = updated;
+        AuthController.to.currentUser.value =
+            AuthController.to.currentUser.value?.copyWith(
+          organizationProfile: updated,
+        );
+        AppSnackbarUtils.showSuccess('Thành công', 'Cập nhật hồ sơ thành công');
       },
     );
   }

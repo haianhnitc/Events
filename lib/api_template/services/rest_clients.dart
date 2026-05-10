@@ -117,7 +117,8 @@ class NRDRestClient extends RestClient {
     if (!headers.containsKey('Content-Type') && requestBody != null) {
       if (request.body.maybeWhen(json: (_) => true, orElse: () => false)) {
         headers['Content-Type'] = 'application/json';
-      } else if (request.body.maybeWhen(text: (_) => true, orElse: () => false)) {
+      } else if (request.body
+          .maybeWhen(text: (_) => true, orElse: () => false)) {
         headers['Content-Type'] = 'text/plain';
       }
     }
@@ -230,7 +231,8 @@ class NRDRestClient extends RestClient {
           String message = 'Forbidden';
           if (response.data is Map<String, dynamic>) {
             code = response.data['errorCode']?.toString() ?? '403';
-            message = response.data['message']?.toString() ?? 'Tài khoản không có quyền truy cập.';
+            message = response.data['message']?.toString() ??
+                'Tài khoản không có quyền truy cập.';
           }
           return ApiResponse.forbidden(
               ApiResponseError(code: code, message: message, errors: []));
@@ -249,6 +251,7 @@ class NRDRestClient extends RestClient {
     }
   }
 
+  @override
   Future<bool> checkNetwork() async {
     try {
       if (kIsWeb) return true;

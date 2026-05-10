@@ -1,4 +1,3 @@
-import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:events_app/api_template/services/failure.dart';

@@ -118,7 +118,6 @@ class _OrganizerParticipantDetailPageState
   Widget _buildProfileCard(p) {
     final user = p.user;
     final name = user?.fullName ?? 'N/A';
-    final email = user?.email ?? 'N/A';
     final avatar = user?.avatarUrl;
     final typeName = _participantTypeName(p.participantType);
     final statusName = _participantStatusName(p.status);
@@ -127,8 +126,7 @@ class _OrganizerParticipantDetailPageState
         ? AppDateUtils.formatDate(p.registeredTime!)
         : 'N/A';
 
-    String typeLabel =
-        typeName == 'ctv' ? 'Cộng tác viên' : 'Người tham dự';
+    String typeLabel = typeName == 'ctv' ? 'Cộng tác viên' : 'Người tham dự';
     Color typeColor = const Color(0xFF06B6D4);
     if (typeName == 'ctv') typeColor = const Color(0xFF8B5CF6);
 
@@ -183,18 +181,14 @@ class _OrganizerParticipantDetailPageState
                         fontWeight: FontWeight.w700,
                         color: Color(0xff273143))),
                 const SizedBox(height: 4),
-                Text(email,
-                    style:
-                        TextStyle(fontSize: 13, color: Colors.grey.shade600)),
-                const SizedBox(height: 4),
                 Text('Đăng ký: $registeredTime',
                     style:
                         TextStyle(fontSize: 12, color: Colors.grey.shade600)),
                 const SizedBox(height: 4),
                 if (user?.joinedAt != null)
-                  Text(
-                      'Tham gia: ${AppDateUtils.formatDate(user!.joinedAt!)}',
-                      style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+                  Text('Tham gia: ${AppDateUtils.formatDate(user!.joinedAt!)}',
+                      style:
+                          TextStyle(fontSize: 12, color: Colors.grey.shade600)),
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 6,
@@ -205,7 +199,8 @@ class _OrganizerParticipantDetailPageState
                     if (isCheckedIn)
                       _buildChip('Đã check-in', const Color(0xFF10B981)),
                     if (user?.status == UserStatus.disabled)
-                      _buildChip('Tài khoản bị vô hiệu', const Color(0xFFEF4444)),
+                      _buildChip(
+                          'Tài khoản bị vô hiệu', const Color(0xFFEF4444)),
                   ],
                 ),
               ],
@@ -255,7 +250,11 @@ class _OrganizerParticipantDetailPageState
             ],
           ),
           const SizedBox(height: 12),
-          _infoRow('Mã QR', p.participantQrContent ?? 'N/A'),
+          _infoRow(
+              'Kích hoạt mã QR',
+              p.participantQrContent != null
+                  ? 'Đã kích hoạt'
+                  : 'Chưa kích hoạt'),
           _infoRow(
               'Check-in',
               p.checkInTime != null

@@ -96,7 +96,7 @@ class _AvatarUploadWidgetState extends State<AvatarUploadWidget> {
         if (_isUploading)
           Positioned.fill(
             child: Container(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: Colors.black26,
                 shape: BoxShape.circle,
               ),

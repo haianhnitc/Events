@@ -18,9 +18,10 @@ void main() {
   });
 
   setUpAll(() {
-    registerFallbackValue(CreateRecruitmentParams(eventId: 1));
+    registerFallbackValue(const CreateRecruitmentParams(eventId: 1));
     registerFallbackValue(const UpdateRecruitmentParams());
-    registerFallbackValue(UpdateRecruitmentParamsWrapper(id: 1, params: const UpdateRecruitmentParams()));
+    registerFallbackValue(const UpdateRecruitmentParamsWrapper(
+        id: 1, params: UpdateRecruitmentParams()));
   });
 
   group('GetOrganizerRecruitmentsUsecase', () {
@@ -37,10 +38,10 @@ void main() {
             page: any(named: 'page'),
             size: any(named: 'size'),
           )).thenAnswer(
-        (_) async => Right(<CtvRecruitmentEntity>[]),
+        (_) async => const Right(<CtvRecruitmentEntity>[]),
       );
 
-      final params = GetOrganizerRecruitmentsParams(
+      const params = GetOrganizerRecruitmentsParams(
         eventId: null,
         keyword: null,
         page: 0,
@@ -61,7 +62,7 @@ void main() {
         (_) async => const Right([]),
       );
 
-      final params = GetOrganizerRecruitmentsParams(
+      const params = GetOrganizerRecruitmentsParams(
         eventId: null,
         keyword: null,
         page: 0,
@@ -83,10 +84,10 @@ void main() {
             page: any(named: 'page'),
             size: any(named: 'size'),
           )).thenAnswer(
-        (_) async => Right(<CtvRecruitmentEntity>[]),
+        (_) async => const Right(<CtvRecruitmentEntity>[]),
       );
 
-      final params = GetOrganizerRecruitmentsParams(
+      const params = GetOrganizerRecruitmentsParams(
         eventId: 5,
         keyword: null,
         page: 0,
@@ -122,7 +123,8 @@ void main() {
 
     test('404 returns Left', () async {
       when(() => mockRepository.getRecruitmentById(any())).thenAnswer(
-        (_) async => Left(FailureEntity.serverFailure('404', 'Not found')),
+        (_) async =>
+            const Left(FailureEntity.serverFailure('404', 'Not found')),
       );
 
       final result = await usecase(999);
@@ -143,7 +145,7 @@ void main() {
         (_) async => Right(CtvRecruitmentEntity()),
       );
 
-      final params = CreateRecruitmentParams(
+      const params = CreateRecruitmentParams(
         eventId: 1,
         title: 'Volunteer',
       );
@@ -154,10 +156,10 @@ void main() {
 
     test('400 returns Left', () async {
       when(() => mockRepository.createRecruitment(any())).thenAnswer(
-        (_) async => Left(FailureEntity.serverFailure('400', 'Invalid')),
+        (_) async => const Left(FailureEntity.serverFailure('400', 'Invalid')),
       );
 
-      final params = CreateRecruitmentParams(eventId: 1, title: '');
+      const params = CreateRecruitmentParams(eventId: 1, title: '');
       final result = await usecase(params);
 
       expect(result.isLeft(), true);
@@ -176,7 +178,7 @@ void main() {
         (_) async => Right(CtvRecruitmentEntity()),
       );
 
-      final params = UpdateRecruitmentParams(title: 'Updated');
+      const params = UpdateRecruitmentParams(title: 'Updated');
       final wrapper = UpdateRecruitmentParamsWrapper(id: 1, params: params);
       final result = await usecase(wrapper);
 
@@ -207,7 +209,8 @@ void main() {
 
     test('404 returns Left', () async {
       when(() => mockRepository.closeRecruitment(any())).thenAnswer(
-        (_) async => Left(FailureEntity.serverFailure('404', 'Not found')),
+        (_) async =>
+            const Left(FailureEntity.serverFailure('404', 'Not found')),
       );
 
       final result = await usecase(999);

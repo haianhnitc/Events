@@ -1,5 +1,4 @@
 import 'package:dartz/dartz.dart';
-import 'package:events_app/api_template/base_response/api_response_forwarder.dart';
 import 'package:events_app/api_template/services/failure.dart';
 import 'package:events_app/common/helpers/use_case.dart';
 import 'package:events_app/feature/common/domain/enum/app_enum.dart';
@@ -15,7 +14,8 @@ class UploadFileUsecase implements UseCase<FileEntity, UploadFileParams> {
   UploadFileUsecase(this._repository);
 
   @override
-  Future<Either<FailureEntity, FileEntity>> call(UploadFileParams params) async {
+  Future<Either<FailureEntity, FileEntity>> call(
+      UploadFileParams params) async {
     return await _repository.uploadFile(
       filePath: params.filePath,
       fileType: params.fileType.apiValue,

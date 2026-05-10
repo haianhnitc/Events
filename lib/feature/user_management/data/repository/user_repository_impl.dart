@@ -67,11 +67,10 @@ class UserRepositoryImpl implements UserRepository {
     return response.toEither().fold(
       (failure) => Left(failure),
       (data) {
-        if (data is! Map<String, dynamic>) return const Right([]);
         final content = data['content'] as List<dynamic>? ?? [];
         return Right(content
-            .map((e) =>
-                EventSummaryModel.fromJson(e as Map<String, dynamic>).toEntity())
+            .map((e) => EventSummaryModel.fromJson(e as Map<String, dynamic>)
+                .toEntity())
             .toList());
       },
     );
@@ -97,10 +96,10 @@ class UserRepositoryImpl implements UserRepository {
     return response.toEither().fold(
       (failure) => Left(failure),
       (data) {
-        if (data is! Map<String, dynamic>) return const Right([]);
         final content = data['content'] as List<dynamic>? ?? [];
         return Right(content
-            .map((e) => RankModel.fromJson(e as Map<String, dynamic>).toEntity())
+            .map(
+                (e) => RankModel.fromJson(e as Map<String, dynamic>).toEntity())
             .toList());
       },
     );
@@ -120,7 +119,6 @@ class UserRepositoryImpl implements UserRepository {
     return response.toEither().fold(
       (failure) => Left(failure),
       (data) {
-        if (data is! Map<String, dynamic>) return const Right([]);
         final content = data['content'] as List<dynamic>? ?? [];
         return Right(content
             .map((e) =>
@@ -136,11 +134,11 @@ class UserRepositoryImpl implements UserRepository {
     int size = 20,
     String? status,
   }) async {
-    final response = await _datasource.getUserPackages(page: page, size: size, status: status);
+    final response = await _datasource.getUserPackages(
+        page: page, size: size, status: status);
     return response.toEither().fold(
       (failure) => Left(failure),
       (data) {
-        if (data is! Map<String, dynamic>) return const Right([]);
         final content = data['content'] as List<dynamic>? ?? [];
         return Right(content
             .map((e) =>
@@ -166,7 +164,6 @@ class UserRepositoryImpl implements UserRepository {
     return response.toEither().fold(
       (failure) => Left(failure),
       (data) {
-        if (data is! Map<String, dynamic>) return const Right([]);
         final content = data['content'] as List<dynamic>? ?? [];
         return Right(content
             .map((e) =>
@@ -191,8 +188,7 @@ class UserRepositoryImpl implements UserRepository {
   }
 
   @override
-  Future<Either<FailureEntity, List<ParticipantEntity>>>
-      getRegistrations({
+  Future<Either<FailureEntity, List<ParticipantEntity>>> getRegistrations({
     required int eventId,
     required int userId,
   }) async {
@@ -203,10 +199,10 @@ class UserRepositoryImpl implements UserRepository {
     return response.toEither().fold(
       (failure) => Left(failure),
       (data) {
-        if (data is! Map<String, dynamic>) return const Right([]);
         final content = data['content'] as List<dynamic>? ?? [];
         return Right(content
-            .map((e) => ParticipantModel.fromJson(e as Map<String, dynamic>).toEntity())
+            .map((e) =>
+                ParticipantModel.fromJson(e as Map<String, dynamic>).toEntity())
             .toList());
       },
     );

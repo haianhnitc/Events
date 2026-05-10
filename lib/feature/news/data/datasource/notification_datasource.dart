@@ -17,7 +17,8 @@ abstract class NotificationDatasource {
 }
 
 @Injectable(as: NotificationDatasource)
-class NotificationDatasourceImpl extends ApiProvider implements NotificationDatasource {
+class NotificationDatasourceImpl extends ApiProvider
+    implements NotificationDatasource {
   NotificationDatasourceImpl({RestClient? client})
       : super(client: client ?? NRDRestClient());
 
@@ -91,7 +92,7 @@ class NotificationDatasourceImpl extends ApiProvider implements NotificationData
 
       return forwardEnvelopeResponse<void>(
         response,
-        (_) => null,
+        (_) {},
         fallbackError: 'Cập nhật trạng thái thất bại',
       );
     } catch (e) {
@@ -110,7 +111,7 @@ class NotificationDatasourceImpl extends ApiProvider implements NotificationData
 
       return forwardEnvelopeResponse<void>(
         response,
-        (_) => null,
+        (_) {},
         fallbackError: 'Cập nhật trạng thái thất bại',
       );
     } catch (e) {

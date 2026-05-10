@@ -54,6 +54,7 @@ class CtvController extends GetxController
 
   final RxList<EventSummaryEntity> _cachedEvents = <EventSummaryEntity>[].obs;
   final RxList<CtvRecruitmentEntity> recruitments = <CtvRecruitmentEntity>[].obs;
+  final Rx<(int, UserEventState)> ctvStateUpdate = Rx<(int, UserEventState)>((0, UserEventState.none));
   final Rx<CtvRecruitmentEntity?> selectedRecruitment =
       (null as CtvRecruitmentEntity?).obs;
   @override
@@ -72,6 +73,21 @@ class CtvController extends GetxController
     super.onInit();
     loadRecruitments();
     _watchCategories();
+    _watchCtvStateUpdates();
+  }
+
+  void _watchCtvStateUpdates() {
+    ever(ctvStateUpdate, (tuple) {
+      final (updatedRecruitmentId, newState) = tuple;
+      final index = _allRecruitments.indexWhere(
+          (r) => r.ctvRecruitmentId == updatedRecruitmentId);
+      if (index >= 0) {
+        _allRecruitments[index] = _allRecruitments[index].copyWith(
+          userEventState: newState,
+        );
+        _applyFiltersAndSync();
+      }
+    });
   }
 
   void _watchCategories() {
@@ -373,6 +389,7 @@ class CtvController extends GetxController
         return false;
       },
       (application) {
+        ctvStateUpdate.value = (ctvRecruitmentId, UserEventState.ctvApplied);
         refreshApplyState(ctvRecruitmentId);
         AppSnackbarUtils.showSuccess(
           'Ứng tuyển thành công',

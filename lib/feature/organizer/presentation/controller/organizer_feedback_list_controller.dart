@@ -15,7 +15,8 @@ class OrganizerFeedbackListController extends GetxController {
       networkGetIt<GetOrganizerFeedbackQuestionsUsecase>();
 
   final RxList<FeedbackEntity> feedbacks = <FeedbackEntity>[].obs;
-  final RxList<FeedbackQuestionEntity> questions = <FeedbackQuestionEntity>[].obs;
+  final RxList<FeedbackQuestionEntity> questions =
+      <FeedbackQuestionEntity>[].obs;
   final RxBool isLoading = false.obs;
   final RxBool isLoadingMore = false.obs;
   final RxBool hasMore = true.obs;
@@ -71,6 +72,7 @@ class OrganizerFeedbackListController extends GetxController {
     );
   }
 
+  @override
   Future<void> refresh() async {
     await loadFeedbacks(refresh: true);
   }
@@ -115,8 +117,8 @@ class OrganizerFeedbackListController extends GetxController {
       final answers = fb.feedbackAnswers ?? [];
       for (final a in answers) {
         if (a.questionId == null || a.answerValue == null) continue;
-        final q = questions.firstWhereOrNull(
-            (q) => q.feedbackQuestionId == a.questionId);
+        final q = questions
+            .firstWhereOrNull((q) => q.feedbackQuestionId == a.questionId);
         if (q == null) continue;
         if (q.questionType == FeedbackQuestionType.rating ||
             q.questionType == FeedbackQuestionType.singleChoice ||

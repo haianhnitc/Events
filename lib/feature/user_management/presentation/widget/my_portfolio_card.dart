@@ -68,7 +68,8 @@ class _MyPortfolioCardState extends State<MyPortfolioCard> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         boxShadow: const [
-          BoxShadow(color: Color(0x0A000000), offset: Offset(0, 4), blurRadius: 16),
+          BoxShadow(
+              color: Color(0x0A000000), offset: Offset(0, 4), blurRadius: 16),
         ],
       ),
       child: Obx(() {
@@ -79,13 +80,15 @@ class _MyPortfolioCardState extends State<MyPortfolioCard> {
               child: SizedBox(
                 width: 24,
                 height: 24,
-                child: CircularProgressIndicator(strokeWidth: 2.5, color: Color(0xFF06B6D4)),
+                child: CircularProgressIndicator(
+                    strokeWidth: 2.5, color: Color(0xFF06B6D4)),
               ),
             ),
           );
         }
 
-        final published = _portfolios.where((p) => p.isPublished == true).toList();
+        final published =
+            _portfolios.where((p) => p.isPublished == true).toList();
         final drafts = _portfolios.where((p) => p.isPublished != true).toList();
         final total = _portfolios.length;
 
@@ -145,7 +148,11 @@ class _MyPortfolioCardState extends State<MyPortfolioCard> {
               color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: SvgPicture.asset(AssetPath.folderIcon, height: 18, width: 18, colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn)),
+            child: SvgPicture.asset(AssetPath.folderIcon,
+                height: 18,
+                width: 18,
+                colorFilter:
+                    const ColorFilter.mode(Colors.white, BlendMode.srcIn)),
           ),
           const SizedBox(width: 10),
           const Expanded(
@@ -168,11 +175,15 @@ class _MyPortfolioCardState extends State<MyPortfolioCard> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.workspace_premium, size: 12, color: Colors.amber),
+                const Icon(Icons.workspace_premium,
+                    size: 12, color: Colors.amber),
                 const SizedBox(width: 4),
                 Text(
                   '$freePortfolios miễn phí',
-                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.white),
+                  style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white),
                 ),
               ],
             ),
@@ -210,7 +221,10 @@ class _MyPortfolioCardState extends State<MyPortfolioCard> {
             ),
             child: Text(
               count,
-              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xff64748B)),
+              style: const TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xff64748B)),
             ),
           ),
         ],
@@ -229,7 +243,8 @@ class _MyPortfolioCardState extends State<MyPortfolioCard> {
               color: const Color(0xFFF1F5F9),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(Icons.folder_off_outlined, size: 24, color: Color(0xFF94A3B8)),
+            child: const Icon(Icons.folder_off_outlined,
+                size: 24, color: Color(0xFF94A3B8)),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -238,7 +253,10 @@ class _MyPortfolioCardState extends State<MyPortfolioCard> {
               children: [
                 const Text(
                   'Chưa có hồ sơ nào',
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xff273143)),
+                  style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xff273143)),
                 ),
                 const SizedBox(height: 2),
                 Text(
@@ -287,7 +305,8 @@ class _MyPortfolioCardState extends State<MyPortfolioCard> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => PortfolioDetailPage(portfolioId: portfolio.portfolioId!),
+        builder: (_) =>
+            PortfolioDetailPage(portfolioId: portfolio.portfolioId!),
       ),
     );
   }
@@ -321,7 +340,9 @@ class _PortfolioRowItem extends StatelessWidget {
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(
-                portfolio.isPublished == true ? Icons.verified_rounded : Icons.edit_note_rounded,
+                portfolio.isPublished == true
+                    ? Icons.verified_rounded
+                    : Icons.edit_note_rounded,
                 size: 18,
                 color: const Color(0xFF06B6D4),
               ),
@@ -344,7 +365,8 @@ class _PortfolioRowItem extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     '${portfolio.viewCount ?? 0} lượt xem • ${portfolio.downloadCount ?? 0} lượt tải',
-                    style: const TextStyle(fontSize: 11, color: Color(0xff94A3B8)),
+                    style:
+                        const TextStyle(fontSize: 11, color: Color(0xff94A3B8)),
                   ),
                 ],
               ),
@@ -380,10 +402,13 @@ class _ActionButton extends StatelessWidget {
         child: Container(
           height: 42,
           decoration: BoxDecoration(
-            color: isDisabled ? const Color(0xFFF1F5F9) : const Color(0xFFF8FAFC),
+            color:
+                isDisabled ? const Color(0xFFF1F5F9) : const Color(0xFFF8FAFC),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: isDisabled ? const Color(0xFFE2E8F0) : const Color(0xFF06B6D4).withValues(alpha: 0.3),
+              color: isDisabled
+                  ? const Color(0xFFE2E8F0)
+                  : const Color(0xFF06B6D4).withValues(alpha: 0.3),
             ),
           ),
           child: Row(
@@ -392,7 +417,9 @@ class _ActionButton extends StatelessWidget {
               Icon(
                 icon,
                 size: 18,
-                color: isDisabled ? const Color(0xFF94A3B8) : const Color(0xFF06B6D4),
+                color: isDisabled
+                    ? const Color(0xFF94A3B8)
+                    : const Color(0xFF06B6D4),
               ),
               const SizedBox(width: 6),
               Text(
@@ -400,7 +427,9 @@ class _ActionButton extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: isDisabled ? const Color(0xFF94A3B8) : const Color(0xFF06B6D4),
+                  color: isDisabled
+                      ? const Color(0xFF94A3B8)
+                      : const Color(0xFF06B6D4),
                 ),
               ),
             ],
@@ -431,9 +460,12 @@ class _ActionButton extends StatelessWidget {
           children: [
             Icon(icon, size: 18, color: Colors.white),
             const SizedBox(width: 6),
-            Text(
+            const Text(
               'Tạo mới',
-              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.white),
+              style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white),
             ),
           ],
         ),
@@ -498,12 +530,16 @@ class _CreatePortfolioSheet extends StatelessWidget {
                           color: const Color(0xFF06B6D4).withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Icon(Icons.add_box_rounded, color: Color(0xFF06B6D4), size: 24),
+                        child: const Icon(Icons.add_box_rounded,
+                            color: Color(0xFF06B6D4), size: 24),
                       ),
                       const SizedBox(width: 12),
                       const Text(
                         'Tạo hồ sơ hoạt động',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Color(0xff273143)),
+                        style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xff273143)),
                       ),
                     ],
                   ),
@@ -518,7 +554,9 @@ class _CreatePortfolioSheet extends StatelessWidget {
                     label: 'Tiêu đề',
                     hint: 'VD: Hồ sơ CTV Event 2026',
                     icon: Icons.title,
-                    validator: (v) => v == null || v.trim().isEmpty ? 'Vui lòng nhập tiêu đề' : null,
+                    validator: (v) => v == null || v.trim().isEmpty
+                        ? 'Vui lòng nhập tiêu đề'
+                        : null,
                   ),
                   const SizedBox(height: 14),
                   _buildTextField(
@@ -526,7 +564,9 @@ class _CreatePortfolioSheet extends StatelessWidget {
                     label: 'Mã hồ sơ',
                     hint: 'VD: portfolio-001',
                     icon: Icons.code,
-                    validator: (v) => v == null || v.trim().isEmpty ? 'Vui lòng nhập mã' : null,
+                    validator: (v) => v == null || v.trim().isEmpty
+                        ? 'Vui lòng nhập mã'
+                        : null,
                   ),
                   const SizedBox(height: 14),
                   _buildTextField(
@@ -546,12 +586,14 @@ class _CreatePortfolioSheet extends StatelessWidget {
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.check_circle, color: Color(0xFF22C55E), size: 18),
+                        const Icon(Icons.check_circle,
+                            color: Color(0xFF22C55E), size: 18),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
                             'Sử dụng quyền miễn phí còn lại để tạo hồ sơ',
-                            style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+                            style: TextStyle(
+                                fontSize: 12, color: Colors.grey.shade700),
                           ),
                         ),
                       ],
@@ -566,10 +608,13 @@ class _CreatePortfolioSheet extends StatelessWidget {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF06B6D4),
                         foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
                         elevation: 0,
                       ),
-                      child: const Text('Tạo hồ sơ', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+                      child: const Text('Tạo hồ sơ',
+                          style: TextStyle(
+                              fontSize: 15, fontWeight: FontWeight.w700)),
                     ),
                   ),
                 ],
@@ -598,7 +643,8 @@ class _CreatePortfolioSheet extends StatelessWidget {
         prefixIcon: Icon(icon, color: const Color(0xff64748B), size: 20),
         filled: true,
         fillColor: Colors.grey.shade50,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide(color: Colors.grey.shade300),
@@ -664,7 +710,8 @@ class _PortfolioDetailSheet extends StatelessWidget {
                   color: const Color(0xFF06B6D4).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(14),
                 ),
-                child: const Icon(Icons.folder_special_rounded, color: Color(0xFF06B6D4), size: 28),
+                child: const Icon(Icons.folder_special_rounded,
+                    color: Color(0xFF06B6D4), size: 28),
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -673,13 +720,19 @@ class _PortfolioDetailSheet extends StatelessWidget {
                   children: [
                     Text(
                       portfolio.title ?? 'Không có tiêu đề',
-                      style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: Color(0xff273143)),
+                      style: const TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xff273143)),
                     ),
                     const SizedBox(height: 4),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
-                        color: isPublished ? Colors.green.shade50 : Colors.orange.shade50,
+                        color: isPublished
+                            ? Colors.green.shade50
+                            : Colors.orange.shade50,
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
@@ -687,7 +740,9 @@ class _PortfolioDetailSheet extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
-                          color: isPublished ? Colors.green.shade700 : Colors.orange.shade700,
+                          color: isPublished
+                              ? Colors.green.shade700
+                              : Colors.orange.shade700,
                         ),
                       ),
                     ),
@@ -699,18 +754,22 @@ class _PortfolioDetailSheet extends StatelessWidget {
           const SizedBox(height: 20),
           Row(
             children: [
-              _buildStatChip(Icons.visibility_rounded, '${portfolio.viewCount ?? 0}', 'Lượt xem'),
+              _buildStatChip(Icons.visibility_rounded,
+                  '${portfolio.viewCount ?? 0}', 'Lượt xem'),
               const SizedBox(width: 12),
-              _buildStatChip(Icons.download_rounded, '${portfolio.downloadCount ?? 0}', 'Lượt tải'),
+              _buildStatChip(Icons.download_rounded,
+                  '${portfolio.downloadCount ?? 0}', 'Lượt tải'),
             ],
           ),
-          if (portfolio.description != null && portfolio.description!.isNotEmpty) ...[
+          if (portfolio.description != null &&
+              portfolio.description!.isNotEmpty) ...[
             const SizedBox(height: 16),
             const Divider(),
             const SizedBox(height: 12),
             Text(
               portfolio.description!,
-              style: TextStyle(fontSize: 14, color: Colors.grey.shade700, height: 1.5),
+              style: TextStyle(
+                  fontSize: 14, color: Colors.grey.shade700, height: 1.5),
             ),
           ],
           if (portfolio.price != null && portfolio.price! > 0) ...[
@@ -724,11 +783,15 @@ class _PortfolioDetailSheet extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.attach_money_rounded, size: 16, color: Color(0xFF22C55E)),
+                  const Icon(Icons.attach_money_rounded,
+                      size: 16, color: Color(0xFF22C55E)),
                   const SizedBox(width: 4),
                   Text(
                     'Giá: ${_formatCurrency(portfolio.price!)}',
-                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF22C55E)),
+                    style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF22C55E)),
                   ),
                 ],
               ),
@@ -743,9 +806,11 @@ class _PortfolioDetailSheet extends StatelessWidget {
               style: OutlinedButton.styleFrom(
                 foregroundColor: const Color(0xff64748B),
                 side: BorderSide(color: Colors.grey.shade300),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
               ),
-              child: const Text('Đóng', style: TextStyle(fontWeight: FontWeight.w600)),
+              child: const Text('Đóng',
+                  style: TextStyle(fontWeight: FontWeight.w600)),
             ),
           ),
         ],
@@ -766,8 +831,13 @@ class _PortfolioDetailSheet extends StatelessWidget {
           children: [
             Icon(icon, size: 20, color: const Color(0xFF06B6D4)),
             const SizedBox(height: 4),
-            Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xff273143))),
-            Text(label, style: TextStyle(fontSize: 11, color: Colors.grey.shade500)),
+            Text(value,
+                style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xff273143))),
+            Text(label,
+                style: TextStyle(fontSize: 11, color: Colors.grey.shade500)),
           ],
         ),
       ),
@@ -797,7 +867,10 @@ class _AllPortfoliosPage extends StatelessWidget {
         ),
         title: const Text(
           'Tất cả hồ sơ',
-          style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: Color(0xff273143)),
+          style: TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.w700,
+              color: Color(0xff273143)),
         ),
         centerTitle: true,
       ),
@@ -810,29 +883,36 @@ class _AllPortfoliosPage extends StatelessWidget {
             future: repo.getPortfolios(userId: userId),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator(color: Color(0xFF06B6D4)));
+                return const Center(
+                    child: CircularProgressIndicator(color: Color(0xFF06B6D4)));
               }
 
               final portfolios = (snapshot.data as dynamic)?.fold(
-                (failure) => <PortfolioEntity>[],
-                (list) => list.cast<PortfolioEntity>(),
-              ) as List<PortfolioEntity>? ?? [];
+                    (failure) => <PortfolioEntity>[],
+                    (list) => list.cast<PortfolioEntity>(),
+                  ) as List<PortfolioEntity>? ??
+                  [];
 
               if (portfolios.isEmpty) {
                 return Center(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.folder_off_outlined, size: 64, color: Colors.grey.shade300),
+                      Icon(Icons.folder_off_outlined,
+                          size: 64, color: Colors.grey.shade300),
                       const SizedBox(height: 12),
-                      Text('Chưa có hồ sơ nào', style: TextStyle(fontSize: 14, color: Colors.grey.shade500)),
+                      Text('Chưa có hồ sơ nào',
+                          style: TextStyle(
+                              fontSize: 14, color: Colors.grey.shade500)),
                     ],
                   ),
                 );
               }
 
-              final published = portfolios.where((p) => p.isPublished == true).toList();
-              final drafts = portfolios.where((p) => p.isPublished != true).toList();
+              final published =
+                  portfolios.where((p) => p.isPublished == true).toList();
+              final drafts =
+                  portfolios.where((p) => p.isPublished != true).toList();
 
               return ListView(
                 padding: const EdgeInsets.all(16),
@@ -859,12 +939,22 @@ class _AllPortfoliosPage extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 8, top: 8),
       child: Row(
         children: [
-          Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xff273143))),
+          Text(title,
+              style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xff273143))),
           const SizedBox(width: 6),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-            decoration: BoxDecoration(color: const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(10)),
-            child: Text('$count', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xff64748B))),
+            decoration: BoxDecoration(
+                color: const Color(0xFFF1F5F9),
+                borderRadius: BorderRadius.circular(10)),
+            child: Text('$count',
+                style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xff64748B))),
           ),
         ],
       ),
@@ -888,7 +978,10 @@ class _PortfolioCardItem extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.04), offset: const Offset(0, 2), blurRadius: 8),
+          BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              offset: const Offset(0, 2),
+              blurRadius: 8),
         ],
       ),
       child: Column(
@@ -904,7 +997,9 @@ class _PortfolioCardItem extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
-                  isPublished ? Icons.verified_rounded : Icons.edit_note_rounded,
+                  isPublished
+                      ? Icons.verified_rounded
+                      : Icons.edit_note_rounded,
                   color: const Color(0xFF06B6D4),
                   size: 22,
                 ),
@@ -916,27 +1011,39 @@ class _PortfolioCardItem extends StatelessWidget {
                   children: [
                     Text(
                       portfolio.title ?? 'Không có tiêu đề',
-                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Color(0xff273143)),
+                      style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xff273143)),
                     ),
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        Icon(Icons.visibility_outlined, size: 14, color: Colors.grey.shade500),
+                        Icon(Icons.visibility_outlined,
+                            size: 14, color: Colors.grey.shade500),
                         const SizedBox(width: 4),
-                        Text('${portfolio.viewCount ?? 0}', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+                        Text('${portfolio.viewCount ?? 0}',
+                            style: TextStyle(
+                                fontSize: 12, color: Colors.grey.shade600)),
                         const SizedBox(width: 12),
-                        Icon(Icons.download_outlined, size: 14, color: Colors.grey.shade500),
+                        Icon(Icons.download_outlined,
+                            size: 14, color: Colors.grey.shade500),
                         const SizedBox(width: 4),
-                        Text('${portfolio.downloadCount ?? 0}', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+                        Text('${portfolio.downloadCount ?? 0}',
+                            style: TextStyle(
+                                fontSize: 12, color: Colors.grey.shade600)),
                       ],
                     ),
                   ],
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: isPublished ? Colors.green.shade50 : Colors.orange.shade50,
+                  color: isPublished
+                      ? Colors.green.shade50
+                      : Colors.orange.shade50,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
@@ -944,17 +1051,21 @@ class _PortfolioCardItem extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: isPublished ? Colors.green.shade700 : Colors.orange.shade700,
+                    color: isPublished
+                        ? Colors.green.shade700
+                        : Colors.orange.shade700,
                   ),
                 ),
               ),
             ],
           ),
-          if (portfolio.description != null && portfolio.description!.isNotEmpty) ...[
+          if (portfolio.description != null &&
+              portfolio.description!.isNotEmpty) ...[
             const SizedBox(height: 12),
             Text(
               portfolio.description!,
-              style: TextStyle(fontSize: 13, color: Colors.grey.shade600, height: 1.4),
+              style: TextStyle(
+                  fontSize: 13, color: Colors.grey.shade600, height: 1.4),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),

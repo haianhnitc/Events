@@ -99,38 +99,12 @@ class _OrganizerEventListPageState extends State<OrganizerEventListPage>
           ),
           Expanded(
             child: Obx(() {
-              if (_ctrl.isLoading.value && _ctrl.events.isEmpty) {
-                return const Center(child: CircularProgressIndicator());
-              }
-              final events = _ctrl.filteredEvents;
-              if (events.isEmpty) {
-                return OrganizerEmptyState(
-                  message: 'Không có sự kiện nào',
-                  description: 'Tạo sự kiện mới để bắt đầu',
-                  icon: Icons.event_outlined,
-                  actionLabel: 'Tạo sự kiện',
-                  onAction: () =>
-                      Get.to(() => const OrganizerCreateEventPage()),
+              if (_ctrl.isLoading.value) {
+                return const Center(
+                  child: CircularProgressIndicator(color: Color(0xff06B6D4)),
                 );
               }
-              return RefreshIndicator(
-                onRefresh: _ctrl.refreshEvents,
-                child: ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: events.length + (_ctrl.isLoading.value ? 1 : 0),
-                  itemBuilder: (context, index) {
-                    if (_ctrl.isLoading.value && index == 0) {
-                      return const Padding(
-                        padding: EdgeInsets.only(bottom: 8),
-                        child: LinearProgressIndicator(),
-                      );
-                    }
-                    final event =
-                        events[index - (_ctrl.isLoading.value ? 1 : 0)];
-                    return _buildEventCard(event);
-                  },
-                ),
-              );
+              return _buildEventListContent();
             }),
           ),
         ],
@@ -140,6 +114,42 @@ class _OrganizerEventListPageState extends State<OrganizerEventListPage>
         onPressed: () => Get.to(() => const OrganizerCreateEventPage()),
         backgroundColor: const Color(0xFF06B6D4),
         child: const Icon(Icons.add, color: Colors.white),
+      ),
+    );
+  }
+
+  Widget _buildEventListContent() {
+    final events = _ctrl.filteredEvents;
+    if (events.isEmpty) {
+      return OrganizerEmptyState(
+        message: 'Không có sự kiện nào',
+        description: 'Tạo sự kiện mới để bắt đầu',
+        icon: Icons.event_outlined,
+        actionLabel: 'Tạo sự kiện',
+        onAction: () => Get.to(() => const OrganizerCreateEventPage()),
+      );
+    }
+    return RefreshIndicator(
+      onRefresh: _ctrl.refreshEvents,
+      notificationPredicate: (notification) => notification.depth == 1,
+      child: NotificationListener<ScrollNotification>(
+        onNotification: (notification) {
+          if (notification is ScrollEndNotification &&
+              notification.metrics.extentAfter < 80 &&
+              _ctrl.events.isNotEmpty &&
+              !_ctrl.isLoading.value &&
+              _ctrl.hasMore) {
+            _ctrl.loadMore();
+          }
+          return false;
+        },
+        child: ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: events.length,
+          itemBuilder: (context, index) {
+            return _buildEventCard(events[index]);
+          },
+        ),
       ),
     );
   }
@@ -320,10 +330,6 @@ class _OrganizerEventListPageState extends State<OrganizerEventListPage>
   OrganizerStatusBadge _getStatusBadge(EventSummaryEntity event) {
     final status = event.status;
     if (status == null) return OrganizerStatusBadge.draft();
-
-    if (event.endTime != null && event.endTime!.isBefore(DateTime.now())) {
-      return OrganizerStatusBadge.closed();
-    }
 
     switch (status) {
       case EventStatus.published:

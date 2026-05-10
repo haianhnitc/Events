@@ -19,8 +19,9 @@ void main() {
   });
 
   setUpAll(() {
-    registerFallbackValue(OrganizerManualAttendanceParams(eventParticipantId: 1));
-    registerFallbackValue(GetOrganizerAttendanceLogsParams(
+    registerFallbackValue(
+        const OrganizerManualAttendanceParams(eventParticipantId: 1));
+    registerFallbackValue(const GetOrganizerAttendanceLogsParams(
       eventId: null,
       page: 0,
       size: 20,
@@ -46,7 +47,8 @@ void main() {
 
     test('404 returns Left', () async {
       when(() => mockRepository.getParticipantQr(any())).thenAnswer(
-        (_) async => Left(FailureEntity.serverFailure('404', 'Not found')),
+        (_) async =>
+            const Left(FailureEntity.serverFailure('404', 'Not found')),
       );
 
       final result = await usecase(999);
@@ -67,7 +69,7 @@ void main() {
         (_) async => Right(AttendanceQrEntity()),
       );
 
-      final params = GetOrganizerEventQrParams(eventId: 1, action: 'CHECKIN');
+      const params = GetOrganizerEventQrParams(eventId: 1, action: 'CHECKIN');
       final result = await usecase(params);
 
       expect(result.isRight(), true);
@@ -78,7 +80,7 @@ void main() {
         (_) async => Right(AttendanceQrEntity()),
       );
 
-      final params = GetOrganizerEventQrParams(eventId: 1, action: 'CHECKOUT');
+      const params = GetOrganizerEventQrParams(eventId: 1, action: 'CHECKOUT');
       final result = await usecase(params);
 
       expect(result.isRight(), true);
@@ -97,7 +99,7 @@ void main() {
         (_) async => Right(EventAttendanceLogEntity()),
       );
 
-      final params = OrganizerManualAttendanceParams(eventParticipantId: 1);
+      const params = OrganizerManualAttendanceParams(eventParticipantId: 1);
       final result = await usecase(params);
 
       expect(result.isRight(), true);
@@ -105,10 +107,10 @@ void main() {
 
     test('400 returns Left', () async {
       when(() => mockRepository.manualCheckIn(any())).thenAnswer(
-        (_) async => Left(FailureEntity.serverFailure('400', 'Invalid')),
+        (_) async => const Left(FailureEntity.serverFailure('400', 'Invalid')),
       );
 
-      final params = OrganizerManualAttendanceParams(eventParticipantId: 1);
+      const params = OrganizerManualAttendanceParams(eventParticipantId: 1);
       final result = await usecase(params);
 
       expect(result.isLeft(), true);
@@ -127,7 +129,7 @@ void main() {
         (_) async => Right(EventAttendanceLogEntity()),
       );
 
-      final params = OrganizerManualAttendanceParams(eventParticipantId: 1);
+      const params = OrganizerManualAttendanceParams(eventParticipantId: 1);
       final result = await usecase(params);
 
       expect(result.isRight(), true);
@@ -143,10 +145,10 @@ void main() {
 
     test('success', () async {
       when(() => mockRepository.getAttendanceLogs(any())).thenAnswer(
-        (_) async => Right(<EventAttendanceLogEntity>[]),
+        (_) async => const Right(<EventAttendanceLogEntity>[]),
       );
 
-      final params = GetOrganizerAttendanceLogsParams(
+      const params = GetOrganizerAttendanceLogsParams(
         eventId: null,
         page: 0,
         size: 20,
@@ -161,7 +163,7 @@ void main() {
         (_) async => const Right([]),
       );
 
-      final params = GetOrganizerAttendanceLogsParams(
+      const params = GetOrganizerAttendanceLogsParams(
         eventId: null,
         page: 0,
         size: 20,

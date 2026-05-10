@@ -8,7 +8,8 @@ import 'package:events_app/feature/recruitment/data/model/ctv_recruitment_model.
 
 import '../../helpers/fake_data.dart';
 
-class TestOrganizerRecruitmentDatasource extends OrganizerRecruitmentDatasourceImpl {
+class TestOrganizerRecruitmentDatasource
+    extends OrganizerRecruitmentDatasourceImpl {
   ApiResponse<Map<String, dynamic>>? getRecruitmentsStub;
   ApiResponse<Map<String, dynamic>>? getByIdStub;
   ApiResponse<Map<String, dynamic>>? createStub;
@@ -127,30 +128,32 @@ class TestOrganizerRecruitmentDatasource extends OrganizerRecruitmentDatasourceI
 
   @override
   Future<ApiResponse<void>> closeRecruitment(int id) async {
-    final envelope = closeStub ?? ApiResponse.success({
-      'errorCode': 0,
-      'statusCode': 200,
-      'message': 'OK',
-      'object': null,
-    });
+    final envelope = closeStub ??
+        const ApiResponse.success({
+          'errorCode': 0,
+          'statusCode': 200,
+          'message': 'OK',
+          'object': null,
+        });
     return forwardEnvelopeResponse<void>(
       envelope,
-      (_) => null,
+      (_) {},
       fallbackError: 'Đóng tuyển CTV thất bại',
     );
   }
 
   @override
   Future<ApiResponse<void>> deleteRecruitment(int id) async {
-    final envelope = deleteStub ?? ApiResponse.success({
-      'errorCode': 0,
-      'statusCode': 200,
-      'message': 'OK',
-      'object': null,
-    });
+    final envelope = deleteStub ??
+        const ApiResponse.success({
+          'errorCode': 0,
+          'statusCode': 200,
+          'message': 'OK',
+          'object': null,
+        });
     return forwardEnvelopeResponse<void>(
       envelope,
-      (_) => null,
+      (_) {},
       fallbackError: 'Xóa tuyển CTV thất bại',
     );
   }
@@ -197,7 +200,7 @@ void main() {
 
     test('empty', () async {
       final datasource = TestOrganizerRecruitmentDatasource(
-        getRecruitmentsStub: ApiResponse.success({
+        getRecruitmentsStub: const ApiResponse.success({
           'errorCode': 0,
           'statusCode': 200,
           'message': 'OK',
@@ -306,7 +309,7 @@ void main() {
         }),
       );
 
-      final params = CreateRecruitmentParams(
+      const params = CreateRecruitmentParams(
         eventId: 1,
         title: 'Volunteer Recruitment',
         roleName: 'Event Volunteer',
@@ -342,7 +345,7 @@ void main() {
         ),
       );
 
-      final params = CreateRecruitmentParams(eventId: 1, title: '');
+      const params = CreateRecruitmentParams(eventId: 1, title: '');
       final result = await datasource.createRecruitment(params);
 
       expect(
@@ -377,7 +380,7 @@ void main() {
         }),
       );
 
-      final params = UpdateRecruitmentParams(title: 'Updated Title');
+      const params = UpdateRecruitmentParams(title: 'Updated Title');
       final result = await datasource.updateRecruitment(1, params);
 
       result.when(
@@ -406,7 +409,7 @@ void main() {
         ),
       );
 
-      final params = UpdateRecruitmentParams(title: 'Updated');
+      const params = UpdateRecruitmentParams(title: 'Updated');
       final result = await datasource.updateRecruitment(999, params);
 
       expect(
@@ -433,7 +436,7 @@ void main() {
   group('closeRecruitment', () {
     test('success', () async {
       final datasource = TestOrganizerRecruitmentDatasource(
-        closeStub: ApiResponse.success({
+        closeStub: const ApiResponse.success({
           'errorCode': 0,
           'statusCode': 200,
           'message': 'OK',
@@ -496,7 +499,7 @@ void main() {
   group('deleteRecruitment', () {
     test('success', () async {
       final datasource = TestOrganizerRecruitmentDatasource(
-        deleteStub: ApiResponse.success({
+        deleteStub: const ApiResponse.success({
           'errorCode': 0,
           'statusCode': 200,
           'message': 'OK',

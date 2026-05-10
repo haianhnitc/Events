@@ -16,12 +16,14 @@ abstract class OrganizerParticipantDatasource {
     int size,
   });
   Future<ApiResponse<ParticipantModel>> getParticipantById(int id);
-  Future<ApiResponse<ParticipantModel>> createParticipant(CreateOrganizerParticipantParams params);
+  Future<ApiResponse<ParticipantModel>> createParticipant(
+      CreateOrganizerParticipantParams params);
   Future<ApiResponse<void>> deleteParticipant(int id);
 }
 
 @Injectable(as: OrganizerParticipantDatasource)
-class OrganizerParticipantDatasourceImpl extends ApiProvider implements OrganizerParticipantDatasource {
+class OrganizerParticipantDatasourceImpl extends ApiProvider
+    implements OrganizerParticipantDatasource {
   OrganizerParticipantDatasourceImpl({RestClient? client})
       : super(client: client ?? NRDRestClient());
 
@@ -35,7 +37,8 @@ class OrganizerParticipantDatasourceImpl extends ApiProvider implements Organize
     try {
       final queryParams = <String, dynamic>{'page': page, 'size': size};
       if (eventId != null) queryParams['eventId'] = eventId;
-      if (participantType != null) queryParams['participantType'] = participantType;
+      if (participantType != null)
+        queryParams['participantType'] = participantType;
 
       final response = await get<Map<String, dynamic>>(
         ApiPath.participants,
@@ -124,12 +127,11 @@ class OrganizerParticipantDatasourceImpl extends ApiProvider implements Organize
 
       return forwardEnvelopeResponse<void>(
         response,
-        (_) => null,
+        (_) {},
         fallbackError: 'Xóa participant thất bại',
       );
     } catch (e) {
       return mapExceptionToApiResponse(e);
     }
   }
-
 }

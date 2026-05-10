@@ -159,11 +159,11 @@ void main() {
 
       final result = await repository.signUpWithEmailAndPassword(
         'password123',
-        SignupParams(
+        const SignupParams(
           idToken: 'token',
           email: 'new@example.com',
           isUser: true,
-          userProfile: const SignupUserProfileParams(fullName: 'Test User'),
+          userProfile: SignupUserProfileParams(fullName: 'Test User'),
         ),
       );
 
@@ -173,13 +173,13 @@ void main() {
     test('trả về Left khi datasource trả badRequest', () async {
       when(() => mockDatasource.signUpWithEmailAndPassword(any(), any()))
           .thenAnswer((_) async => const ApiResponse.badRequest(
-            ApiResponseError(
-                code: '400', message: 'Email đã tồn tại', errors: []),
-          ));
+                ApiResponseError(
+                    code: '400', message: 'Email đã tồn tại', errors: []),
+              ));
 
       final result = await repository.signUpWithEmailAndPassword(
         'password',
-        SignupParams(
+        const SignupParams(
           idToken: 'token',
           email: 'existing@example.com',
           isUser: true,

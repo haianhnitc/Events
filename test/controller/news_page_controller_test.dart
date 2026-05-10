@@ -1,5 +1,4 @@
 import 'package:dartz/dartz.dart';
-import 'package:events_app/api_template/services/failure.dart';
 import 'package:events_app/feature/news/domain/entity/news_entity.dart';
 import 'package:events_app/feature/news/domain/usecase/news_usecase.dart';
 import 'package:events_app/feature/news/presentation/controller/news_page_controller.dart';
@@ -58,7 +57,8 @@ void main() {
       expect(controller.hasMore, isFalse);
     });
 
-    test('trả về list rỗng và set hasMore = false khi backend trả empty', () async {
+    test('trả về list rỗng và set hasMore = false khi backend trả empty',
+        () async {
       when(() => mockUsecase(any())).thenAnswer((_) async => const Right([]));
 
       await controller.loadNews();

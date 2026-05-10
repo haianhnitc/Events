@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:app_settings/app_settings.dart';
-import 'package:events_app/feature/common/domain/entity/file_entity.dart';
 import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
 import 'package:events_app/common/utils/permission_helper.dart';
 import 'package:file_picker/file_picker.dart';

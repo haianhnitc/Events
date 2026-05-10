@@ -8,7 +8,8 @@ import 'package:events_app/feature/staff_application/data/model/staff_applicatio
 
 import '../../helpers/fake_data.dart';
 
-class TestOrganizerStaffApplicationDatasource extends OrganizerStaffApplicationDatasourceImpl {
+class TestOrganizerStaffApplicationDatasource
+    extends OrganizerStaffApplicationDatasourceImpl {
   ApiResponse<Map<String, dynamic>>? getListStub;
   ApiResponse<Map<String, dynamic>>? getByIdStub;
   ApiResponse<Map<String, dynamic>>? approveStub;
@@ -48,7 +49,8 @@ class TestOrganizerStaffApplicationDatasource extends OrganizerStaffApplicationD
         }
         final content = object['content'] as List<dynamic>? ?? [];
         return content
-            .map((e) => StaffApplicationModel.fromJson(e as Map<String, dynamic>))
+            .map((e) =>
+                StaffApplicationModel.fromJson(e as Map<String, dynamic>))
             .toList();
       },
       fallbackError: 'Lấy danh sách đơn ứng tuyển thất bại',
@@ -56,7 +58,8 @@ class TestOrganizerStaffApplicationDatasource extends OrganizerStaffApplicationD
   }
 
   @override
-  Future<ApiResponse<StaffApplicationModel>> getStaffApplicationById(int id) async {
+  Future<ApiResponse<StaffApplicationModel>> getStaffApplicationById(
+      int id) async {
     final envelope = getByIdStub ??
         ApiResponse.success({
           'errorCode': 0,
@@ -140,7 +143,7 @@ void main() {
 
     test('empty', () async {
       final datasource = TestOrganizerStaffApplicationDatasource(
-        getListStub: ApiResponse.success({
+        getListStub: const ApiResponse.success({
           'errorCode': 0,
           'statusCode': 200,
           'message': 'OK',
@@ -278,7 +281,7 @@ void main() {
         }),
       );
 
-      final params = ApproveStaffApplicationParams(
+      const params = ApproveStaffApplicationParams(
         applicationId: 1,
         isApproved: true,
         feedback: 'Great application!',
@@ -314,7 +317,7 @@ void main() {
         }),
       );
 
-      final params = ApproveStaffApplicationParams(
+      const params = ApproveStaffApplicationParams(
         applicationId: 1,
         isApproved: false,
         feedback: 'Please apply next time',

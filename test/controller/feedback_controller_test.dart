@@ -2,7 +2,6 @@ import 'package:dartz/dartz.dart';
 import 'package:events_app/api_template/services/failure.dart';
 import 'package:events_app/dependency_injection/injection.dart';
 import 'package:events_app/feature/common/domain/enum/app_enum.dart';
-import 'package:events_app/feature/event_management/domain/entity/event_summary_entity.dart';
 import 'package:events_app/feature/feedback/domain/entity/feedback_entity.dart';
 import 'package:events_app/feature/feedback/domain/usecase/feedback_usecase.dart';
 import 'package:events_app/feature/feedback/domain/usecase/feedback_usecase_params.dart';
@@ -12,10 +11,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
 import 'package:mocktail/mocktail.dart';
 
-class MockGetFeedbackQuestionsUsecase extends Mock implements GetFeedbackQuestionsUsecase {}
+class MockGetFeedbackQuestionsUsecase extends Mock
+    implements GetFeedbackQuestionsUsecase {}
+
 class MockSubmitFeedbackUsecase extends Mock implements SubmitFeedbackUsecase {}
 
-class FakeGetFeedbackQuestionsParams extends Fake implements GetFeedbackQuestionsParams {}
+class FakeGetFeedbackQuestionsParams extends Fake
+    implements GetFeedbackQuestionsParams {}
+
 class FakeSubmitFeedbackParams extends Fake implements SubmitFeedbackParams {}
 
 void main() {
@@ -120,7 +123,8 @@ void main() {
     });
 
     test('true khi tất cả required questions đã trả lời', () {
-      controller.questions.add(makeQuestion(id: 1, isRequired: true, type: FeedbackQuestionType.text));
+      controller.questions.add(makeQuestion(
+          id: 1, isRequired: true, type: FeedbackQuestionType.text));
       controller.setAnswer(1, 'Answer');
 
       expect(controller.canSubmit, isTrue);
@@ -133,26 +137,30 @@ void main() {
     });
 
     test('false khi required singleChoice chưa chọn', () {
-      controller.questions.add(makeQuestion(id: 1, isRequired: true, type: FeedbackQuestionType.singleChoice));
+      controller.questions.add(makeQuestion(
+          id: 1, isRequired: true, type: FeedbackQuestionType.singleChoice));
 
       expect(controller.canSubmit, isFalse);
     });
 
     test('true khi required singleChoice đã chọn', () {
-      controller.questions.add(makeQuestion(id: 1, isRequired: true, type: FeedbackQuestionType.singleChoice));
+      controller.questions.add(makeQuestion(
+          id: 1, isRequired: true, type: FeedbackQuestionType.singleChoice));
       controller.toggleOption(1, 10);
 
       expect(controller.canSubmit, isTrue);
     });
 
     test('false khi required multipleChoice chưa chọn', () {
-      controller.questions.add(makeQuestion(id: 1, isRequired: true, type: FeedbackQuestionType.multipleChoice));
+      controller.questions.add(makeQuestion(
+          id: 1, isRequired: true, type: FeedbackQuestionType.multipleChoice));
 
       expect(controller.canSubmit, isFalse);
     });
 
     test('true khi required multipleChoice đã chọn', () {
-      controller.questions.add(makeQuestion(id: 1, isRequired: true, type: FeedbackQuestionType.multipleChoice));
+      controller.questions.add(makeQuestion(
+          id: 1, isRequired: true, type: FeedbackQuestionType.multipleChoice));
       controller.toggleOption(1, 10);
 
       expect(controller.canSubmit, isTrue);
@@ -176,8 +184,8 @@ void main() {
     });
 
     test('thất bại thì propagates error (isLoading = false)', () async {
-      when(() => mockGetQuestionsUsecase(any()))
-          .thenAnswer((_) async => const Left(FailureEntity.serverFailure('500', 'error')));
+      when(() => mockGetQuestionsUsecase(any())).thenAnswer(
+          (_) async => const Left(FailureEntity.serverFailure('500', 'error')));
 
       await controller.loadQuestions(1);
 
@@ -189,8 +197,8 @@ void main() {
     test('thành công thì sets hasSubmitted = true', () async {
       controller.questions.add(makeQuestion(id: 1));
       controller.setAnswer(1, 'Answer');
-      when(() => mockSubmitFeedbackUsecase(any()))
-          .thenAnswer((_) async => Right(FeedbackEntity(attendanceFeedbackId: 1)));
+      when(() => mockSubmitFeedbackUsecase(any())).thenAnswer(
+          (_) async => Right(FeedbackEntity(attendanceFeedbackId: 1)));
 
       await controller.submitFeedback();
 
@@ -199,8 +207,8 @@ void main() {
 
     test('thất bại thì không set hasSubmitted', () async {
       controller.questions.add(makeQuestion(id: 1));
-      when(() => mockSubmitFeedbackUsecase(any()))
-          .thenAnswer((_) async => const Left(FailureEntity.serverFailure('500', 'error')));
+      when(() => mockSubmitFeedbackUsecase(any())).thenAnswer(
+          (_) async => const Left(FailureEntity.serverFailure('500', 'error')));
 
       await controller.submitFeedback();
 
@@ -208,7 +216,8 @@ void main() {
     });
 
     test('gọi usecase với đúng params', () async {
-      controller.questions.add(makeQuestion(id: 1, type: FeedbackQuestionType.text));
+      controller.questions
+          .add(makeQuestion(id: 1, type: FeedbackQuestionType.text));
       controller.setAnswer(1, 'Answer');
       controller.comment.value = 'Great event!';
       when(() => mockSubmitFeedbackUsecase(any()))

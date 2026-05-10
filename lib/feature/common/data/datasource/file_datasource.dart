@@ -63,7 +63,7 @@ class FileDatasourceImpl extends ApiProvider implements FileDatasource {
 
       return forwardEnvelopeResponse<void>(
         response,
-        (_) => null,
+        (_) {},
         fallbackError: 'Xóa file thất bại',
       );
     } catch (e) {

@@ -1,16 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:events_app/feature/common/domain/enum/app_enum.dart';
 import 'package:events_app/feature/event_management/domain/entity/event_summary_entity.dart';
 
 class OrganizerEventPickerSheet extends StatefulWidget {
   final List<EventSummaryEntity> events;
   final void Function(EventSummaryEntity) onSelected;
   final String title;
+  final String? allOptionLabel;
+  final VoidCallback? onAllSelected;
+  final EventStatus? statusFilter;
 
   const OrganizerEventPickerSheet({
     super.key,
     required this.events,
     required this.onSelected,
     this.title = 'Chọn sự kiện',
+    this.allOptionLabel,
+    this.onAllSelected,
+    this.statusFilter,
   });
 
   static Future<void> show({
@@ -18,6 +25,9 @@ class OrganizerEventPickerSheet extends StatefulWidget {
     required List<EventSummaryEntity> events,
     required void Function(EventSummaryEntity) onSelected,
     String title = 'Chọn sự kiện',
+    String? allOptionLabel,
+    VoidCallback? onAllSelected,
+    EventStatus? statusFilter,
   }) {
     return showModalBottomSheet(
       context: context,
@@ -30,6 +40,9 @@ class OrganizerEventPickerSheet extends StatefulWidget {
         events: events,
         onSelected: onSelected,
         title: title,
+        allOptionLabel: allOptionLabel,
+        onAllSelected: onAllSelected,
+        statusFilter: statusFilter,
       ),
     );
   }
@@ -41,12 +54,17 @@ class OrganizerEventPickerSheet extends StatefulWidget {
 
 class _OrganizerEventPickerSheetState extends State<OrganizerEventPickerSheet> {
   final _searchController = TextEditingController();
-  List<EventSummaryEntity> _filtered = [];
+  late List<EventSummaryEntity> _filtered;
 
   @override
   void initState() {
     super.initState();
-    _filtered = widget.events;
+    _filtered = _applyFilter(widget.events);
+  }
+
+  List<EventSummaryEntity> _applyFilter(List<EventSummaryEntity> list) {
+    if (widget.statusFilter == null) return list;
+    return list.where((e) => e.status == widget.statusFilter).toList();
   }
 
   @override
@@ -57,16 +75,23 @@ class _OrganizerEventPickerSheetState extends State<OrganizerEventPickerSheet> {
 
   void _onSearch(String query) {
     setState(() {
+      final base = _applyFilter(widget.events);
       if (query.isEmpty) {
-        _filtered = widget.events;
+        _filtered = base;
       } else {
-        _filtered = widget.events.where((e) {
-          final q = query.toLowerCase();
+        final q = query.toLowerCase();
+        _filtered = base.where((e) {
           return (e.title?.toLowerCase().contains(q) ?? false) ||
               (e.startTime?.toString().contains(q) ?? false);
         }).toList();
       }
     });
+  }
+
+  int get _totalCount {
+    return widget.allOptionLabel != null
+        ? _filtered.length + 1
+        : _filtered.length;
   }
 
   @override
@@ -85,17 +110,20 @@ class _OrganizerEventPickerSheetState extends State<OrganizerEventPickerSheet> {
               _buildSearch(),
               const Divider(height: 1),
               Expanded(
-                child: _filtered.isEmpty
+                child: _filtered.isEmpty && widget.allOptionLabel == null
                     ? _buildEmpty()
                     : ListView.separated(
                         controller: scrollController,
                         padding: const EdgeInsets.symmetric(vertical: 8),
-                        itemCount: _filtered.length,
+                        itemCount: _totalCount,
                         separatorBuilder: (_, __) =>
                             const Divider(height: 1, indent: 72),
                         itemBuilder: (context, index) {
-                          final e = _filtered[index];
-                          return _buildEventTile(e);
+                          if (widget.allOptionLabel != null && index == 0) {
+                            return _buildAllTile();
+                          }
+                          return _buildEventTile(_filtered[
+                              widget.allOptionLabel != null ? index - 1 : index]);
                         },
                       ),
               ),
@@ -135,7 +163,7 @@ class _OrganizerEventPickerSheetState extends State<OrganizerEventPickerSheet> {
               ),
             ),
           ),
-          if (_filtered.isNotEmpty)
+          if (_filtered.isNotEmpty || widget.allOptionLabel != null)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               decoration: BoxDecoration(
@@ -143,7 +171,7 @@ class _OrganizerEventPickerSheetState extends State<OrganizerEventPickerSheet> {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
-                '${_filtered.length}',
+                '${_totalCount}',
                 style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
@@ -194,6 +222,38 @@ class _OrganizerEventPickerSheetState extends State<OrganizerEventPickerSheet> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildAllTile() {
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      leading: Container(
+        width: 44,
+        height: 44,
+        decoration: BoxDecoration(
+          color: const Color(0xFFF1F5F9),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: const Icon(Icons.checklist, color: Color(0xFF64748B), size: 22),
+      ),
+      title: Text(
+        widget.allOptionLabel!,
+        style: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          color: Color(0xff273143),
+        ),
+      ),
+      subtitle: Text(
+        'Hiển thị tất cả sự kiện',
+        style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+      ),
+      trailing: const Icon(Icons.chevron_right, color: Color(0xff94A3B8)),
+      onTap: () {
+        Navigator.pop(context);
+        widget.onAllSelected?.call();
+      },
     );
   }
 
@@ -260,7 +320,12 @@ class _OrganizerEventPickerSheetState extends State<OrganizerEventPickerSheet> {
         ],
       ),
       trailing: const Icon(Icons.chevron_right, color: Color(0xff94A3B8)),
-      onTap: e.eventId != null ? () => widget.onSelected(e) : null,
+      onTap: e.eventId != null
+          ? () {
+              Navigator.pop(context);
+              widget.onSelected(e);
+            }
+          : null,
     );
   }
 

@@ -1,13 +1,14 @@
 import 'dart:async';
+
 import 'package:events_app/api_template/services/failure.dart';
 import 'package:events_app/authentication/presentation/controller/auth_controller.dart';
 import 'package:events_app/dependency_injection/injection.dart';
 import 'package:events_app/feature/common/domain/enum/app_enum.dart';
-import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
 import 'package:events_app/feature/payment/domain/entity/payment_url_entity.dart';
 import 'package:events_app/feature/payment/domain/entity/transaction_entity.dart';
 import 'package:events_app/feature/payment/domain/usecase/sepay_payment_usecase.dart';
 import 'package:events_app/feature/payment/domain/usecase/sepay_payment_params.dart';
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 
 class SePayPaymentController extends GetxController {
@@ -23,7 +24,13 @@ class SePayPaymentController extends GetxController {
 
   Timer? _pollingTimer;
   static const int _maxPollingAttempts = 60;
-  static const Duration _pollingInterval = Duration(seconds: 2);
+  static const Duration _pollingInterval = Duration(seconds: 3);
+
+  Function(TransactionEntity)? _pendingOnSuccess;
+  Function(TransactionEntity)? _pendingOnFailure;
+  VoidCallback? _pendingOnTimeout;
+
+  int _currentTransactionId = 0;
 
   Future<PaymentUrlEntity?> createPayment({
     required TransactionReferenceType referenceType,
@@ -70,67 +77,89 @@ class SePayPaymentController extends GetxController {
     required int transactionId,
     required Function(TransactionEntity transaction) onSuccess,
     Function(TransactionEntity transaction)? onFailure,
+    VoidCallback? onTimeout,
   }) async {
     if (isPolling.value) return false;
+    stopPolling();
+
+    _currentTransactionId = transactionId;
+    _pendingOnSuccess = onSuccess;
+    _pendingOnFailure = onFailure;
+    _pendingOnTimeout = onTimeout;
     isPolling.value = true;
     pollingCount.value = 0;
+    debugPrint(
+        '[SePayPaymentController] startPolling() called for transactionId=$transactionId');
 
-    return await _pollTransaction(
-      transactionId: transactionId,
-      onSuccess: onSuccess,
-      onFailure: onFailure,
-    );
+    _doPoll();
+    return true;
   }
 
-  Future<bool> _pollTransaction({
-    required int transactionId,
-    required Function(TransactionEntity transaction) onSuccess,
-    Function(TransactionEntity transaction)? onFailure,
-  }) async {
-    if (!isPolling.value || pollingCount.value >= _maxPollingAttempts) {
-      isPolling.value = false;
-      return false;
+  Future<void> _doPoll() async {
+    debugPrint('[SePayPaymentController] _doPoll() ENTERED - isPolling=${isPolling.value}, pollingCount=${pollingCount.value}');
+    if (!isPolling.value) {
+      debugPrint('[SePayPaymentController] _doPoll() SKIPPED - not polling');
+      return;
     }
 
     pollingCount.value++;
+    if (pollingCount.value > _maxPollingAttempts) {
+      stopPolling();
+      debugPrint(
+          '[SePayPaymentController] Max polling attempts reached, stopping.');
+      _pendingOnTimeout?.call();
+      return;
+    }
 
     final result = await _getTransactionStatusUsecase(
-        GetTransactionStatusParams(transactionId: transactionId));
+        GetTransactionStatusParams(transactionId: _currentTransactionId));
 
-    return await result.fold(
+    await result.fold(
       (failure) async {
-        await Future.delayed(_pollingInterval);
-        return await _pollTransaction(
-          transactionId: transactionId,
-          onSuccess: onSuccess,
-          onFailure: onFailure,
-        );
+        debugPrint(
+            '[SePayPaymentController] Poll ${pollingCount.value}: FAILURE - $failure');
+        if (isPolling.value) {
+          _scheduleNextPoll();
+        }
       },
       (transaction) async {
+        debugPrint(
+            '[SePay] Poll ${pollingCount.value}: status = ${transaction.status} (raw: $transaction)');
+        if (!isPolling.value) return;
+
         if (transaction.status == TransactionStatus.pending) {
-          await Future.delayed(_pollingInterval);
-          return _pollTransaction(
-            transactionId: transactionId,
-            onSuccess: onSuccess,
-            onFailure: onFailure,
-          );
+          _scheduleNextPoll();
+          return;
         }
 
         isPolling.value = false;
         if (transaction.status == TransactionStatus.failed) {
-          onFailure?.call(transaction);
-          return false;
+          debugPrint('[SePay] Payment FAILED');
+          _pendingOnFailure?.call(transaction);
+        } else {
+          debugPrint(
+              '[SePay] Payment SUCCESS — triggering callback, isPolling=$isPolling');
+          _pendingOnSuccess?.call(transaction);
+          debugPrint('[SePay] Callback returned');
         }
-        onSuccess(transaction);
-        return true;
       },
     );
   }
 
-  void stopPolling() {
+  void _scheduleNextPoll() {
+    debugPrint(
+        '[SePayPaymentController] Scheduling next poll in ${_pollingInterval.inSeconds}s (attempt ${pollingCount.value}/$_maxPollingAttempts)');
     _pollingTimer?.cancel();
+    _pollingTimer = Timer(_pollingInterval, _doPoll);
+  }
+
+  void stopPolling() {
+    debugPrint('[SePayPaymentController] stopPolling() CALLED');
+    _pollingTimer?.cancel();
+    _pollingTimer = null;
     isPolling.value = false;
     pollingCount.value = 0;
+    debugPrint('[SePayPaymentController] stopPolling() DONE - isPolling=${isPolling.value}');
   }
 
   void clearPayment() {

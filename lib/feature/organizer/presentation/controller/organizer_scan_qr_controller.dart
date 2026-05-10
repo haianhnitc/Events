@@ -8,7 +8,6 @@ import 'package:events_app/dependency_injection/injection.dart';
 import 'package:events_app/feature/attendance/domain/entity/attendance_entity.dart';
 import 'package:events_app/feature/attendance/domain/usecase/attendance_usecase.dart';
 import 'package:events_app/feature/attendance/domain/usecase/scan_qr_params.dart';
-import 'package:events_app/feature/common/domain/enum/app_enum.dart';
 import 'package:events_app/feature/participant/domain/entity/participant_entity.dart';
 import 'package:events_app/feature/organizer/attendance/domain/usecase/organizer_attendance_usecase.dart';
 import 'package:events_app/feature/organizer/attendance/domain/usecase/organizer_attendance_params.dart';
@@ -40,7 +39,8 @@ class OrganizerScanResultEntity {
   });
 }
 
-class OrganizerScanQrController extends GetxController with GetTickerProviderStateMixin {
+class OrganizerScanQrController extends GetxController
+    with GetTickerProviderStateMixin {
   MobileScannerController? mobileScannerController;
 
   final Rx<OrganizerCameraPermissionState> permissionState =
@@ -108,7 +108,8 @@ class OrganizerScanQrController extends GetxController with GetTickerProviderSta
         mobileScannerController = MobileScannerController();
         break;
       case PermissionStatus.permanentlyDenied:
-        permissionState.value = OrganizerCameraPermissionState.permanentlyDenied;
+        permissionState.value =
+            OrganizerCameraPermissionState.permanentlyDenied;
         break;
       case PermissionStatus.denied:
       case PermissionStatus.restricted:
@@ -174,8 +175,8 @@ class OrganizerScanQrController extends GetxController with GetTickerProviderSta
     }
 
     if (_isQrExpired(code)) {
-      _showErrorSnackbar('Mã QR hết hạn',
-          'Mã QR đã hết hạn. Vui lòng tạo mã mới.');
+      _showErrorSnackbar(
+          'Mã QR hết hạn', 'Mã QR đã hết hạn. Vui lòng tạo mã mới.');
       _resumeScanner();
       return;
     }
@@ -195,7 +196,8 @@ class OrganizerScanQrController extends GetxController with GetTickerProviderSta
   }
 
   bool _isEventQrCode(String code) {
-    return code.startsWith('EVENT_CHECKIN:') || code.startsWith('EVENT_CHECKOUT:');
+    return code.startsWith('EVENT_CHECKIN:') ||
+        code.startsWith('EVENT_CHECKOUT:');
   }
 
   String? _validateQrFormat(String code) {
@@ -363,7 +365,8 @@ class OrganizerScanQrController extends GetxController with GetTickerProviderSta
     return scanResult;
   }
 
-  void _onScanSuccess(OrganizerScanResultEntity result, OrganizerScanMode action) {
+  void _onScanSuccess(
+      OrganizerScanResultEntity result, OrganizerScanMode action) {
     _showingResult.value = true;
     showResultOverlay.value = true;
     lastScanResult.value = result;
@@ -372,14 +375,17 @@ class OrganizerScanQrController extends GetxController with GetTickerProviderSta
       checkedInCount.value++;
     }
 
-    final participantName = result.scanResult?.participantName ?? 'Người tham gia';
+    final participantName =
+        result.scanResult?.participantName ?? 'Người tham gia';
     final message = result.message ??
         (action == OrganizerScanMode.checkIn
             ? 'Check-in thành công'
             : 'Check-out thành công');
 
     _showSuccessSnackbar(
-      action == OrganizerScanMode.checkIn ? 'Check-in thành công' : 'Check-out thành công',
+      action == OrganizerScanMode.checkIn
+          ? 'Check-in thành công'
+          : 'Check-out thành công',
       '$participantName - $message',
     );
 
@@ -411,7 +417,8 @@ class OrganizerScanQrController extends GetxController with GetTickerProviderSta
     failure.when(
       serverFailure: (_, msg) => message = msg ?? 'Đã xảy ra lỗi từ máy chủ',
       dataParsingFailure: () => message = 'Không đọc được dữ liệu phản hồi',
-      noConnectionFailure: () => message = 'Không có kết nối mạng. Vui lòng kiểm tra internet.',
+      noConnectionFailure: () =>
+          message = 'Không có kết nối mạng. Vui lòng kiểm tra internet.',
       systemFailure: (_, msg) => message = msg ?? 'Lỗi hệ thống',
     );
     return message;

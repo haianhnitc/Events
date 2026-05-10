@@ -6,9 +6,11 @@ import 'package:events_app/feature/news/domain/usecase/notification_usecase.dart
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
-class MockNotificationRepository extends Mock implements NotificationRepository {}
+class MockNotificationRepository extends Mock
+    implements NotificationRepository {}
 
-class FakeGetNotificationListParams extends Fake implements GetNotificationListParams {}
+class FakeGetNotificationListParams extends Fake
+    implements GetNotificationListParams {}
 
 void main() {
   late MockNotificationRepository mockRepository;
@@ -34,7 +36,7 @@ void main() {
         NotificationEntity(notificationId: 1, title: 'Notification 1'),
         NotificationEntity(notificationId: 2, title: 'Notification 2'),
       ];
-      final params = const GetNotificationListParams(page: 0, size: 20);
+      const params = GetNotificationListParams(page: 0, size: 20);
       when(() => mockRepository.getNotificationList(
             page: any(named: 'page'),
             size: any(named: 'size'),
@@ -53,7 +55,7 @@ void main() {
     });
 
     test('trả về empty list khi repository trả rỗng', () async {
-      final params = const GetNotificationListParams();
+      const params = GetNotificationListParams();
       when(() => mockRepository.getNotificationList(
             page: any(named: 'page'),
             size: any(named: 'size'),
@@ -69,12 +71,13 @@ void main() {
     });
 
     test('trả về Left(FailureEntity) khi repository trả failure', () async {
-      final params = const GetNotificationListParams();
+      const params = GetNotificationListParams();
       when(() => mockRepository.getNotificationList(
-            page: any(named: 'page'),
-            size: any(named: 'size'),
-          )).thenAnswer(
-          (_) async => const Left(FailureEntity.serverFailure('500', 'Server error')));
+                page: any(named: 'page'),
+                size: any(named: 'size'),
+              ))
+          .thenAnswer((_) async =>
+              const Left(FailureEntity.serverFailure('500', 'Server error')));
 
       final result = await usecase(params);
 
@@ -82,7 +85,7 @@ void main() {
     });
 
     test('truyền đúng params xuống repository', () async {
-      final params = const GetNotificationListParams(page: 1, size: 10);
+      const params = GetNotificationListParams(page: 1, size: 10);
       when(() => mockRepository.getNotificationList(
             page: 1,
             size: 10,
@@ -127,26 +130,29 @@ void main() {
     });
 
     test('trả về Left(FailureEntity) khi repository trả notFound', () async {
-      when(() => mockRepository.getNotificationById(9999))
-          .thenAnswer((_) async => const Left(FailureEntity.serverFailure('404', 'Not found')));
+      when(() => mockRepository.getNotificationById(9999)).thenAnswer(
+          (_) async =>
+              const Left(FailureEntity.serverFailure('404', 'Not found')));
 
       final result = await usecase(9999);
 
       expect(result.isLeft(), isTrue);
     });
 
-    test('trả về Left(FailureEntity) khi repository trả unauthorized', () async {
-      when(() => mockRepository.getNotificationById(1))
-          .thenAnswer((_) async => const Left(FailureEntity.serverFailure('401', 'Unauthorized')));
+    test('trả về Left(FailureEntity) khi repository trả unauthorized',
+        () async {
+      when(() => mockRepository.getNotificationById(1)).thenAnswer((_) async =>
+          const Left(FailureEntity.serverFailure('401', 'Unauthorized')));
 
       final result = await usecase(1);
 
       expect(result.isLeft(), isTrue);
     });
 
-    test('trả về Left(FailureEntity) khi repository trả serverFailure', () async {
-      when(() => mockRepository.getNotificationById(1))
-          .thenAnswer((_) async => const Left(FailureEntity.serverFailure('500', 'Server error')));
+    test('trả về Left(FailureEntity) khi repository trả serverFailure',
+        () async {
+      when(() => mockRepository.getNotificationById(1)).thenAnswer((_) async =>
+          const Left(FailureEntity.serverFailure('500', 'Server error')));
 
       final result = await usecase(1);
 
@@ -171,17 +177,18 @@ void main() {
     });
 
     test('trả về Left(FailureEntity) khi repository trả failure', () async {
-      when(() => mockRepository.markAsRead(9999))
-          .thenAnswer((_) async => const Left(FailureEntity.serverFailure('404', 'Not found')));
+      when(() => mockRepository.markAsRead(9999)).thenAnswer((_) async =>
+          const Left(FailureEntity.serverFailure('404', 'Not found')));
 
       final result = await usecase(9999);
 
       expect(result.isLeft(), isTrue);
     });
 
-    test('trả về Left(FailureEntity) khi repository trả unauthorized', () async {
-      when(() => mockRepository.markAsRead(1))
-          .thenAnswer((_) async => const Left(FailureEntity.serverFailure('401', 'Unauthorized')));
+    test('trả về Left(FailureEntity) khi repository trả unauthorized',
+        () async {
+      when(() => mockRepository.markAsRead(1)).thenAnswer((_) async =>
+          const Left(FailureEntity.serverFailure('401', 'Unauthorized')));
 
       final result = await usecase(1);
 
@@ -206,17 +213,18 @@ void main() {
     });
 
     test('trả về Left(FailureEntity) khi repository trả failure', () async {
-      when(() => mockRepository.markAllAsRead())
-          .thenAnswer((_) async => const Left(FailureEntity.serverFailure('401', 'Unauthorized')));
+      when(() => mockRepository.markAllAsRead()).thenAnswer((_) async =>
+          const Left(FailureEntity.serverFailure('401', 'Unauthorized')));
 
       final result = await usecase(null);
 
       expect(result.isLeft(), isTrue);
     });
 
-    test('trả về Left(FailureEntity) khi repository trả serverFailure', () async {
-      when(() => mockRepository.markAllAsRead())
-          .thenAnswer((_) async => const Left(FailureEntity.serverFailure('500', 'Server error')));
+    test('trả về Left(FailureEntity) khi repository trả serverFailure',
+        () async {
+      when(() => mockRepository.markAllAsRead()).thenAnswer((_) async =>
+          const Left(FailureEntity.serverFailure('500', 'Server error')));
 
       final result = await usecase(null);
 

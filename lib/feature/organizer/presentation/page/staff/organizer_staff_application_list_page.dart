@@ -127,38 +127,41 @@ class _OrganizerStaffApplicationListPageState
   Widget _buildApplicationList(StaffApplicationStatus? status) {
     return Obx(() {
       if (_ctrl.isLoading.value && _ctrl.applications.isEmpty) {
-        return const Center(child: CircularProgressIndicator());
-      }
-      var filtered = _ctrl.applications.toList();
-      if (status != null) {
-        filtered = filtered.where((a) => a.status == status).toList();
-      }
-      if (_searchController.text.isNotEmpty) {
-        final q = _searchController.text.toLowerCase();
-        filtered = filtered.where((a) {
-          final name = a.applicant?.fullName?.toLowerCase() ?? '';
-          final email = a.applicant?.email?.toLowerCase() ?? '';
-          return name.contains(q) || email.contains(q);
-        }).toList();
-      }
-      if (filtered.isEmpty) {
-        return OrganizerEmptyState(
-          message: 'Không có đơn ứng tuyển',
-          icon: Icons.assignment_outlined,
+        return const Center(
+          child: CircularProgressIndicator(color: Color(0xff06B6D4)),
         );
       }
-      return RefreshIndicator(
-        onRefresh: _ctrl.refreshApplications,
-        child: ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: filtered.length,
-          itemBuilder: (context, index) {
-            final app = filtered[index];
-            return _buildApplicationCard(app);
-          },
-        ),
-      );
+      return _buildApplicationListContent(status);
     });
+  }
+
+  Widget _buildApplicationListContent(StaffApplicationStatus? status) {
+    var filtered = _ctrl.applications.toList();
+    if (status != null) {
+      filtered = filtered.where((a) => a.status == status).toList();
+    }
+    if (_searchController.text.isNotEmpty) {
+      final q = _searchController.text.toLowerCase();
+      filtered = filtered.where((a) {
+        final name = a.applicant?.fullName?.toLowerCase() ?? '';
+        final email = a.applicant?.email?.toLowerCase() ?? '';
+        return name.contains(q) || email.contains(q);
+      }).toList();
+    }
+    if (filtered.isEmpty) {
+      return const OrganizerEmptyState(
+        message: 'Không có đơn ứng tuyển',
+        icon: Icons.assignment_outlined,
+      );
+    }
+    return RefreshIndicator(
+      onRefresh: _ctrl.refreshApplications,
+      child: ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: filtered.length,
+        itemBuilder: (context, index) => _buildApplicationCard(filtered[index]),
+      ),
+    );
   }
 
   Widget _buildApplicationCard(app) {

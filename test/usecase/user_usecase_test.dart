@@ -15,9 +15,11 @@ import 'package:mocktail/mocktail.dart';
 
 class MockUserRepository extends Mock implements UserRepository {}
 
-class FakeUpdateCurrentUserParams extends Fake implements UpdateCurrentUserParams {}
+class FakeUpdateCurrentUserParams extends Fake
+    implements UpdateCurrentUserParams {}
 
-class FakeGetUserParticipatedEventsParams extends Fake implements GetUserParticipatedEventsParams {}
+class FakeGetUserParticipatedEventsParams extends Fake
+    implements GetUserParticipatedEventsParams {}
 
 void main() {
   late MockUserRepository mockRepository;
@@ -76,18 +78,20 @@ void main() {
       );
     });
 
-    test('trả về Left(FailureEntity) khi repository trả unauthorized', () async {
-      when(() => mockRepository.getCurrentUser())
-          .thenAnswer((_) async => const Left(FailureEntity.serverFailure('401', 'Unauthorized')));
+    test('trả về Left(FailureEntity) khi repository trả unauthorized',
+        () async {
+      when(() => mockRepository.getCurrentUser()).thenAnswer((_) async =>
+          const Left(FailureEntity.serverFailure('401', 'Unauthorized')));
 
       final result = await usecase(const NoParams());
 
       expect(result.isLeft(), isTrue);
     });
 
-    test('trả về Left(FailureEntity) khi repository trả serverFailure', () async {
-      when(() => mockRepository.getCurrentUser())
-          .thenAnswer((_) async => const Left(FailureEntity.serverFailure('500', 'Server error')));
+    test('trả về Left(FailureEntity) khi repository trả serverFailure',
+        () async {
+      when(() => mockRepository.getCurrentUser()).thenAnswer((_) async =>
+          const Left(FailureEntity.serverFailure('500', 'Server error')));
 
       final result = await usecase(const NoParams());
 
@@ -121,18 +125,19 @@ void main() {
 
     test('trả về Left(FailureEntity) khi repository trả notFound', () async {
       final usecase = GetUserByIdUsecase(mockRepository);
-      when(() => mockRepository.getUserById(9999))
-          .thenAnswer((_) async => const Left(FailureEntity.serverFailure('404', 'Not found')));
+      when(() => mockRepository.getUserById(9999)).thenAnswer((_) async =>
+          const Left(FailureEntity.serverFailure('404', 'Not found')));
 
       final result = await usecase(9999);
 
       expect(result.isLeft(), isTrue);
     });
 
-    test('trả về Left(FailureEntity) khi repository trả unauthorized', () async {
+    test('trả về Left(FailureEntity) khi repository trả unauthorized',
+        () async {
       final usecase = GetUserByIdUsecase(mockRepository);
-      when(() => mockRepository.getUserById(1))
-          .thenAnswer((_) async => const Left(FailureEntity.serverFailure('401', 'Unauthorized')));
+      when(() => mockRepository.getUserById(1)).thenAnswer((_) async =>
+          const Left(FailureEntity.serverFailure('401', 'Unauthorized')));
 
       final result = await usecase(1);
 
@@ -154,7 +159,7 @@ void main() {
         firebaseUid: 'firebase-uid',
         currentCoin: 0,
       );
-      final params = UpdateCurrentUserParams(fullName: 'New Name');
+      const params = UpdateCurrentUserParams(fullName: 'New Name');
       when(() => mockRepository.updateCurrentUser(params))
           .thenAnswer((_) async => Right(entity));
 
@@ -168,19 +173,22 @@ void main() {
     });
 
     test('trả về Left(FailureEntity) khi repository trả badRequest', () async {
-      final params = UpdateCurrentUserParams(fullName: '');
-      when(() => mockRepository.updateCurrentUser(params))
-          .thenAnswer((_) async => const Left(FailureEntity.serverFailure('400', 'Bad request')));
+      const params = UpdateCurrentUserParams(fullName: '');
+      when(() => mockRepository.updateCurrentUser(params)).thenAnswer(
+          (_) async =>
+              const Left(FailureEntity.serverFailure('400', 'Bad request')));
 
       final result = await usecase(params);
 
       expect(result.isLeft(), isTrue);
     });
 
-    test('trả về Left(FailureEntity) khi repository trả unauthorized', () async {
-      final params = UpdateCurrentUserParams(fullName: 'Name');
-      when(() => mockRepository.updateCurrentUser(params))
-          .thenAnswer((_) async => const Left(FailureEntity.serverFailure('401', 'Unauthorized')));
+    test('trả về Left(FailureEntity) khi repository trả unauthorized',
+        () async {
+      const params = UpdateCurrentUserParams(fullName: 'Name');
+      when(() => mockRepository.updateCurrentUser(params)).thenAnswer(
+          (_) async =>
+              const Left(FailureEntity.serverFailure('401', 'Unauthorized')));
 
       final result = await usecase(params);
 
@@ -200,7 +208,7 @@ void main() {
         EventSummaryEntity(eventId: 1, title: 'Event 1'),
         EventSummaryEntity(eventId: 2, title: 'Event 2'),
       ];
-      final params = GetUserParticipatedEventsParams(userId: 1);
+      const params = GetUserParticipatedEventsParams(userId: 1);
       when(() => mockRepository.getUserParticipatedEvents(
             userId: any(named: 'userId'),
             participantType: any(named: 'participantType'),
@@ -221,7 +229,7 @@ void main() {
     });
 
     test('trả về empty list khi repository trả rỗng', () async {
-      final params = GetUserParticipatedEventsParams(userId: 1);
+      const params = GetUserParticipatedEventsParams(userId: 1);
       when(() => mockRepository.getUserParticipatedEvents(
             userId: any(named: 'userId'),
             participantType: any(named: 'participantType'),
@@ -239,7 +247,7 @@ void main() {
     });
 
     test('truyền đúng params xuống repository', () async {
-      final params = const GetUserParticipatedEventsParams(
+      const params = GetUserParticipatedEventsParams(
         userId: 1,
         participantType: 'ATTENDEE',
         page: 2,
@@ -263,14 +271,15 @@ void main() {
     });
 
     test('trả về Left(FailureEntity) khi repository trả failure', () async {
-      final params = GetUserParticipatedEventsParams(userId: 1);
+      const params = GetUserParticipatedEventsParams(userId: 1);
       when(() => mockRepository.getUserParticipatedEvents(
-            userId: any(named: 'userId'),
-            participantType: any(named: 'participantType'),
-            page: any(named: 'page'),
-            size: any(named: 'size'),
-          )).thenAnswer(
-          (_) async => const Left(FailureEntity.serverFailure('500', 'Server error')));
+                userId: any(named: 'userId'),
+                participantType: any(named: 'participantType'),
+                page: any(named: 'page'),
+                size: any(named: 'size'),
+              ))
+          .thenAnswer((_) async =>
+              const Left(FailureEntity.serverFailure('500', 'Server error')));
 
       final result = await usecase(params);
 
@@ -325,10 +334,11 @@ void main() {
     test('trả về Left(FailureEntity) khi repository trả failure', () async {
       final usecase = GetUserPackagesUsecase(mockRepository);
       when(() => mockRepository.getUserPackages(
-            page: any(named: 'page'),
-            size: any(named: 'size'),
-          )).thenAnswer(
-          (_) async => const Left(FailureEntity.serverFailure('500', 'Server error')));
+                page: any(named: 'page'),
+                size: any(named: 'size'),
+              ))
+          .thenAnswer((_) async =>
+              const Left(FailureEntity.serverFailure('500', 'Server error')));
 
       final result = await usecase(const GetUserPackagesParams());
 
@@ -364,8 +374,8 @@ void main() {
 
     test('trả về Left(FailureEntity) khi repository trả failure', () async {
       final usecase = GetUserRankUsecase(mockRepository);
-      when(() => mockRepository.getUserRank(1))
-          .thenAnswer((_) async => const Left(FailureEntity.serverFailure('500', 'Server error')));
+      when(() => mockRepository.getUserRank(1)).thenAnswer((_) async =>
+          const Left(FailureEntity.serverFailure('500', 'Server error')));
 
       final result = await usecase(1);
 
@@ -396,8 +406,10 @@ class GetUserPackagesUsecase {
 
   GetUserPackagesUsecase(this._repository);
 
-  Future<Either<FailureEntity, List<UserPackageEntity>>> call(GetUserPackagesParams params) async {
-    return await _repository.getUserPackages(page: params.page, size: params.size);
+  Future<Either<FailureEntity, List<UserPackageEntity>>> call(
+      GetUserPackagesParams params) async {
+    return await _repository.getUserPackages(
+        page: params.page, size: params.size);
   }
 }
 

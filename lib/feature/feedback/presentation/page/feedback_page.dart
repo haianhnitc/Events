@@ -6,9 +6,6 @@ import 'package:events_app/common/utils/app_distance_utils.dart';
 import 'package:events_app/common/utils/app_location_service.dart';
 import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
 import 'package:events_app/feature/feedback/domain/entity/feedback_entity.dart';
-import 'package:events_app/feature/feedback/domain/usecase/feedback_usecase.dart';
-import 'package:events_app/feature/feedback/domain/usecase/feedback_usecase_params.dart';
-import 'package:events_app/feature/feedback/domain/usecase/submit_feedback_params.dart';
 import 'package:events_app/feature/feedback/presentation/controller/feedback_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -366,7 +363,8 @@ class _FeedbackPageState extends State<FeedbackPage> {
                 ),
                 if (question.isRequired == true)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
                       color: const Color(0xffEF4444).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(6),
@@ -407,7 +405,8 @@ class _FeedbackPageState extends State<FeedbackPage> {
 
   Widget _buildRatingInput(FeedbackQuestionEntity question) {
     const maxRating = 5;
-    final currentRating = int.tryParse(_controller.answers[question.feedbackQuestionId] ?? '');
+    final currentRating =
+        int.tryParse(_controller.answers[question.feedbackQuestionId] ?? '');
 
     return Column(
       children: [
@@ -439,7 +438,9 @@ class _FeedbackPageState extends State<FeedbackPage> {
         ),
         const SizedBox(height: 8),
         Text(
-          currentRating != null ? '$currentRating / $maxRating' : 'Nhấn để đánh giá',
+          currentRating != null
+              ? '$currentRating / $maxRating'
+              : 'Nhấn để đánh giá',
           style: TextStyle(
             fontSize: 13,
             color: currentRating != null
@@ -477,7 +478,8 @@ class _FeedbackPageState extends State<FeedbackPage> {
 
   Widget _buildSingleChoiceInput(FeedbackQuestionEntity question) {
     final options = question.options ?? [];
-    final selectedId = _controller.selectedOptions[question.feedbackQuestionId]?.firstOrNull;
+    final selectedId =
+        _controller.selectedOptions[question.feedbackQuestionId]?.firstOrNull;
 
     return Column(
       children: options.map((option) {
@@ -486,7 +488,8 @@ class _FeedbackPageState extends State<FeedbackPage> {
         return GestureDetector(
           onTap: () {
             if (option.optionId != null) {
-              _controller.selectSingleOption(question.feedbackQuestionId!, option.optionId!);
+              _controller.selectSingleOption(
+                  question.feedbackQuestionId!, option.optionId!);
             }
           },
           child: Container(
@@ -511,9 +514,13 @@ class _FeedbackPageState extends State<FeedbackPage> {
                   height: 20,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: isSelected ? const Color(0xff06B6D4) : Colors.transparent,
+                    color: isSelected
+                        ? const Color(0xff06B6D4)
+                        : Colors.transparent,
                     border: Border.all(
-                      color: isSelected ? const Color(0xff06B6D4) : const Color(0xffD1D5DB),
+                      color: isSelected
+                          ? const Color(0xff06B6D4)
+                          : const Color(0xffD1D5DB),
                       width: 2,
                     ),
                   ),
@@ -531,8 +538,11 @@ class _FeedbackPageState extends State<FeedbackPage> {
                     option.optionValue ?? '',
                     style: TextStyle(
                       fontSize: 14,
-                      color: isSelected ? const Color(0xff06B6D4) : const Color(0xff273143),
-                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                      color: isSelected
+                          ? const Color(0xff06B6D4)
+                          : const Color(0xff273143),
+                      fontWeight:
+                          isSelected ? FontWeight.w600 : FontWeight.w400,
                     ),
                   ),
                 ),
@@ -546,7 +556,8 @@ class _FeedbackPageState extends State<FeedbackPage> {
 
   Widget _buildMultipleChoiceInput(FeedbackQuestionEntity question) {
     final options = question.options ?? [];
-    final selectedIds = _controller.selectedOptions[question.feedbackQuestionId] ?? [];
+    final selectedIds =
+        _controller.selectedOptions[question.feedbackQuestionId] ?? [];
 
     return Column(
       children: options.map((option) {
@@ -555,7 +566,8 @@ class _FeedbackPageState extends State<FeedbackPage> {
         return GestureDetector(
           onTap: () {
             if (option.optionId != null) {
-              _controller.toggleOption(question.feedbackQuestionId!, option.optionId!);
+              _controller.toggleOption(
+                  question.feedbackQuestionId!, option.optionId!);
             }
           },
           child: Container(
@@ -580,9 +592,13 @@ class _FeedbackPageState extends State<FeedbackPage> {
                   height: 20,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(4),
-                    color: isSelected ? const Color(0xff06B6D4) : Colors.transparent,
+                    color: isSelected
+                        ? const Color(0xff06B6D4)
+                        : Colors.transparent,
                     border: Border.all(
-                      color: isSelected ? const Color(0xff06B6D4) : const Color(0xffD1D5DB),
+                      color: isSelected
+                          ? const Color(0xff06B6D4)
+                          : const Color(0xffD1D5DB),
                       width: 2,
                     ),
                   ),
@@ -600,8 +616,11 @@ class _FeedbackPageState extends State<FeedbackPage> {
                     option.optionValue ?? '',
                     style: TextStyle(
                       fontSize: 14,
-                      color: isSelected ? const Color(0xff06B6D4) : const Color(0xff273143),
-                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                      color: isSelected
+                          ? const Color(0xff06B6D4)
+                          : const Color(0xff273143),
+                      fontWeight:
+                          isSelected ? FontWeight.w600 : FontWeight.w400,
                     ),
                   ),
                 ),
@@ -699,9 +718,8 @@ class _FeedbackPageState extends State<FeedbackPage> {
                 ? () => _handleSubmitWithCheckOut()
                 : null,
             style: ElevatedButton.styleFrom(
-              backgroundColor: canSubmit
-                  ? const Color(0xff06B6D4)
-                  : const Color(0xffB0B4C0),
+              backgroundColor:
+                  canSubmit ? const Color(0xff06B6D4) : const Color(0xffB0B4C0),
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(

@@ -8,7 +8,8 @@ import 'package:mocktail/mocktail.dart';
 
 class MockParticipantRepository extends Mock implements ParticipantRepository {}
 
-class FakeGetMyParticipantsParams extends Fake implements GetMyParticipantsParams {}
+class FakeGetMyParticipantsParams extends Fake
+    implements GetMyParticipantsParams {}
 
 void main() {
   late MockParticipantRepository mockRepository;
@@ -36,7 +37,7 @@ void main() {
       when(() => mockRepository.getMyParticipants(any()))
           .thenAnswer((_) async => Right(entities));
 
-      final params = GetMyParticipantsParams(userId: 1, page: 0, size: 20);
+      const params = GetMyParticipantsParams(userId: 1, page: 0, size: 20);
       final result = await getMyParticipantsUsecase(params);
 
       expect(result.isRight(), isTrue);
@@ -54,7 +55,7 @@ void main() {
       when(() => mockRepository.getMyParticipants(any()))
           .thenAnswer((_) async => const Right([]));
 
-      final params = GetMyParticipantsParams(userId: 1);
+      const params = GetMyParticipantsParams(userId: 1);
       final result = await getMyParticipantsUsecase(params);
 
       expect(result.isRight(), isTrue);
@@ -65,11 +66,11 @@ void main() {
     });
 
     test('trả về failure khi repository thất bại', () async {
-      when(() => mockRepository.getMyParticipants(any()))
-          .thenAnswer((_) async =>
+      when(() => mockRepository.getMyParticipants(any())).thenAnswer(
+          (_) async =>
               const Left(FailureEntity.serverFailure('500', 'Server error')));
 
-      final params = GetMyParticipantsParams(userId: 1);
+      const params = GetMyParticipantsParams(userId: 1);
       final result = await getMyParticipantsUsecase(params);
 
       expect(result.isLeft(), isTrue);
@@ -96,8 +97,8 @@ void main() {
     });
 
     test('trả về failure khi repository trả notFound', () async {
-      when(() => mockRepository.getParticipantById(9999))
-          .thenAnswer((_) async =>
+      when(() => mockRepository.getParticipantById(9999)).thenAnswer(
+          (_) async =>
               const Left(FailureEntity.serverFailure('404', 'Not found')));
 
       final result = await getParticipantByIdUsecase(9999);

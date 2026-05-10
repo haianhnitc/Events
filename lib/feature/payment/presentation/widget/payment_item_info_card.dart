@@ -311,15 +311,15 @@ class _PackagePaymentDetails extends StatelessWidget {
         ],
         if (autoRenew) ...[
           const SizedBox(height: 4),
-          Row(
+          const Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.autorenew,
                 size: 14,
                 color: Color(0xff3B82F6),
               ),
-              const SizedBox(width: 4),
-              const Text(
+              SizedBox(width: 4),
+              Text(
                 'Tự động gia hạn',
                 style: TextStyle(
                   fontSize: 13,

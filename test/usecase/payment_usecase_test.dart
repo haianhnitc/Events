@@ -42,12 +42,15 @@ void main() {
     mockCoinRepository = MockCoinRepository();
     mockSePayPaymentRepository = MockSePayPaymentRepository();
     getCoinHistoryUsecase = GetCoinHistoryUsecase(mockCoinRepository);
-    createSePayPaymentUsecase = CreateSePayPaymentUsecase(mockSePayPaymentRepository);
-    getTransactionStatusUsecase = GetTransactionStatusUsecase(mockSePayPaymentRepository);
+    createSePayPaymentUsecase =
+        CreateSePayPaymentUsecase(mockSePayPaymentRepository);
+    getTransactionStatusUsecase =
+        GetTransactionStatusUsecase(mockSePayPaymentRepository);
   });
 
   group('GetCoinHistoryUsecase', () {
-    test('trả về list CoinTransactionEntity khi repository thành công', () async {
+    test('trả về list CoinTransactionEntity khi repository thành công',
+        () async {
       final entities = [
         CoinTransactionEntity(transactionId: 1, amount: 10),
         CoinTransactionEntity(transactionId: 2, amount: -5),
@@ -57,10 +60,10 @@ void main() {
             size: any(named: 'size'),
             sort: any(named: 'sort'),
           )).thenAnswer((_) async => Right((
-        items: entities,
-        totalElements: 2,
-        totalPages: 1,
-      )));
+            items: entities,
+            totalElements: 2,
+            totalPages: 1,
+          )));
 
       final result = await getCoinHistoryUsecase(const CoinHistoryParams());
 
@@ -80,10 +83,10 @@ void main() {
             size: any(named: 'size'),
             sort: any(named: 'sort'),
           )).thenAnswer((_) async => const Right((
-        items: <CoinTransactionEntity>[],
-        totalElements: 0,
-        totalPages: 0,
-      )));
+            items: <CoinTransactionEntity>[],
+            totalElements: 0,
+            totalPages: 0,
+          )));
 
       final result = await getCoinHistoryUsecase(const CoinHistoryParams());
 
@@ -99,10 +102,11 @@ void main() {
 
     test('trả về failure khi repository thất bại', () async {
       when(() => mockCoinRepository.getCoinHistory(
-            page: any(named: 'page'),
-            size: any(named: 'size'),
-            sort: any(named: 'sort'),
-          )).thenAnswer((_) async =>
+                page: any(named: 'page'),
+                size: any(named: 'size'),
+                sort: any(named: 'sort'),
+              ))
+          .thenAnswer((_) async =>
               const Left(FailureEntity.serverFailure('500', 'Server error')));
 
       final result = await getCoinHistoryUsecase(const CoinHistoryParams());
@@ -122,7 +126,7 @@ void main() {
           .thenAnswer((_) async => Right(entity));
 
       final result = await createSePayPaymentUsecase(
-        CreateTransactionParams(
+        const CreateTransactionParams(
           referenceType: TransactionReferenceType.ticket,
           originalAmount: 100000,
           paymentProvider: PaymentProvider.sepay,
@@ -145,7 +149,7 @@ void main() {
               const Left(FailureEntity.serverFailure('400', 'Bad request')));
 
       final result = await createSePayPaymentUsecase(
-        CreateTransactionParams(
+        const CreateTransactionParams(
           referenceType: TransactionReferenceType.ticket,
           originalAmount: 0,
           paymentProvider: PaymentProvider.sepay,
@@ -178,8 +182,8 @@ void main() {
 
     test('trả về Left khi repository trả notFound', () async {
       when(() => mockSePayPaymentRepository.getTransactionById(any()))
-          .thenAnswer(
-              (_) async => const Left(FailureEntity.serverFailure('404', 'Not found')));
+          .thenAnswer((_) async =>
+              const Left(FailureEntity.serverFailure('404', 'Not found')));
 
       final result = await getTransactionStatusUsecase(
         const GetTransactionStatusParams(transactionId: 9999),

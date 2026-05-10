@@ -33,7 +33,7 @@ void main() {
             size: any(named: 'size'),
           )).thenAnswer((_) async => successResponse(models));
 
-      final params = GetMyParticipantsParams(userId: 1, page: 0, size: 20);
+      const params = GetMyParticipantsParams(userId: 1, page: 0, size: 20);
       final result = await repository.getMyParticipants(params);
 
       expect(result.isRight(), isTrue);
@@ -49,13 +49,14 @@ void main() {
 
     test('trả về FailureEntity khi datasource trả failure', () async {
       when(() => mockDatasource.getMyParticipants(
-            any(),
-            page: any(named: 'page'),
-            size: any(named: 'size'),
-          )).thenAnswer(
-          (_) async => errorResponse<List<ParticipantModel>>(unauthorizedResponse()));
+                any(),
+                page: any(named: 'page'),
+                size: any(named: 'size'),
+              ))
+          .thenAnswer((_) async =>
+              errorResponse<List<ParticipantModel>>(unauthorizedResponse()));
 
-      final params = GetMyParticipantsParams(userId: 1);
+      const params = GetMyParticipantsParams(userId: 1);
       final result = await repository.getMyParticipants(params);
 
       expect(result.isLeft(), isTrue);
@@ -71,7 +72,7 @@ void main() {
             size: any(named: 'size'),
           )).thenAnswer((_) async => successResponse(models));
 
-      final params = GetMyParticipantsParams(userId: 1);
+      const params = GetMyParticipantsParams(userId: 1);
       final result = await repository.getMyParticipants(params);
 
       result.fold(
@@ -105,8 +106,8 @@ void main() {
     });
 
     test('trả về FailureEntity khi datasource trả notFound', () async {
-      when(() => mockDatasource.getParticipantById(9999))
-          .thenAnswer((_) async => errorResponse<ParticipantModel>(notFoundResponse()));
+      when(() => mockDatasource.getParticipantById(9999)).thenAnswer(
+          (_) async => errorResponse<ParticipantModel>(notFoundResponse()));
 
       final result = await repository.getParticipantById(9999);
 

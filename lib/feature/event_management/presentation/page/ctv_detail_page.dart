@@ -1,11 +1,10 @@
-import 'package:events_app/authentication/presentation/controller/auth_controller.dart';
 import 'package:events_app/common/path/asset_path.dart';
-import 'package:events_app/feature/common/domain/enum/app_enum.dart';
 import 'package:events_app/feature/common/utils/app_date_utils.dart';
 import 'package:events_app/feature/common/utils/app_image_utils.dart';
 import 'package:events_app/feature/common/utils/app_map_utils.dart';
 import 'package:events_app/feature/event_management/presentation/page/event_detail_page.dart';
 import 'package:events_app/feature/organizer/presentation/page/events/organizer_event_detail_page.dart';
+import 'package:events_app/routes/navbar/organizer_nav_bar_controller.dart';
 import 'package:events_app/feature/recruitment/presentation/controller/ctv_detail_page_controller.dart';
 import 'package:events_app/feature/recruitment/presentation/widget/ctv_apply_bottom_sheet.dart';
 import 'package:flutter/material.dart';
@@ -616,77 +615,78 @@ class _CtvDetailPageState extends State<CtvDetailPage> {
   }
 
   Widget _buildRegisterButton() {
-    final actionState = _controller.actionState;
-    final recruitment = _controller.recruitment.value;
+    return Obx(() {
+      final actionState = _controller.actionState.value;
+      final recruitment = _controller.recruitment.value;
 
-    return GestureDetector(
-      onTap: actionState.isEnabled
-          ? () {
-              final recruitmentId = recruitment?.ctvRecruitmentId;
-              if (recruitmentId == null) return;
+      return GestureDetector(
+        onTap: actionState.isEnabled
+            ? () {
+                final recruitmentId = recruitment?.ctvRecruitmentId;
+                if (recruitmentId == null) return;
 
-              showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                backgroundColor: Colors.transparent,
-                builder: (_) => CtvApplyBottomSheet(
-                  ctvRecruitmentId: recruitmentId,
-                  eventId: recruitment?.eventId,
-                  position: recruitment?.roleName,
-                  onSubmitted: _controller.reloadApplicationStatus,
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  builder: (_) => CtvApplyBottomSheet(
+                    ctvRecruitmentId: recruitmentId,
+                    eventId: recruitment?.eventId,
+                    position: recruitment?.roleName,
+                    onSubmitted: _controller.reloadApplicationStatus,
+                  ),
+                );
+              }
+            : null,
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16),
+          height: 42,
+          decoration: BoxDecoration(
+            color: actionState.isEnabled
+                ? const Color(0xffDB0025)
+                : const Color(0xffB0B4C0),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Stack(
+            children: [
+              Center(
+                child: Text(
+                  actionState.label,
+                  style: const TextStyle(
+                      fontSize: 14,
+                      height: 20 / 14,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.white),
                 ),
-              );
-            }
-          : null,
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16),
-        height: 42,
-        decoration: BoxDecoration(
-          color: actionState.isEnabled
-              ? const Color(0xffDB0025)
-              : const Color(0xffB0B4C0),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Stack(
-          children: [
-            Center(
-              child: Text(
-                actionState.label,
-                style: const TextStyle(
-                    fontSize: 14,
-                    height: 20 / 14,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.white),
               ),
-            ),
-            Positioned(
-              top: 12,
-              left: 28,
-              child: SvgPicture.asset(
-                AssetPath.tickIcon,
-                height: 16,
-                width: 16,
-                color: Colors.white,
-              ),
-            )
-          ],
+              Positioned(
+                top: 12,
+                left: 28,
+                child: SvgPicture.asset(
+                  AssetPath.tickIcon,
+                  height: 16,
+                  width: 16,
+                  color: Colors.white,
+                ),
+              )
+            ],
+          ),
         ),
-      ),
-    );
+      );
+    });
   }
 
   Widget _buildGoToEventButton() {
     final eventId = _controller.recruitment.value?.eventId;
     if (eventId == null) return const SizedBox.shrink();
 
-    final isOrganizer =
-        AuthController.to.currentUser.value?.role == UserRole.organization;
+    final isInOrganizerContext = Get.isRegistered<OrganizerNavBarController>();
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
       child: GestureDetector(
         onTap: () => Get.to(
-          () => isOrganizer
+          () => isInOrganizerContext
               ? OrganizerEventDetailPage(eventId: eventId)
               : EventDetailPage(eventId: eventId),
         ),

@@ -50,7 +50,7 @@ class FooterHomePage extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              offset: Offset(0, 4),
+              offset: const Offset(0, 4),
               blurRadius: 6,
               spreadRadius: -1,
               color: Colors.white.withOpacity(0.1),

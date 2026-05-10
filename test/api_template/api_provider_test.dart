@@ -169,7 +169,7 @@ void main() {
 
   setUp(() {
     client = RecordingRestClient(
-      nextResponse: ApiResponse.success(<String, dynamic>{
+      nextResponse: const ApiResponse.success(<String, dynamic>{
         'errorCode': 0,
         'statusCode': 200,
         'message': 'Success',
@@ -189,48 +189,53 @@ void main() {
       expect(client.requests.length, 1);
       expect(client.requests.first.path, '/users/1');
       expect(client.requests.first.type, ApiRequestType.get);
-      expect(result.when(
-        success: (data) => data['object']?['name'],
-        badRequest: (_) => null,
-        unauthorized: (_) => null,
-        forbidden: (_) => null,
-        notFound: (_) => null,
-        conflict: (_) => null,
-        internalServerError: () => null,
-        badGateway: () => null,
-        serviceUnavailable: () => null,
-        gatewayTimeout: () => null,
-        canceled: () => null,
-        responseParsing: () => null,
-        unexpected: (_) => null,
-      ), 'Test');
+      expect(
+          result.when(
+            success: (data) => data['object']?['name'],
+            badRequest: (_) => null,
+            unauthorized: (_) => null,
+            forbidden: (_) => null,
+            notFound: (_) => null,
+            conflict: (_) => null,
+            internalServerError: () => null,
+            badGateway: () => null,
+            serviceUnavailable: () => null,
+            gatewayTimeout: () => null,
+            canceled: () => null,
+            responseParsing: () => null,
+            unexpected: (_) => null,
+          ),
+          'Test');
     });
 
     test('post gui body JSON va tra ve response da parse', () async {
       final result = await provider.post<Map<String, dynamic>>(
         '/users',
         (data) => data as Map<String, dynamic>,
-        body: const ApiRequestBody.json({'name': 'New User', 'email': 'new@example.com'}),
+        body: const ApiRequestBody.json(
+            {'name': 'New User', 'email': 'new@example.com'}),
       );
 
       expect(client.requests.length, 1);
       expect(client.requests.first.path, '/users');
       expect(client.requests.first.type, ApiRequestType.post);
-      expect(result.when(
-        success: (data) => data['object']?['name'],
-        badRequest: (_) => null,
-        unauthorized: (_) => null,
-        forbidden: (_) => null,
-        notFound: (_) => null,
-        conflict: (_) => null,
-        internalServerError: () => null,
-        badGateway: () => null,
-        serviceUnavailable: () => null,
-        gatewayTimeout: () => null,
-        canceled: () => null,
-        responseParsing: () => null,
-        unexpected: (_) => null,
-      ), 'Test');
+      expect(
+          result.when(
+            success: (data) => data['object']?['name'],
+            badRequest: (_) => null,
+            unauthorized: (_) => null,
+            forbidden: (_) => null,
+            notFound: (_) => null,
+            conflict: (_) => null,
+            internalServerError: () => null,
+            badGateway: () => null,
+            serviceUnavailable: () => null,
+            gatewayTimeout: () => null,
+            canceled: () => null,
+            responseParsing: () => null,
+            unexpected: (_) => null,
+          ),
+          'Test');
     });
 
     test('put gui body JSON va tra ve response da parse', () async {
@@ -243,21 +248,23 @@ void main() {
       expect(client.requests.length, 1);
       expect(client.requests.first.path, '/users/1');
       expect(client.requests.first.type, ApiRequestType.put);
-      expect(result.when(
-        success: (data) => true,
-        badRequest: (_) => false,
-        unauthorized: (_) => false,
-        forbidden: (_) => false,
-        notFound: (_) => false,
-        conflict: (_) => false,
-        internalServerError: () => false,
-        badGateway: () => false,
-        serviceUnavailable: () => false,
-        gatewayTimeout: () => false,
-        canceled: () => false,
-        responseParsing: () => false,
-        unexpected: (_) => false,
-      ), true);
+      expect(
+          result.when(
+            success: (data) => true,
+            badRequest: (_) => false,
+            unauthorized: (_) => false,
+            forbidden: (_) => false,
+            notFound: (_) => false,
+            conflict: (_) => false,
+            internalServerError: () => false,
+            badGateway: () => false,
+            serviceUnavailable: () => false,
+            gatewayTimeout: () => false,
+            canceled: () => false,
+            responseParsing: () => false,
+            unexpected: (_) => false,
+          ),
+          true);
     });
 
     test('delete goi dung path va tra ve response', () async {
@@ -269,21 +276,23 @@ void main() {
       expect(client.requests.length, 1);
       expect(client.requests.first.path, '/users/1');
       expect(client.requests.first.type, ApiRequestType.delete);
-      expect(result.when(
-        success: (data) => true,
-        badRequest: (_) => false,
-        unauthorized: (_) => false,
-        forbidden: (_) => false,
-        notFound: (_) => false,
-        conflict: (_) => false,
-        internalServerError: () => false,
-        badGateway: () => false,
-        serviceUnavailable: () => false,
-        gatewayTimeout: () => false,
-        canceled: () => false,
-        responseParsing: () => false,
-        unexpected: (_) => false,
-      ), true);
+      expect(
+          result.when(
+            success: (data) => true,
+            badRequest: (_) => false,
+            unauthorized: (_) => false,
+            forbidden: (_) => false,
+            notFound: (_) => false,
+            conflict: (_) => false,
+            internalServerError: () => false,
+            badGateway: () => false,
+            serviceUnavailable: () => false,
+            gatewayTimeout: () => false,
+            canceled: () => false,
+            responseParsing: () => false,
+            unexpected: (_) => false,
+          ),
+          true);
     });
 
     test('patch goi dung path va tra ve response', () async {
@@ -295,76 +304,83 @@ void main() {
       expect(client.requests.length, 1);
       expect(client.requests.first.path, '/users/1');
       expect(client.requests.first.type, ApiRequestType.patch);
-      expect(result.when(
-        success: (data) => true,
-        badRequest: (_) => false,
-        unauthorized: (_) => false,
-        forbidden: (_) => false,
-        notFound: (_) => false,
-        conflict: (_) => false,
-        internalServerError: () => false,
-        badGateway: () => false,
-        serviceUnavailable: () => false,
-        gatewayTimeout: () => false,
-        canceled: () => false,
-        responseParsing: () => false,
-        unexpected: (_) => false,
-      ), true);
+      expect(
+          result.when(
+            success: (data) => true,
+            badRequest: (_) => false,
+            unauthorized: (_) => false,
+            forbidden: (_) => false,
+            notFound: (_) => false,
+            conflict: (_) => false,
+            internalServerError: () => false,
+            badGateway: () => false,
+            serviceUnavailable: () => false,
+            gatewayTimeout: () => false,
+            canceled: () => false,
+            responseParsing: () => false,
+            unexpected: (_) => false,
+          ),
+          true);
     });
 
     test('upload gui multipart form data va tra ve response', () async {
       final result = await provider.upload<Map<String, dynamic>>(
         '/upload',
         (data) => data as Map<String, dynamic>,
-        body: const ApiRequestBody.json({'filePath': '/path/to/file.jpg', 'documentType': 'AVATAR'}),
+        body: const ApiRequestBody.json(
+            {'filePath': '/path/to/file.jpg', 'documentType': 'AVATAR'}),
       );
 
       expect(client.requests.length, 1);
       expect(client.requests.first.path, '/upload');
       expect(client.requests.first.type, ApiRequestType.upload);
-      expect(result.when(
-        success: (data) => true,
-        badRequest: (_) => false,
-        unauthorized: (_) => false,
-        forbidden: (_) => false,
-        notFound: (_) => false,
-        conflict: (_) => false,
-        internalServerError: () => false,
-        badGateway: () => false,
-        serviceUnavailable: () => false,
-        gatewayTimeout: () => false,
-        canceled: () => false,
-        responseParsing: () => false,
-        unexpected: (_) => false,
-      ), true);
+      expect(
+          result.when(
+            success: (data) => true,
+            badRequest: (_) => false,
+            unauthorized: (_) => false,
+            forbidden: (_) => false,
+            notFound: (_) => false,
+            conflict: (_) => false,
+            internalServerError: () => false,
+            badGateway: () => false,
+            serviceUnavailable: () => false,
+            gatewayTimeout: () => false,
+            canceled: () => false,
+            responseParsing: () => false,
+            unexpected: (_) => false,
+          ),
+          true);
     });
   });
 
   group('ApiProvider - Error Handling', () {
     test('tra ve serviceUnavailable khi network check that bai', () async {
       client.checkNetworkOverride = () => false;
-      client.nextResponse = ApiResponse.serviceUnavailable();
+      client.nextResponse = const ApiResponse.serviceUnavailable();
 
       final result = await provider.get<Map<String, dynamic>>(
         '/users',
         (data) => data as Map<String, dynamic>,
       );
 
-      expect(result.when(
-        success: (_) => false,
-        badRequest: (_) => false,
-        unauthorized: (_) => false,
-        forbidden: (_) => false,
-        notFound: (_) => false,
-        conflict: (_) => false,
-        internalServerError: () => false,
-        badGateway: () => false,
-        serviceUnavailable: () => true,
-        gatewayTimeout: () => false,
-        canceled: () => false,
-        responseParsing: () => false,
-        unexpected: (_) => false,
-      ), true);
+      expect(
+          result.when(
+            success: (_) => false,
+            badRequest: (_) => false,
+            unauthorized: (_) => false,
+            forbidden: (_) => false,
+            notFound: (_) => false,
+            conflict: (_) => false,
+            internalServerError: () => false,
+            badGateway: () => false,
+            serviceUnavailable: () => true,
+            gatewayTimeout: () => false,
+            canceled: () => false,
+            responseParsing: () => false,
+            unexpected: (_) => false,
+          ),
+          true);
     });
 
     test('tra ve unauthorized khi auth that bai', () async {
@@ -378,21 +394,23 @@ void main() {
         requireAuth: true,
       );
 
-      expect(result.when(
-        success: (_) => false,
-        badRequest: (_) => false,
-        unauthorized: (_) => true,
-        forbidden: (_) => false,
-        notFound: (_) => false,
-        conflict: (_) => false,
-        internalServerError: () => false,
-        badGateway: () => false,
-        serviceUnavailable: () => false,
-        gatewayTimeout: () => false,
-        canceled: () => false,
-        responseParsing: () => false,
-        unexpected: (_) => false,
-      ), true);
+      expect(
+          result.when(
+            success: (_) => false,
+            badRequest: (_) => false,
+            unauthorized: (_) => true,
+            forbidden: (_) => false,
+            notFound: (_) => false,
+            conflict: (_) => false,
+            internalServerError: () => false,
+            badGateway: () => false,
+            serviceUnavailable: () => false,
+            gatewayTimeout: () => false,
+            canceled: () => false,
+            responseParsing: () => false,
+            unexpected: (_) => false,
+          ),
+          true);
     });
 
     test('tra ve internalServerError khi nhan InternalServerError', () async {
@@ -404,21 +422,23 @@ void main() {
         body: const ApiRequestBody.json({'name': 'Test'}),
       );
 
-      expect(result.when(
-        success: (_) => false,
-        badRequest: (_) => false,
-        unauthorized: (_) => false,
-        forbidden: (_) => false,
-        notFound: (_) => false,
-        conflict: (_) => false,
-        internalServerError: () => true,
-        badGateway: () => false,
-        serviceUnavailable: () => false,
-        gatewayTimeout: () => false,
-        canceled: () => false,
-        responseParsing: () => false,
-        unexpected: (_) => false,
-      ), true);
+      expect(
+          result.when(
+            success: (_) => false,
+            badRequest: (_) => false,
+            unauthorized: (_) => false,
+            forbidden: (_) => false,
+            notFound: (_) => false,
+            conflict: (_) => false,
+            internalServerError: () => true,
+            badGateway: () => false,
+            serviceUnavailable: () => false,
+            gatewayTimeout: () => false,
+            canceled: () => false,
+            responseParsing: () => false,
+            unexpected: (_) => false,
+          ),
+          true);
     });
 
     test('tra ve badGateway khi nhan BadGateway', () async {
@@ -429,21 +449,23 @@ void main() {
         (data) => data as Map<String, dynamic>,
       );
 
-      expect(result.when(
-        success: (_) => false,
-        badRequest: (_) => false,
-        unauthorized: (_) => false,
-        forbidden: (_) => false,
-        notFound: (_) => false,
-        conflict: (_) => false,
-        internalServerError: () => false,
-        badGateway: () => true,
-        serviceUnavailable: () => false,
-        gatewayTimeout: () => false,
-        canceled: () => false,
-        responseParsing: () => false,
-        unexpected: (_) => false,
-      ), true);
+      expect(
+          result.when(
+            success: (_) => false,
+            badRequest: (_) => false,
+            unauthorized: (_) => false,
+            forbidden: (_) => false,
+            notFound: (_) => false,
+            conflict: (_) => false,
+            internalServerError: () => false,
+            badGateway: () => true,
+            serviceUnavailable: () => false,
+            gatewayTimeout: () => false,
+            canceled: () => false,
+            responseParsing: () => false,
+            unexpected: (_) => false,
+          ),
+          true);
     });
   });
 }

@@ -124,13 +124,13 @@ class _AuthGateState extends State<AuthGate> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  SizedBox(
+                  const SizedBox(
                     width: 22,
                     height: 22,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
                       valueColor: AlwaysStoppedAnimation<Color>(
-                        const Color(0xFF06B6D4),
+                        Color(0xFF06B6D4),
                       ),
                     ),
                   ),

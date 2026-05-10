@@ -36,7 +36,11 @@ void main() {
         mockGetEventListUsecase);
 
     when(() => mockAuthController.currentUser).thenReturn(
-      Rx(UserEntity(userId: 1, email: 'test@test.com', firebaseUid: 'uid-1', currentCoin: 0)),
+      Rx(UserEntity(
+          userId: 1,
+          email: 'test@test.com',
+          firebaseUid: 'uid-1',
+          currentCoin: 0)),
     );
 
     controller = OrganizerEventListController();
@@ -75,7 +79,7 @@ void main() {
 
     test('empty list', () async {
       when(() => mockGetEventListUsecase(any())).thenAnswer(
-        (_) async => Right((
+        (_) async => const Right((
           items: <EventSummaryEntity>[],
           totalElements: 0,
           totalPages: 0,
@@ -90,7 +94,7 @@ void main() {
 
     test('with search query filters correctly', () async {
       when(() => mockGetEventListUsecase(any())).thenAnswer(
-        (_) async => Right((
+        (_) async => const Right((
           items: <EventSummaryEntity>[],
           totalElements: 0,
           totalPages: 0,
@@ -105,7 +109,7 @@ void main() {
 
     test('with status filter passes correct params', () async {
       when(() => mockGetEventListUsecase(any())).thenAnswer(
-        (_) async => Right((
+        (_) async => const Right((
           items: <EventSummaryEntity>[],
           totalElements: 0,
           totalPages: 0,
@@ -120,7 +124,7 @@ void main() {
 
     test('refresh clears and reloads', () async {
       when(() => mockGetEventListUsecase(any())).thenAnswer(
-        (_) async => Right((
+        (_) async => const Right((
           items: <EventSummaryEntity>[],
           totalElements: 0,
           totalPages: 0,
@@ -137,7 +141,7 @@ void main() {
       when(() => mockGetEventListUsecase(any())).thenAnswer(
         (_) async {
           await Future.delayed(const Duration(milliseconds: 100));
-          return Right((
+          return const Right((
             items: <EventSummaryEntity>[],
             totalElements: 0,
             totalPages: 0,
@@ -155,7 +159,7 @@ void main() {
 
     test('sets hasMore based on page content', () async {
       when(() => mockGetEventListUsecase(any())).thenAnswer(
-        (_) async => Right((
+        (_) async => const Right((
           items: <EventSummaryEntity>[],
           totalElements: 100,
           totalPages: 5,
@@ -169,7 +173,7 @@ void main() {
   group('loadMore', () {
     test('calls loadEvents when hasMore = true', () async {
       when(() => mockGetEventListUsecase(any())).thenAnswer(
-        (_) async => Right((
+        (_) async => const Right((
           items: <EventSummaryEntity>[],
           totalElements: 100,
           totalPages: 5,
@@ -183,7 +187,7 @@ void main() {
 
     test('does nothing when hasMore = false', () async {
       when(() => mockGetEventListUsecase(any())).thenAnswer(
-        (_) async => Right((
+        (_) async => const Right((
           items: <EventSummaryEntity>[],
           totalElements: 0,
           totalPages: 0,
@@ -200,7 +204,7 @@ void main() {
       when(() => mockGetEventListUsecase(any())).thenAnswer(
         (_) async {
           await Future.delayed(const Duration(milliseconds: 100));
-          return Right((
+          return const Right((
             items: <EventSummaryEntity>[],
             totalElements: 0,
             totalPages: 0,
@@ -218,7 +222,7 @@ void main() {
   group('setQuery', () {
     test('updates query and triggers reload', () async {
       when(() => mockGetEventListUsecase(any())).thenAnswer(
-        (_) async => Right((
+        (_) async => const Right((
           items: <EventSummaryEntity>[],
           totalElements: 0,
           totalPages: 0,
@@ -235,7 +239,7 @@ void main() {
   group('setStatusFilter', () {
     test('updates filter and triggers reload', () async {
       when(() => mockGetEventListUsecase(any())).thenAnswer(
-        (_) async => Right((
+        (_) async => const Right((
           items: <EventSummaryEntity>[],
           totalElements: 0,
           totalPages: 0,

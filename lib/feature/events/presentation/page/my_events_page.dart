@@ -102,7 +102,9 @@ class _MyEventsPageState extends State<MyEventsPage>
     return _regController.registrations.where((p) {
       if (p.status == ParticipantStatus.attended ||
           p.status == ParticipantStatus.noShow ||
-          p.isCheckOut == true) return false;
+          p.isCheckOut == true) {
+        return false;
+      }
       return true;
     }).toList()
       ..sort((a, b) {
@@ -139,8 +141,9 @@ class _MyEventsPageState extends State<MyEventsPage>
 
   Widget _buildUpcomingList() {
     final list = _upcomingParticipants;
-    if (list.isEmpty)
+    if (list.isEmpty) {
       return _buildEmptyState('Chưa có sự kiện nào sắp diễn ra');
+    }
     return RefreshIndicator(
       onRefresh: () async => _loadAll(),
       color: const Color(0xff06B6D4),

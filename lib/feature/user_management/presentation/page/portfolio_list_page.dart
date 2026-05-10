@@ -96,22 +96,34 @@ class _PortfolioListPageState extends State<PortfolioListPage>
 
       return RefreshIndicator(
         onRefresh: () => ctrl.loadPublished(refresh: true),
-        child: ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount:
-              ctrl.publishedPortfolios.length + (ctrl.hasMorePublished.value ? 1 : 0),
-          itemBuilder: (context, index) {
-            if (index >= ctrl.publishedPortfolios.length) {
+        notificationPredicate: (notification) => notification.depth == 1,
+        child: NotificationListener<ScrollNotification>(
+          onNotification: (notification) {
+            if (notification is ScrollEndNotification &&
+                notification.metrics.extentAfter < 80 &&
+                ctrl.publishedPortfolios.isNotEmpty &&
+                !ctrl.isLoadingPublished.value &&
+                ctrl.hasMorePublished.value) {
               ctrl.loadPublished();
-              return const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(16),
-                  child: CircularProgressIndicator(color: Color(0xFF06B6D4)),
-                ),
-              );
             }
-            return _buildPortfolioItem(ctrl.publishedPortfolios[index], published: true);
+            return false;
           },
+          child: ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: ctrl.publishedPortfolios.length +
+                (ctrl.hasMorePublished.value ? 1 : 0),
+            itemBuilder: (context, index) {
+              if (index >= ctrl.publishedPortfolios.length) {
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(16),
+                    child: CircularProgressIndicator(color: Color(0xFF06B6D4)),
+                  ),
+                );
+              }
+              return _buildPortfolioItem(ctrl.publishedPortfolios[index], published: true);
+            },
+          ),
         ),
       );
     });
@@ -135,21 +147,34 @@ class _PortfolioListPageState extends State<PortfolioListPage>
 
       return RefreshIndicator(
         onRefresh: () => ctrl.loadDrafts(refresh: true),
-        child: ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: ctrl.draftPortfolios.length + (ctrl.hasMoreDrafts.value ? 1 : 0),
-          itemBuilder: (context, index) {
-            if (index >= ctrl.draftPortfolios.length) {
+        notificationPredicate: (notification) => notification.depth == 1,
+        child: NotificationListener<ScrollNotification>(
+          onNotification: (notification) {
+            if (notification is ScrollEndNotification &&
+                notification.metrics.extentAfter < 80 &&
+                ctrl.draftPortfolios.isNotEmpty &&
+                !ctrl.isLoadingDrafts.value &&
+                ctrl.hasMoreDrafts.value) {
               ctrl.loadDrafts();
-              return const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(16),
-                  child: CircularProgressIndicator(color: Color(0xFF06B6D4)),
-                ),
-              );
             }
-            return _buildPortfolioItem(ctrl.draftPortfolios[index], published: false);
+            return false;
           },
+          child: ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: ctrl.draftPortfolios.length +
+                (ctrl.hasMoreDrafts.value ? 1 : 0),
+            itemBuilder: (context, index) {
+              if (index >= ctrl.draftPortfolios.length) {
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(16),
+                    child: CircularProgressIndicator(color: Color(0xFF06B6D4)),
+                  ),
+                );
+              }
+              return _buildPortfolioItem(ctrl.draftPortfolios[index], published: false);
+            },
+          ),
         ),
       );
     });

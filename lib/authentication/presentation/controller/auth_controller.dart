@@ -580,7 +580,7 @@ class AuthController extends GetxController {
     try {
       AppSnackbarUtils.showInfo('Google', 'Đang kết nối với Google...');
 
-      final result = await _signInWithGoogleOnlyUsecase(NoParams());
+      final result = await _signInWithGoogleOnlyUsecase(const NoParams());
 
       return result.fold(
         (failure) {

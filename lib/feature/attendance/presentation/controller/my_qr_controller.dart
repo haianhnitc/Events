@@ -7,7 +7,6 @@ import 'package:events_app/feature/attendance/domain/entity/attendance_entity.da
 import 'package:events_app/feature/attendance/domain/usecase/attendance_usecase.dart';
 import 'package:events_app/feature/attendance/domain/usecase/scan_qr_params.dart';
 import 'package:events_app/feature/common/domain/enum/app_enum.dart';
-import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
 import 'package:events_app/feature/participant/domain/entity/participant_entity.dart';
 import 'package:events_app/feature/participant/domain/usecase/participant_usecase.dart';
 import 'package:get/get.dart';
@@ -113,7 +112,8 @@ class MyQrController extends GetxController {
     isRefreshing.value = false;
   }
 
-  Future<void> _loadQrsForParticipants(List<ParticipantEntity> participants) async {
+  Future<void> _loadQrsForParticipants(
+      List<ParticipantEntity> participants) async {
     for (final p in participants) {
       if (p.eventParticipantId != null && p.isCheckOut != true) {
         await _loadQrForParticipant(p);
@@ -122,7 +122,8 @@ class MyQrController extends GetxController {
   }
 
   Future<void> loadQrFor(ParticipantEntity participant) async {
-    if (participant.eventParticipantId == null || participant.isCheckOut == true) return;
+    if (participant.eventParticipantId == null ||
+        participant.isCheckOut == true) return;
     await _loadQrForParticipant(participant);
   }
 
