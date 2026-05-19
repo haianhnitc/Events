@@ -278,7 +278,7 @@ class _OrganizerDashboardPageState extends State<OrganizerDashboardPage> {
               ],
             ),
             const SizedBox(height: 16),
-            _buildPeriodComparison(dash),
+            // _buildPeriodComparison(dash),
           ],
         );
       }),
@@ -629,8 +629,8 @@ class _OrganizerDashboardPageState extends State<OrganizerDashboardPage> {
         OrganizerSectionHeader(
           title: 'Sự kiện gần đây',
           actionLabel: 'Xem tất cả',
-          onActionTap: () =>
-              Get.find<OrganizerNavBarController>().navigateTo(OrganizerNavOptions.events),
+          onActionTap: () => Get.find<OrganizerNavBarController>()
+              .navigateTo(OrganizerNavOptions.events),
         ),
         Container(
           margin: const EdgeInsets.symmetric(horizontal: 16),

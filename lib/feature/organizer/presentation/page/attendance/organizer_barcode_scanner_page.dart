@@ -55,7 +55,9 @@ class _OrganizerBarcodeScannerPageState
       }
     } else if (_eventCtrl.events.isNotEmpty) {
       _selectedEvent = _eventCtrl.events.first;
-      _participantCtrl.setEventFilter(_selectedEvent!.eventId!);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _participantCtrl.setEventFilter(_selectedEvent!.eventId!);
+      });
     }
   }
 

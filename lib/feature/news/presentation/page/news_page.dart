@@ -35,7 +35,6 @@ class _NewsPageState extends State<NewsPage> {
       body: SafeArea(
         child: Column(
           children: [
-            // Header gradient
             Container(
               width: double.infinity,
               decoration: const BoxDecoration(
@@ -44,7 +43,8 @@ class _NewsPageState extends State<NewsPage> {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
-                borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
+                borderRadius:
+                    BorderRadius.vertical(bottom: Radius.circular(20)),
               ),
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
               child: Column(
@@ -60,7 +60,6 @@ class _NewsPageState extends State<NewsPage> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  // Search field
                   Row(
                     children: [
                       Expanded(
@@ -73,7 +72,8 @@ class _NewsPageState extends State<NewsPage> {
                             fillColor: Colors.white,
                             hintText: 'Tìm kiếm tin tức...',
                             hintStyle: TextStyle(color: Colors.grey.shade500),
-                            prefixIcon: Icon(Icons.search, color: Colors.grey.shade500),
+                            prefixIcon:
+                                Icon(Icons.search, color: Colors.grey.shade500),
                             contentPadding: const EdgeInsets.symmetric(
                                 vertical: 0, horizontal: 12),
                             border: OutlineInputBorder(
@@ -99,8 +99,6 @@ class _NewsPageState extends State<NewsPage> {
                 ],
               ),
             ),
-
-            // Tab chips
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
               child: Obx(() {
@@ -116,8 +114,6 @@ class _NewsPageState extends State<NewsPage> {
                 );
               }),
             ),
-
-            // News list
             Expanded(
               child: Obx(() {
                 final isLoading = _c.isLoading.value;
@@ -132,7 +128,8 @@ class _NewsPageState extends State<NewsPage> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.newspaper, size: 60, color: Colors.grey.shade300),
+                        Icon(Icons.newspaper,
+                            size: 60, color: Colors.grey.shade300),
                         const SizedBox(height: 12),
                         Text(
                           'Không có tin tức',

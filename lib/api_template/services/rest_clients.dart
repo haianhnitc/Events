@@ -165,7 +165,7 @@ class NRDRestClient extends RestClient {
             requestBody['filePath'] as String,
             filename: requestBody['fileName'] as String? ?? 'document',
           ),
-          'documentType': requestBody['documentType'] ?? '',
+          'fileType': requestBody['fileType'] ?? '',
           if (requestBody['originalFileName'] != null)
             'originalFileName': requestBody['originalFileName'] as String,
         });

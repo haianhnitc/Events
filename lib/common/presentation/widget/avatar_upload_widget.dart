@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:events_app/common/utils/upload_helper.dart';
 import 'package:events_app/dependency_injection/injection.dart';
 import 'package:events_app/feature/common/domain/enum/app_enum.dart';
+import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
 import 'package:events_app/feature/common/usecase/upload_file_params.dart';
 import 'package:events_app/feature/common/usecase/upload_file_usecase.dart';
 import 'package:flutter/material.dart';
@@ -76,9 +77,7 @@ class _AvatarUploadWidgetState extends State<AvatarUploadWidget> {
           noConnectionFailure: () => 'Không có kết nối mạng',
           systemFailure: (_, msg) => msg,
         );
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(message ?? 'Upload thất bại')),
-        );
+        AppSnackbarUtils.showError('Upload thất bại', message ?? 'Vui lòng thử lại');
         return null;
       },
       (file) => FileUploadResult(fileId: file.fileId!, url: file.url!),
@@ -221,9 +220,7 @@ class _BannerUploadWidgetState extends State<BannerUploadWidget> {
           noConnectionFailure: () => 'Không có kết nối mạng',
           systemFailure: (_, msg) => msg,
         );
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(message ?? 'Upload thất bại')),
-        );
+        AppSnackbarUtils.showError('Upload thất bại', message ?? 'Vui lòng thử lại');
         return null;
       },
       (file) => FileUploadResult(fileId: file.fileId!, url: file.url!),

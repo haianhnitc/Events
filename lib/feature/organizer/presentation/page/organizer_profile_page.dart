@@ -181,7 +181,8 @@ class _OrganizerProfilePageState extends State<OrganizerProfilePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildSectionHeader('Thông tin có thể chỉnh sửa', Icons.edit_outlined),
+            _buildSectionHeader(
+                'Thông tin có thể chỉnh sửa', Icons.edit_outlined),
             const SizedBox(height: 12),
             Container(height: 1, color: const Color(0x0F273143)),
             const SizedBox(height: 16),
@@ -246,18 +247,17 @@ class _OrganizerProfilePageState extends State<OrganizerProfilePage> {
               context: context,
               applicationName: 'Events App',
               applicationVersion: '1.0.0',
-              applicationLegalese:
-                  '© 2026 Events App. All rights reserved.',
+              applicationLegalese: '© 2026 Events App. All rights reserved.',
             ),
           ),
-          const Divider(height: 1),
-          _buildMenuItem(
-            icon: Icons.key_rounded,
-            label: '[DEV] Copy Token cho Postman',
-            iconColor: const Color(0xFFB45309),
-            textColor: const Color(0xFFB45309),
-            onTap: () => AuthController.to.printAccessTokenForPostman(),
-          ),
+          // const Divider(height: 1),
+          // _buildMenuItem(
+          //   icon: Icons.key_rounded,
+          //   label: '[DEV] Copy Token cho Postman',
+          //   iconColor: const Color(0xFFB45309),
+          //   textColor: const Color(0xFFB45309),
+          //   onTap: () => AuthController.to.printAccessTokenForPostman(),
+          // ),
           const Divider(height: 1),
           _buildMenuItem(
             icon: Icons.logout,
@@ -424,8 +424,10 @@ class _OrganizerProfilePageState extends State<OrganizerProfilePage> {
               Expanded(
                 child: Text(
                   label,
-                  style:
-                      TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: textColor),
+                  style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: textColor),
                 ),
               ),
               Icon(Icons.chevron_right, size: 20, color: Colors.grey.shade400),

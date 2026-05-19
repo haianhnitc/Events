@@ -32,7 +32,7 @@ class FileDatasourceImpl extends ApiProvider implements FileDatasource {
         (data) => Map<String, dynamic>.from(data as Map),
         body: ApiRequestBody.file({
           'filePath': filePath,
-          'documentType': fileType,
+          'fileType': fileType,
         }),
         requireAuth: true,
       );

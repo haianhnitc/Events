@@ -122,12 +122,12 @@ class _MenuSection extends StatelessWidget {
           label: 'Lịch sử giao dịch',
           onTap: () => Get.toNamed('/transaction-history'),
         ),
-        const SizedBox(height: 8),
-        _DebugMenuItem(
-          icon: Icons.key_rounded,
-          label: '[DEV] Copy Token cho Postman',
-          onTap: () => AuthController.to.printAccessTokenForPostman(),
-        ),
+        // const SizedBox(height: 8),
+        // _DebugMenuItem(
+        //   icon: Icons.key_rounded,
+        //   label: '[DEV] Copy Token cho Postman',
+        //   onTap: () => AuthController.to.printAccessTokenForPostman(),
+        // ),
       ],
     );
   }

@@ -25,13 +25,6 @@ extension UploadFileTypeExtension on UploadFileType {
     final ext = path.split('.').last.toLowerCase();
     return ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'].contains(ext);
   }
-
-  List<PlatformFile> validateAndGetDocuments(List<PlatformFile> files) {
-    if (this == UploadFileType.image) {
-      return [];
-    }
-    return files;
-  }
 }
 
 class UploadResult {
@@ -96,6 +89,15 @@ class ImagePickerService {
 
       if (file == null) return null;
 
+      final validate = _validateImageFile(file);
+      if (!validate.ok) {
+        AppSnackbarUtils.showError(
+          'Định dạng không hỗ trợ',
+          validate.message,
+        );
+        return null;
+      }
+
       return UploadResult(
         filePath: file.path,
         fileName: file.name,
@@ -136,6 +138,8 @@ class ImagePickerService {
 
       final results = <UploadResult>[];
       for (final file in limitedFiles) {
+        final validate = _validateImageFile(file);
+        if (!validate.ok) continue;
         results.add(UploadResult(
           filePath: file.path,
           fileName: file.name,
@@ -148,6 +152,59 @@ class ImagePickerService {
     } catch (e) {
       return [];
     }
+  }
+
+  ({bool ok, String message}) _validateImageFile(XFile file) {
+    final ext = file.path.split('.').last.toLowerCase();
+    if (!['jpg', 'jpeg', 'png', 'gif', 'webp'].contains(ext)) {
+      return (ok: false, message: 'Chỉ hỗ trợ ảnh JPG, PNG, GIF, WebP. Vui lòng chọn ảnh khác.');
+    }
+
+    if (!kIsWeb) {
+      final magicBytes = _readMagicBytes(file.path);
+      if (magicBytes != null && !_isValidMagicBytes(magicBytes)) {
+        return (
+          ok: false,
+          message: 'File "$ext" không hợp lệ. Chỉ hỗ trợ ảnh JPG, PNG, GIF, WebP.',
+        );
+      }
+    }
+
+    return (ok: true, message: '');
+  }
+
+  List<int>? _readMagicBytes(String path) {
+    try {
+      final file = File(path);
+      if (!file.existsSync()) return null;
+      final raf = file.openSync(mode: FileMode.read);
+      final bytes = raf.readSync(12);
+      raf.closeSync();
+      return bytes;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  bool _isValidMagicBytes(List<int> bytes) {
+    if (bytes.length < 4) return false;
+
+    // JPEG: FF D8 FF
+    if (bytes[0] == 0xFF && bytes[1] == 0xD8 && bytes[2] == 0xFF) return true;
+
+    // PNG: 89 50 4E 47
+    if (bytes[0] == 0x89 && bytes[1] == 0x50 && bytes[2] == 0x4E && bytes[3] == 0x47) return true;
+
+    // GIF: 47 49 46 38
+    if (bytes[0] == 0x47 && bytes[1] == 0x49 && bytes[2] == 0x46 && bytes[3] == 0x38) return true;
+
+    // WebP: 52 49 46 46 .... 57 45 42 50
+    if (bytes[0] == 0x52 && bytes[1] == 0x49 && bytes[2] == 0x46 && bytes[3] == 0x46 &&
+        bytes.length >= 12 && bytes[8] == 0x57 && bytes[9] == 0x45 && bytes[10] == 0x42 && bytes[11] == 0x50) {
+      return true;
+    }
+
+    return false;
   }
 
   void _showPermissionDeniedDialog(String permissionName, String message) {

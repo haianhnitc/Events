@@ -135,12 +135,13 @@ class _OrganizerStaffApplicationDetailPageState
                       child: GestureDetector(
                         onTap: () {
                           if (app.eventId != null) {
-                            Get.to(() => OrganizerEventDetailPage(eventId: app.eventId!));
+                            Get.to(() => OrganizerEventDetailPage(
+                                eventId: app.eventId!));
                           }
                         },
                         child: Text(
                           app.eventTitle ?? 'N/A',
-                          style: TextStyle(
+                          style: const TextStyle(
                               fontSize: 12,
                               color: const Color(0xFF06B6D4),
                               fontWeight: FontWeight.w500,
@@ -320,9 +321,10 @@ class _OrganizerStaffApplicationDetailPageState
         Obx(() => SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                onPressed: _ctrl.isApproveLoading.value || _ctrl.isRejectLoading.value
-                    ? null
-                    : () => _ctrl.showApproveDialog(),
+                onPressed:
+                    _ctrl.isApproveLoading.value || _ctrl.isRejectLoading.value
+                        ? null
+                        : () => _ctrl.showApproveDialog(),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF10B981),
                   padding: const EdgeInsets.symmetric(vertical: 14),
@@ -352,9 +354,10 @@ class _OrganizerStaffApplicationDetailPageState
         Obx(() => SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
-                onPressed: _ctrl.isApproveLoading.value || _ctrl.isRejectLoading.value
-                    ? null
-                    : () => _ctrl.showRejectDialog(),
+                onPressed:
+                    _ctrl.isApproveLoading.value || _ctrl.isRejectLoading.value
+                        ? null
+                        : () => _ctrl.showRejectDialog(),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: const Color(0xFFEF4444),
                   padding: const EdgeInsets.symmetric(vertical: 14),
