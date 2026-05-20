@@ -61,5 +61,12 @@ app.*.map.json
 .agents/
 skills-lock.json
 
+# --- iOS Temporary and Backup Files ---
+**/ios/Runner.xcodeproj/xcshareddata/
+**/ios/Runner.xcworkspace/xcshareddata/
+**/ios/.symlinks/
+**/*.xcscheme.backup
+**/Package.resolved
+
 #   firebase_core: ^2.22.0
 #   firebase_auth: ^4.7.0

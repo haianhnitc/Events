@@ -80,7 +80,7 @@ class AppLayout extends StatelessWidget {
                                   ),
                                   constraints: const BoxConstraints(
                                       minWidth: 10,
-                                      maxWidth: 20,
+                                      maxWidth: 25,
                                       minHeight: 18),
                                   child: Center(
                                     child: Text(
