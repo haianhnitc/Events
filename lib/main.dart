@@ -13,8 +13,12 @@ import 'package:events_app/api_template/event_network.dart';
 import 'package:events_app/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 
+import 'package:events_app/common/timezone_helper.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  TimezoneHelper.ensureInitialized();
 
   const appEnv = String.fromEnvironment('APP_ENV', defaultValue: 'dev');
   configureDependencies(env: appEnv);
