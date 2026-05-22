@@ -30,33 +30,29 @@ class MockGoogleSignInAccount extends Mock implements GoogleSignInAccount {}
 class MockGoogleSignInAuthentication extends Mock
     implements GoogleSignInAuthentication {}
 
-class MockFirebaseAuthException implements FirebaseAuthException {
-  const MockFirebaseAuthException({required this.code, this.message});
+class MockFirebaseAuthException extends Mock
+    implements FirebaseAuthException {
+  MockFirebaseAuthException({required this.code, this.message});
 
   @override
   final String code;
 
   @override
   final String? message;
-
-  @override
-  String? get email => null;
-
-  @override
-  User? get user => null;
-
-  @override
-  AuthCredential? get credential => null;
 }
 
 /// Test RestClient that records requests and returns configured responses.
 class TestRestClient extends Fake implements RestClient {
-  ApiResponse<Map<String, dynamic>>? nextResponse;
+  dynamic _nextResponse;
   final List<ApiRequest> requests = [];
 
   void reset() {
-    nextResponse = null;
+    _nextResponse = null;
     requests.clear();
+  }
+
+  void setNextResponse(dynamic response) {
+    _nextResponse = response;
   }
 
   @override
@@ -66,31 +62,11 @@ class TestRestClient extends Fake implements RestClient {
     bool requireAuth,
   ) async {
     requests.add(request);
-    if (nextResponse != null) {
-      // Clone the response to avoid freezed issues on reuse
-      return _cloneResponse(nextResponse!);
+    if (_nextResponse != null) {
+      // Return the next response as-is (it should already be typed correctly)
+      return _nextResponse as ApiResponse<Model>;
     }
-    return successEnvelope(null);
-  }
-
-  ApiResponse<Model> _cloneResponse<Model>(
-      ApiResponse<Map<String, dynamic>> from) {
-    return from.when(
-      success: (_) =>
-          ApiResponse.success(parser(from.whenOrNull(success: (_) => _) ?? {})),
-      badRequest: (e) => ApiResponse.badRequest(e),
-      unauthorized: (e) => ApiResponse.unauthorized(e),
-      forbidden: (e) => ApiResponse.forbidden(e),
-      notFound: (e) => ApiResponse.notFound(e),
-      conflict: (e) => ApiResponse.conflict(e),
-      internalServerError: () => const ApiResponse.internalServerError(),
-      badGateway: () => const ApiResponse.badGateway(),
-      serviceUnavailable: () => const ApiResponse.serviceUnavailable(),
-      gatewayTimeout: () => const ApiResponse.gatewayTimeout(),
-      canceled: () => const ApiResponse.canceled(),
-      responseParsing: () => const ApiResponse.responseParsing(),
-      unexpected: (e) => ApiResponse.unexpected(e),
-    );
+    return ApiResponse<Model>.success(null as Model);
   }
 
   @override
@@ -112,8 +88,8 @@ class TestAuthDatasource extends AuthDatasourceImpl {
 
   final TestRestClient _testClient;
 
-  void stubResponse(ApiResponse<Map<String, dynamic>> response) {
-    _testClient.nextResponse = response;
+  void stubResponse(dynamic response) {
+    _testClient.setNextResponse(response);
   }
 
   void reset() {
@@ -175,7 +151,7 @@ void main() {
       when(() => mockFirebaseAuth.signInWithEmailAndPassword(
             email: any(named: 'email'),
             password: any(named: 'password'),
-          )).thenThrow(const MockFirebaseAuthException(
+          )).thenThrow(MockFirebaseAuthException(
         code: 'wrong-password',
         message: 'Wrong password',
       ));
@@ -368,7 +344,7 @@ void main() {
       when(() => mockFirebaseAuth.createUserWithEmailAndPassword(
             email: any(named: 'email'),
             password: any(named: 'password'),
-          )).thenThrow(const MockFirebaseAuthException(
+          )).thenThrow(MockFirebaseAuthException(
         code: 'email-already-in-use',
         message: 'Email already in use',
       ));
@@ -424,7 +400,7 @@ void main() {
   // ─── signOut ─────────────────────────────────────────────────────────────────
   group('signOut', () {
     test('trả về success khi backend và Firebase signout thành công', () async {
-      datasource.stubResponse(successEnvelope(null));
+      datasource.stubResponse(successEnvelope(<String, dynamic>{}));
       when(() => mockFirebaseAuth.signOut()).thenAnswer((_) async {});
       when(() => mockGoogleSignIn.signOut()).thenAnswer((_) async => null);
 
@@ -436,7 +412,7 @@ void main() {
     });
 
     test('trả về unexpected khi Firebase ném exception khi signOut', () async {
-      datasource.stubResponse(successEnvelope(null));
+      datasource.stubResponse(successEnvelope(<String, dynamic>{}));
       when(() => mockFirebaseAuth.signOut())
           .thenThrow(Exception('Firebase error'));
       when(() => mockGoogleSignIn.signOut()).thenAnswer((_) async => null);
@@ -503,7 +479,7 @@ void main() {
     test('trả về unexpected khi Firebase ném exception', () async {
       when(() => mockFirebaseAuth.sendPasswordResetEmail(
             email: any(named: 'email'),
-          )).thenThrow(const MockFirebaseAuthException(
+          )).thenThrow(MockFirebaseAuthException(
         code: 'user-not-found',
         message: 'User not found',
       ));

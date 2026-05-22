@@ -181,3 +181,34 @@ bool isCanceled<T>(ApiResponse<T> result) {
     unexpected: (_) => false,
   );
 }
+
+// Helper builders cho responses
+ApiResponse<Map<String, dynamic>> successEnvelope(Map<String, dynamic> data) {
+  // Wrap the data in an API envelope structure
+  return ApiResponse<Map<String, dynamic>>.success({
+    'errorCode': 0,
+    'statusCode': 200,
+    'message': 'Success',
+    'object': data,
+  });
+}
+
+ApiResponse<Map<String, dynamic>> unauthorizedResponse() {
+  return const ApiResponse<Map<String, dynamic>>.unauthorized(
+    ApiResponseError(
+      code: '401',
+      message: 'Unauthorized',
+      errors: null,
+    ),
+  );
+}
+
+ApiResponse<T> errorResponse<T extends Object>() {
+  return const ApiResponse<dynamic>.unexpected(
+    ApiResponseError(
+      code: 'ERROR',
+      message: 'Error',
+      errors: null,
+    ),
+  ) as ApiResponse<T>;
+}
