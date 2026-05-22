@@ -11,6 +11,7 @@ import 'package:events_app/feature/attendance/data/model/attendance_model.dart';
 import 'package:events_app/feature/attendance/data/model/event_attendance_log_model.dart';
 
 import '../../helpers/fake_data.dart';
+import '../../helpers/api_response_matchers.dart';
 
 class MockOrganizerAttendanceDatasource extends Mock
     implements OrganizerAttendanceDatasource {}
@@ -45,8 +46,15 @@ void main() {
     });
 
     test('404 returns Left', () async {
-      when(() => mockDatasource.getEventQr(any(), any()))
-          .thenAnswer((_) async => errorResponse<Map<String, dynamic>>());
+      when(() => mockDatasource.getEventQr(any(), any())).thenAnswer(
+        (_) async => ApiResponse<AttendanceQrModel>.unexpected(
+          const ApiResponseError(
+            code: 'ERROR',
+            message: 'Error',
+            errors: null,
+          ),
+        ),
+      );
 
       final result = await repository.getEventQr(999, 'CHECKIN');
 
@@ -70,8 +78,15 @@ void main() {
     });
 
     test('404', () async {
-      when(() => mockDatasource.getParticipantQr(any()))
-          .thenAnswer((_) async => errorResponse<Map<String, dynamic>>());
+      when(() => mockDatasource.getParticipantQr(any())).thenAnswer(
+        (_) async => ApiResponse<AttendanceQrModel>.unexpected(
+          const ApiResponseError(
+            code: 'ERROR',
+            message: 'Error',
+            errors: null,
+          ),
+        ),
+      );
 
       final result = await repository.getParticipantQr(999);
 
@@ -97,8 +112,15 @@ void main() {
     });
 
     test('400 returns Left', () async {
-      when(() => mockDatasource.manualCheckIn(any()))
-          .thenAnswer((_) async => errorResponse<Map<String, dynamic>>());
+      when(() => mockDatasource.manualCheckIn(any())).thenAnswer(
+        (_) async => ApiResponse<EventAttendanceLogModel>.unexpected(
+          const ApiResponseError(
+            code: 'ERROR',
+            message: 'Error',
+            errors: null,
+          ),
+        ),
+      );
 
       const params = OrganizerManualAttendanceParams(eventParticipantId: 1);
       final result = await repository.manualCheckIn(params);

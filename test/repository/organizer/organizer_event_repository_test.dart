@@ -1,4 +1,6 @@
 import 'package:dartz/dartz.dart';
+import 'package:events_app/feature/organizer/event/data/datasource/organizer_event_datasource.dart';
+import 'package:events_app/feature/organizer/event/data/repository/organizer_event_repository_impl.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:events_app/api_template/base_response/api_response.dart';
@@ -11,6 +13,9 @@ import 'package:events_app/feature/event_management/data/model/event_analytics_m
 import 'package:events_app/feature/event_management/domain/entity/event_entity.dart';
 import 'package:events_app/feature/event_management/domain/entity/event_summary_entity.dart';
 import 'package:events_app/feature/common/domain/enum/app_enum.dart';
+import '../../helpers/api_response_matchers.dart';
+
+import '../../helpers/fake_data.dart';
 
 class MockOrganizerEventDatasource extends Mock
     implements OrganizerEventDatasource {}
@@ -100,8 +105,15 @@ void main() {
     });
 
     test('propagates failure', () async {
-      when(() => mockDatasource.getOrganizerEvents(any()))
-          .thenAnswer((_) async => errorResponse<Map<String, dynamic>>());
+      when(() => mockDatasource.getOrganizerEvents(any())).thenAnswer(
+        (_) async => ApiResponse<EventSummaryPage>.unexpected(
+          const ApiResponseError(
+            code: 'ERROR',
+            message: 'Error',
+            errors: null,
+          ),
+        ),
+      );
 
       const params = OrganizerEventListParams(
         organizerId: 1,
@@ -163,8 +175,15 @@ void main() {
     });
 
     test('404 returns Left', () async {
-      when(() => mockDatasource.deleteEvent(any()))
-          .thenAnswer((_) async => errorResponse<Map<String, dynamic>>());
+      when(() => mockDatasource.deleteEvent(any())).thenAnswer(
+        (_) async => ApiResponse<void>.unexpected(
+          const ApiResponseError(
+            code: 'ERROR',
+            message: 'Error',
+            errors: null,
+          ),
+        ),
+      );
 
       final result = await repository.deleteEvent(999);
 
