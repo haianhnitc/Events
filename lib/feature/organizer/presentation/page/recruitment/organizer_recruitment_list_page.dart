@@ -76,14 +76,10 @@ class _OrganizerRecruitmentListPageState
                 OrganizerSearchField(
                   controller: _searchController,
                   hintText: 'Tìm kiếm bài tuyển dụng...',
-                  onChanged: (v) {
-                    _ctrl.searchQuery.value = v;
-                    _ctrl.loadRecruitments(refresh: true);
-                  },
+                  onChanged: (v) => _ctrl.setSearch(v),
                   onClear: () {
                     _searchController.clear();
-                    _ctrl.searchQuery.value = '';
-                    _ctrl.loadRecruitments(refresh: true);
+                    _ctrl.setSearch('');
                   },
                 ),
               ],

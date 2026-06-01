@@ -11,7 +11,10 @@ class OrganizerDashboardController extends GetxController {
 
   final Rx<OrganizationDashboardEntity?> dashboard =
       Rx<OrganizationDashboardEntity?>(null);
-  final RxBool isLoading = false.obs;
+
+  final RxBool isLoadingMetrics = false.obs;
+  final RxBool isLoadingRecentEvents = false.obs;
+  final RxBool isLoadingStaffInfo = false.obs;
   final RxBool isRefreshing = false.obs;
 
   @override
@@ -21,28 +24,48 @@ class OrganizerDashboardController extends GetxController {
   }
 
   Future<void> loadDashboard() async {
-    if (isLoading.value) return;
     final orgId = AuthController.to.currentUser.value?.userId;
     if (orgId == null) return;
-    isLoading.value = true;
-    final result = await _getDashboardUsecase(orgId);
-    result.fold(
-      (failure) => _handleFailure(failure),
-      (data) => dashboard.value = data,
-    );
-    isLoading.value = false;
+
+    isLoadingMetrics.value = true;
+    isLoadingRecentEvents.value = true;
+    isLoadingStaffInfo.value = true;
+
+    try {
+      final result = await _getDashboardUsecase(orgId);
+
+      result.fold(
+        (failure) {
+          _handleFailure(failure);
+          isLoadingMetrics.value = false;
+          isLoadingRecentEvents.value = false;
+          isLoadingStaffInfo.value = false;
+        },
+        (data) {
+          dashboard.value = data;
+
+          isLoadingMetrics.value = false;
+
+          Future.delayed(const Duration(milliseconds: 50), () {
+            isLoadingRecentEvents.value = false;
+          });
+
+          Future.delayed(const Duration(milliseconds: 100), () {
+            isLoadingStaffInfo.value = false;
+          });
+        },
+      );
+    } catch (e) {
+      isLoadingMetrics.value = false;
+      isLoadingRecentEvents.value = false;
+      isLoadingStaffInfo.value = false;
+    }
   }
 
   Future<void> refreshDashboard() async {
     if (isRefreshing.value) return;
-    final orgId = AuthController.to.currentUser.value?.userId;
-    if (orgId == null) return;
     isRefreshing.value = true;
-    final result = await _getDashboardUsecase(orgId);
-    result.fold(
-      (failure) => _handleFailure(failure),
-      (data) => dashboard.value = data,
-    );
+    await loadDashboard();
     isRefreshing.value = false;
   }
 

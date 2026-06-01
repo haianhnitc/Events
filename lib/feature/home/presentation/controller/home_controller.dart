@@ -18,7 +18,7 @@ class HomeController extends GetxController {
 
   final RxList<EventSummaryEntity> featuredEvents = <EventSummaryEntity>[].obs;
   final Rx<RankEntity?> userRank = Rx<RankEntity?>(null);
-  final RxBool isLoading = true.obs;
+  final RxBool isLoadingFeaturedEvents = true.obs;
   final RxBool isLoadingRank = true.obs;
 
   @override
@@ -29,18 +29,18 @@ class HomeController extends GetxController {
   }
 
   Future<void> loadFeaturedEvents() async {
-    isLoading.value = true;
+    isLoadingFeaturedEvents.value = true;
 
     final result = await _getFeaturedEventsUsecase();
 
     result.fold(
       (failure) {
         _handleFailure(failure);
-        isLoading.value = false;
+        isLoadingFeaturedEvents.value = false;
       },
       (data) {
         featuredEvents.assignAll(data);
-        isLoading.value = false;
+        isLoadingFeaturedEvents.value = false;
       },
     );
   }

@@ -56,36 +56,30 @@ class _OrganizerDashboardPageState extends State<OrganizerDashboardPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F8),
       body: SafeArea(
-        child: Obx(() {
-          if (_dashboardCtrl.isLoading.value &&
-              _dashboardCtrl.dashboard.value == null) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          return RefreshIndicator(
-            onRefresh: () async {
-              await _dashboardCtrl.refreshDashboard();
-              await _eventCtrl.refreshEvents();
-            },
-            child: CustomScrollView(
-              slivers: [
-                _buildHeader(),
-                SliverToBoxAdapter(
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 16),
-                      _buildStatGrid(),
-                      const SizedBox(height: 20),
-                      _buildQuickActions(),
-                      const SizedBox(height: 20),
-                      _buildRecentEvents(),
-                      const SizedBox(height: 24),
-                    ],
-                  ),
+        child: RefreshIndicator(
+          onRefresh: () async {
+            await _dashboardCtrl.refreshDashboard();
+            await _eventCtrl.refreshEvents();
+          },
+          child: CustomScrollView(
+            slivers: [
+              _buildHeader(),
+              SliverToBoxAdapter(
+                child: Column(
+                  children: [
+                    const SizedBox(height: 16),
+                    _buildStatGrid(),
+                    const SizedBox(height: 20),
+                    _buildQuickActions(),
+                    const SizedBox(height: 20),
+                    _buildRecentEvents(),
+                    const SizedBox(height: 24),
+                  ],
                 ),
-              ],
-            ),
-          );
-        }),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -194,15 +188,24 @@ class _OrganizerDashboardPageState extends State<OrganizerDashboardPage> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Obx(() {
+        if (_dashboardCtrl.isLoadingMetrics.value &&
+            _dashboardCtrl.dashboard.value == null) {
+          return _buildLoadingIndicator('Đang tải thống kê...');
+        }
+
         final dash = _dashboardCtrl.dashboard.value;
-        final totalEvents = dash?.totalEvents ?? 0;
-        final totalReg = dash?.totalRegistrations ?? 0;
-        final avgRate = dash?.averageAttendanceRate ?? 0.0;
-        final views = dash?.totalViews ?? 0;
-        final curEvents = dash?.currentPeriodEvents ?? 0;
-        final curRegs = dash?.currentPeriodRegistrations ?? 0;
-        final curViews = dash?.currentPeriodViews ?? 0;
-        final curRate = dash?.currentPeriodAttendanceRate ?? 0.0;
+        if (dash == null) {
+          return const SizedBox.shrink();
+        }
+
+        final totalEvents = dash.totalEvents ?? 0;
+        final totalReg = dash.totalRegistrations ?? 0;
+        final avgRate = dash.averageAttendanceRate ?? 0.0;
+        final views = dash.totalViews ?? 0;
+        final curEvents = dash.currentPeriodEvents ?? 0;
+        final curRegs = dash.currentPeriodRegistrations ?? 0;
+        final curViews = dash.currentPeriodViews ?? 0;
+        final curRate = dash.currentPeriodAttendanceRate ?? 0.0;
 
         return Column(
           children: [
@@ -214,12 +217,12 @@ class _OrganizerDashboardPageState extends State<OrganizerDashboardPage> {
                     value: '$totalEvents',
                     icon: Icons.event_outlined,
                     iconColor: const Color(0xFF06B6D4),
-                    trend: _formatGrowth(dash?.totalEventsGrowth),
+                    trend: _formatGrowth(dash.totalEventsGrowth),
                     subValue: curEvents > 0
                         ? '$curEvents sự kiện mới (30 ngày)'
                         : null,
                     tooltipMessage:
-                        'Tăng ${_formatGrowth(dash?.totalEventsGrowth) ?? '0%'} so với 30 ngày trước.\nTháng này: $curEvents sự kiện.',
+                        'Tăng ${_formatGrowth(dash.totalEventsGrowth) ?? '0%'} so với 30 ngày trước.\nTháng này: $curEvents sự kiện.',
                     onTap: () => Get.to(() => const OrganizerEventListPage()),
                   ),
                 ),
@@ -230,12 +233,12 @@ class _OrganizerDashboardPageState extends State<OrganizerDashboardPage> {
                     value: _formatCompact(totalReg),
                     icon: Icons.people_outline,
                     iconColor: const Color(0xFF8B5CF6),
-                    trend: _formatGrowth(dash?.totalRegistrationsGrowth),
+                    trend: _formatGrowth(dash.totalRegistrationsGrowth),
                     subValue: curRegs > 0
                         ? '${_formatCompact(curRegs)} đăng ký (30 ngày)'
                         : null,
                     tooltipMessage:
-                        'Tăng ${_formatGrowth(dash?.totalRegistrationsGrowth) ?? '0%'} so với 30 ngày trước.\nTháng này: ${_formatCompact(curRegs)} đăng ký.',
+                        'Tăng ${_formatGrowth(dash.totalRegistrationsGrowth) ?? '0%'} so với 30 ngày trước.\nTháng này: ${_formatCompact(curRegs)} đăng ký.',
                     onTap: () {},
                   ),
                 ),
@@ -250,12 +253,12 @@ class _OrganizerDashboardPageState extends State<OrganizerDashboardPage> {
                     value: _formatCompact(views),
                     icon: Icons.visibility_outlined,
                     iconColor: const Color(0xFFF59E0B),
-                    trend: _formatGrowth(dash?.totalViewsGrowth),
+                    trend: _formatGrowth(dash.totalViewsGrowth),
                     subValue: curViews > 0
                         ? '${_formatCompact(curViews)} lượt xem (30 ngày)'
                         : null,
                     tooltipMessage:
-                        'Tăng ${_formatGrowth(dash?.totalViewsGrowth) ?? '0%'} so với 30 ngày trước.\nTháng này: ${_formatCompact(curViews)} lượt xem.',
+                        'Tăng ${_formatGrowth(dash.totalViewsGrowth) ?? '0%'} so với 30 ngày trước.\nTháng này: ${_formatCompact(curViews)} lượt xem.',
                     onTap: () {},
                   ),
                 ),
@@ -266,19 +269,19 @@ class _OrganizerDashboardPageState extends State<OrganizerDashboardPage> {
                     value: '${(avgRate).toStringAsFixed(1)}%',
                     icon: Icons.qr_code_scanner,
                     iconColor: const Color(0xFF10B981),
-                    trend: _formatGrowth(dash?.averageAttendanceRateGrowth),
+                    trend: _formatGrowth(dash.averageAttendanceRateGrowth),
                     subValue: curRate > 0
                         ? '${curRate.toStringAsFixed(1)}% (30 ngày)'
                         : null,
                     tooltipMessage:
-                        '${_formatGrowth(dash?.averageAttendanceRateGrowth) ?? '0%'} so với 30 ngày trước.\nTháng này: ${curRate.toStringAsFixed(1)}% tham dự.',
+                        '${_formatGrowth(dash.averageAttendanceRateGrowth) ?? '0%'} so với 30 ngày trước.\nTháng này: ${curRate.toStringAsFixed(1)}% tham dự.',
                     onTap: () {},
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 16),
-            // _buildPeriodComparison(dash),
+            _buildPeriodComparison(dash),
           ],
         );
       }),
@@ -635,11 +638,9 @@ class _OrganizerDashboardPageState extends State<OrganizerDashboardPage> {
         Container(
           margin: const EdgeInsets.symmetric(horizontal: 16),
           child: Obx(() {
-            final events = _eventCtrl.events.take(3).toList();
-            if (_eventCtrl.isLoading.value && events.isEmpty) {
-              return const Center(
-                child: CircularProgressIndicator(color: Color(0xff06B6D4)),
-              );
+            final events = _eventCtrl.events;
+            if (_dashboardCtrl.isLoadingRecentEvents.value && events.isEmpty) {
+              return _buildLoadingIndicator('Đang tải sự kiện...');
             }
             if (events.isEmpty) {
               return const OrganizerEmptyState(
@@ -648,14 +649,15 @@ class _OrganizerDashboardPageState extends State<OrganizerDashboardPage> {
                 compact: true,
               );
             }
+            final topEvents = events.take(5).toList();
             return Column(
-              children: events.asMap().entries.map((entry) {
+              children: topEvents.asMap().entries.map((entry) {
                 final index = entry.key;
-                final e = entry.value;
+                final event = entry.value;
                 return Column(
                   children: [
-                    _buildRecentEventItem(e),
-                    if (index < events.length - 1) const Divider(height: 1),
+                    _buildRecentEventItem(event),
+                    if (index < topEvents.length - 1) const Divider(height: 1),
                   ],
                 );
               }).toList(),
@@ -755,5 +757,31 @@ class _OrganizerDashboardPageState extends State<OrganizerDashboardPage> {
       case EventStatus.locked:
         return OrganizerStatusBadge.locked();
     }
+  }
+
+  Widget _buildLoadingIndicator(String label) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 48),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF06B6D4)),
+              strokeWidth: 3,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: Color(0xff64748B),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

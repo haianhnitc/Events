@@ -18,13 +18,16 @@ class OrganizerRecruitmentListController extends GetxController {
   UpdateOrganizerRecruitmentUsecase get _updateRecruitmentUsecase =>
       networkGetIt<UpdateOrganizerRecruitmentUsecase>();
 
-  final RxList<CtvRecruitmentEntity> recruitments = <CtvRecruitmentEntity>[].obs;
+  final RxList<CtvRecruitmentEntity> recruitments =
+      <CtvRecruitmentEntity>[].obs;
   final RxBool isLoading = false.obs;
   final RxBool isRefreshing = false.obs;
   final RxInt currentPage = 0.obs;
   final RxBool hasMore = true.obs;
   final Rx<int?> filterEventId = Rx<int?>(null);
   final RxString searchQuery = ''.obs;
+
+  int _requestId = 0;
 
   static final Rx<(int, bool?)> recruitmentStateUpdate =
       Rx<(int, bool?)>((0, null));
@@ -39,8 +42,8 @@ class OrganizerRecruitmentListController extends GetxController {
   void _watchRecruitmentUpdates() {
     ever(recruitmentStateUpdate, (tuple) {
       final (updatedId, newIsOpen) = tuple;
-      final index = recruitments.indexWhere(
-          (r) => r.ctvRecruitmentId == updatedId);
+      final index =
+          recruitments.indexWhere((r) => r.ctvRecruitmentId == updatedId);
       if (index >= 0) {
         recruitments[index] = recruitments[index].copyWith(isOpen: newIsOpen);
       }
@@ -56,12 +59,21 @@ class OrganizerRecruitmentListController extends GetxController {
     if (!hasMore.value && !refresh) return;
 
     isLoading.value = true;
+
+    final currentRequestId = _requestId;
+
     final result = await _getRecruitmentsUsecase(GetOrganizerRecruitmentsParams(
       eventId: filterEventId.value,
       keyword: searchQuery.value.isEmpty ? null : searchQuery.value,
       page: currentPage.value,
       size: 20,
     ));
+
+    if (currentRequestId != _requestId) {
+      isLoading.value = false;
+      return;
+    }
+
     result.fold(
       (failure) {
         _handleFailure(failure);
@@ -98,8 +110,12 @@ class OrganizerRecruitmentListController extends GetxController {
         title: const Text('Xác nhận xóa'),
         content: const Text('Bạn có chắc muốn xóa bài tuyển dụng này không?'),
         actions: [
-          TextButton(onPressed: () => Get.back(result: false), child: const Text('Hủy')),
-          TextButton(onPressed: () => Get.back(result: true), child: const Text('Xóa')),
+          TextButton(
+              onPressed: () => Get.back(result: false),
+              child: const Text('Hủy')),
+          TextButton(
+              onPressed: () => Get.back(result: true),
+              child: const Text('Xóa')),
         ],
       ),
     );
@@ -109,7 +125,8 @@ class OrganizerRecruitmentListController extends GetxController {
     result.fold(
       (failure) => _handleFailure(failure),
       (_) {
-        AppSnackbarUtils.showSuccess('Thành công', 'Xóa bài tuyển dụng thành công');
+        AppSnackbarUtils.showSuccess(
+            'Thành công', 'Xóa bài tuyển dụng thành công');
         recruitments.removeWhere((r) => r.ctvRecruitmentId == recruitmentId);
       },
     );
@@ -121,8 +138,12 @@ class OrganizerRecruitmentListController extends GetxController {
         title: const Text('Xác nhận đóng tuyển'),
         content: const Text('Bạn có chắc muốn đóng tuyển CTV không?'),
         actions: [
-          TextButton(onPressed: () => Get.back(result: false), child: const Text('Hủy')),
-          TextButton(onPressed: () => Get.back(result: true), child: const Text('Đóng tuyển')),
+          TextButton(
+              onPressed: () => Get.back(result: false),
+              child: const Text('Hủy')),
+          TextButton(
+              onPressed: () => Get.back(result: true),
+              child: const Text('Đóng tuyển')),
         ],
       ),
     );
@@ -134,7 +155,8 @@ class OrganizerRecruitmentListController extends GetxController {
       (_) {
         AppSnackbarUtils.showSuccess('Thành công', 'Đóng tuyển CTV thành công');
         recruitmentStateUpdate.value = (recruitmentId, false);
-        final index = recruitments.indexWhere((r) => r.ctvRecruitmentId == recruitmentId);
+        final index =
+            recruitments.indexWhere((r) => r.ctvRecruitmentId == recruitmentId);
         if (index >= 0) {
           recruitments[index] = recruitments[index].copyWith(isOpen: false);
         }
@@ -144,6 +166,13 @@ class OrganizerRecruitmentListController extends GetxController {
 
   void setEventFilter(int? eventId) {
     filterEventId.value = eventId;
+    _requestId++;
+    loadRecruitments(refresh: true);
+  }
+
+  void setSearch(String query) {
+    searchQuery.value = query;
+    _requestId++;
     loadRecruitments(refresh: true);
   }
 

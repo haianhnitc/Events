@@ -12,7 +12,8 @@ import 'package:injectable/injectable.dart';
 abstract class OrganizerOrganizationDatasource {
   Future<ApiResponse<OrganizationProfileModel>> updateProfile(
       int organizationId, OrganizationProfileUpdateParams params);
-  Future<ApiResponse<OrganizationDashboardModel>> getDashboard(int organizationId);
+  Future<ApiResponse<OrganizationDashboardModel>> getDashboard(
+      int organizationId);
 }
 
 @Injectable(as: OrganizerOrganizationDatasource)
@@ -48,7 +49,8 @@ class OrganizerOrganizationDatasourceImpl extends ApiProvider
   }
 
   @override
-  Future<ApiResponse<OrganizationDashboardModel>> getDashboard(int organizationId) async {
+  Future<ApiResponse<OrganizationDashboardModel>> getDashboard(
+      int organizationId) async {
     try {
       final response = await get<Map<String, dynamic>>(
         ApiPath.organizationDashboardById(organizationId),

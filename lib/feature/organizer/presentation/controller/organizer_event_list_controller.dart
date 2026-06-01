@@ -31,6 +31,8 @@ class OrganizerEventListController extends GetxController {
   int _totalPages = 1;
   bool get hasMore => _currentPage < _totalPages - 1;
 
+  int _requestId = 0;
+
   AuthController get _authController => Get.find<AuthController>();
 
   static final Rx<(int, EventStatus?)> eventStateUpdate =
@@ -107,6 +109,8 @@ class OrganizerEventListController extends GetxController {
 
     isLoading.value = true;
 
+    final currentRequestId = _requestId;
+
     final params = OrganizerEventListParams(
       organizerId: organizerId,
       page: _currentPage,
@@ -118,6 +122,11 @@ class OrganizerEventListController extends GetxController {
     );
 
     final result = await _getEventListUsecase(params);
+
+    if (currentRequestId != _requestId) {
+      isLoading.value = false;
+      return;
+    }
 
     result.fold(
       (failure) {
@@ -156,17 +165,20 @@ class OrganizerEventListController extends GetxController {
 
   void setFilter(EventStatus? status) {
     filterStatus.value = status;
+    _requestId++;
     loadEvents(reset: true);
   }
 
   void setSearch(String query) {
     searchQuery.value = query;
+    _requestId++;
     loadEvents(reset: true);
   }
 
   void setSort(String by, String direction) {
     sortBy.value = by;
     sortDirection.value = direction;
+    _requestId++;
     loadEvents(reset: true);
   }
 

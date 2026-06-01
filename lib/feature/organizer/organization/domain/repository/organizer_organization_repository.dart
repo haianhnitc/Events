@@ -7,5 +7,6 @@ import 'package:events_app/feature/organizer/organization/domain/usecase/organiz
 abstract class OrganizerOrganizationRepository {
   Future<Either<FailureEntity, OrganizationProfileEntity>> updateProfile(
       int organizationId, OrganizationProfileUpdateParams params);
-  Future<Either<FailureEntity, OrganizationDashboardEntity>> getDashboard(int organizationId);
+  Future<Either<FailureEntity, OrganizationDashboardEntity>> getDashboard(
+      int organizationId);
 }

@@ -11,7 +11,8 @@ import 'package:events_app/feature/organizer/organization/domain/usecase/organiz
 import 'package:injectable/injectable.dart';
 
 @Injectable(as: OrganizerOrganizationRepository)
-class OrganizerOrganizationRepositoryImpl implements OrganizerOrganizationRepository {
+class OrganizerOrganizationRepositoryImpl
+    implements OrganizerOrganizationRepository {
   final OrganizerOrganizationDatasource _datasource;
 
   OrganizerOrganizationRepositoryImpl(this._datasource);
@@ -24,7 +25,8 @@ class OrganizerOrganizationRepositoryImpl implements OrganizerOrganizationReposi
   }
 
   @override
-  Future<Either<FailureEntity, OrganizationDashboardEntity>> getDashboard(int organizationId) async {
+  Future<Either<FailureEntity, OrganizationDashboardEntity>> getDashboard(
+      int organizationId) async {
     final response = await _datasource.getDashboard(organizationId);
     return response.toEitherNullable().map((m) => m.toEntity());
   }
