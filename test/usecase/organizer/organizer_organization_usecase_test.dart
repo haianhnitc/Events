@@ -41,7 +41,7 @@ void main() {
 
       const params = UpdateOrganizerProfileParams(
         organizationId: 1,
-        params: const OrganizationProfileUpdateParams(
+        params: OrganizationProfileUpdateParams(
             organizationName: 'Updated Org'),
       );
       final result = await usecase(params);
@@ -57,7 +57,7 @@ void main() {
 
       const params = UpdateOrganizerProfileParams(
         organizationId: 1,
-        params: const OrganizationProfileUpdateParams(organizationName: ''),
+        params: OrganizationProfileUpdateParams(organizationName: ''),
       );
       final result = await usecase(params);
 

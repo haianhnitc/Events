@@ -1,14 +1,11 @@
 import 'dart:io';
 
-import 'package:app_settings/app_settings.dart';
 import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
+import 'package:events_app/common/utils/permission_dialog_helper.dart';
 import 'package:events_app/common/utils/permission_helper.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 enum UploadFileType {
   image,
@@ -42,8 +39,17 @@ class UploadResult {
 }
 
 class ImagePickerService {
-  final ImagePicker _picker = ImagePicker();
-  final PermissionHelper _permissionHelper = PermissionHelper();
+  final ImagePicker _picker;
+  final PermissionHelper _permissionHelper;
+  final PermissionDialogHelper _dialogHelper;
+
+  ImagePickerService({
+    ImagePicker? picker,
+    PermissionHelper? permissionHelper,
+    PermissionDialogHelper? dialogHelper,
+  })  : _picker = picker ?? ImagePicker(),
+        _permissionHelper = permissionHelper ?? PermissionHelper(),
+        _dialogHelper = dialogHelper ?? const PermissionDialogHelper();
 
   Future<UploadResult?> pickSingleImage({
     ImageSource source = ImageSource.gallery,
@@ -53,31 +59,19 @@ class ImagePickerService {
   }) async {
     try {
       if (source == ImageSource.gallery) {
-        final permissionResult =
-            await _permissionHelper.requestPhotosPermission();
-        if (!permissionResult.granted) {
-          if (permissionResult.status == PermissionStatus.permanentlyDenied) {
-            _showPermissionDeniedDialog(
-              'Photo Library',
-              permissionResult.message,
-            );
-          }
-          return null;
-        }
+        final granted = await _dialogHelper.requestWithDialog(
+          _permissionHelper.requestPhotosPermission,
+          'Photo Library',
+        );
+        if (!granted) return null;
       }
 
       if (source == ImageSource.camera) {
-        final permissionResult =
-            await _permissionHelper.requestCameraPermission();
-        if (!permissionResult.granted) {
-          if (permissionResult.status == PermissionStatus.permanentlyDenied) {
-            _showPermissionDeniedDialog(
-              'Camera',
-              permissionResult.message,
-            );
-          }
-          return null;
-        }
+        final granted = await _dialogHelper.requestWithDialog(
+          _permissionHelper.requestCameraPermission,
+          'Camera',
+        );
+        if (!granted) return null;
       }
 
       final XFile? file = await _picker.pickImage(
@@ -116,17 +110,11 @@ class ImagePickerService {
     int imageQuality = 85,
   }) async {
     try {
-      final permissionResult =
-          await _permissionHelper.requestPhotosPermission();
-      if (!permissionResult.granted) {
-        if (permissionResult.status == PermissionStatus.permanentlyDenied) {
-          _showPermissionDeniedDialog(
-            'Photo Library',
-            permissionResult.message,
-          );
-        }
-        return [];
-      }
+      final granted = await _dialogHelper.requestWithDialog(
+        _permissionHelper.requestPhotosPermission,
+        'Photo Library',
+      );
+      if (!granted) return [];
 
       final List<XFile> files = await _picker.pickMultiImage(
         maxWidth: maxWidth.toDouble(),
@@ -207,37 +195,6 @@ class ImagePickerService {
     return false;
   }
 
-  void _showPermissionDeniedDialog(String permissionName, String message) {
-    AppSnackbarUtils.showError(
-      'Quyền truy cập bị từ chối',
-      'Không thể truy cập $permissionName. Vui lòng cấp quyền trong Cài đặt.',
-    );
-    Get.dialog(
-      AlertDialog(
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        title: const Text('Quyền truy cập bị từ chối'),
-        content: Text(
-          'Ứng dụng cần quyền "$permissionName" để thực hiện chức năng này.\n\n$message\n\nVui lòng cấp quyền trong Cài đặt ứng dụng.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: const Text('Hủy'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Get.back();
-              AppSettings.openAppSettings();
-            },
-            child: const Text('Mở Cài đặt'),
-          ),
-        ],
-      ),
-    );
-  }
 }
 
 class FilePickerService {

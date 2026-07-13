@@ -1,6 +1,4 @@
 import 'dart:convert';
-import 'dart:typed_data';
-
 import 'package:events_app/api_template/base_response/api_response.dart';
 import 'package:events_app/api_template/base_response/api_response_forwarder.dart';
 import 'package:events_app/api_template/base_request/api_request.dart';
@@ -13,7 +11,6 @@ import 'package:events_app/feature/common/domain/enum/app_enum.dart';
 import 'package:events_app/feature/user_management/data/model/user_model.dart';
 import 'package:events_app/feature/user_management/data/model/verification_document_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:injectable/injectable.dart';
 

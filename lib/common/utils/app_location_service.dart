@@ -17,6 +17,7 @@ class LocationCoords {
 
 enum LocationErrorType {
   permissionDenied,
+  permanentlyDenied,
   locationServiceDisabled,
   timeout,
   unknown,
@@ -36,6 +37,12 @@ class LocationError {
         message: 'Không có quyền truy cập vị trí',
       );
 
+  factory LocationError.permanentlyDenied() => const LocationError(
+        type: LocationErrorType.permanentlyDenied,
+        message:
+            'Quyền vị trí bị từ chối vĩnh viễn. Vui lòng cấp quyền trong Cài đặt.',
+      );
+
   factory LocationError.serviceDisabled() => const LocationError(
         type: LocationErrorType.locationServiceDisabled,
         message: 'Dịch vụ định vị đang tắt. Vui lòng bật GPS.',
@@ -53,6 +60,11 @@ class LocationError {
 }
 
 class AppLocationService {
+  final PermissionHelper _permissionHelper;
+
+  AppLocationService({PermissionHelper? permissionHelper})
+      : _permissionHelper = permissionHelper ?? PermissionHelper();
+
   Future<({LocationCoords? coords, LocationError? error})>
       getCurrentLocation() async {
     if (kIsWeb) {
@@ -64,17 +76,10 @@ class AppLocationService {
 
     final permissionResult = await _checkAndRequestPermission();
     if (!permissionResult.granted) {
-      final errorType =
-          permissionResult.status == PermissionStatus.permanentlyDenied
-              ? LocationErrorType.permissionDenied
-              : LocationErrorType.permissionDenied;
-      return (
-        coords: null,
-        error: LocationError(
-          type: errorType,
-          message: permissionResult.message,
-        ),
-      );
+      if (permissionResult.status == PermissionStatus.permanentlyDenied) {
+        return (coords: null, error: LocationError.permanentlyDenied());
+      }
+      return (coords: null, error: LocationError.permissionDenied());
     }
 
     final serviceEnabled = await Geolocator.isLocationServiceEnabled();
@@ -124,7 +129,6 @@ class AppLocationService {
   }
 
   Future<PermissionResult> _checkAndRequestPermission() async {
-    final helper = PermissionHelper();
-    return await helper.requestLocationPermission();
+    return await _permissionHelper.requestLocationPermission();
   }
 }

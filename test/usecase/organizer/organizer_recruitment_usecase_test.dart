@@ -179,7 +179,7 @@ void main() {
       );
 
       const params = UpdateRecruitmentParams(title: 'Updated');
-      final wrapper = UpdateRecruitmentParamsWrapper(id: 1, params: params);
+      const wrapper = UpdateRecruitmentParamsWrapper(id: 1, params: params);
       final result = await usecase(wrapper);
 
       expect(result.isRight(), true);
