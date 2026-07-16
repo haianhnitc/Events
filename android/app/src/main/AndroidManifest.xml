@@ -12,10 +12,12 @@
     <!-- Location permissions for showing nearby events -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
 
     <!-- Internet permission (already included by default) -->
     <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Notification permission (Android 13+) for FCM push notifications -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:label="events_app"

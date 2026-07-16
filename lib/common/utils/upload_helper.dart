@@ -103,45 +103,6 @@ class ImagePickerService {
     }
   }
 
-  Future<List<UploadResult>> pickMultipleImages({
-    int maxImages = 10,
-    int maxWidth = 2048,
-    int maxHeight = 2048,
-    int imageQuality = 85,
-  }) async {
-    try {
-      final granted = await _dialogHelper.requestWithDialog(
-        _permissionHelper.requestPhotosPermission,
-        'Photo Library',
-      );
-      if (!granted) return [];
-
-      final List<XFile> files = await _picker.pickMultiImage(
-        maxWidth: maxWidth.toDouble(),
-        maxHeight: maxHeight.toDouble(),
-        imageQuality: imageQuality,
-      );
-
-      final limitedFiles = files.take(maxImages).toList();
-
-      final results = <UploadResult>[];
-      for (final file in limitedFiles) {
-        final validate = _validateImageFile(file);
-        if (!validate.ok) continue;
-        results.add(UploadResult(
-          filePath: file.path,
-          fileName: file.name,
-          fileSize: _getFileSize(file.path),
-          mimeType: _getMimeType(file.path),
-        ));
-      }
-
-      return results;
-    } catch (e) {
-      return [];
-    }
-  }
-
   ({bool ok, String message}) _validateImageFile(XFile file) {
     final ext = file.path.split('.').last.toLowerCase();
     if (!['jpg', 'jpeg', 'png', 'gif', 'webp'].contains(ext)) {

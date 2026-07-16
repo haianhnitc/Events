@@ -35,6 +35,35 @@ class PermissionDialogHelper {
     return false;
   }
 
+  Future<bool> showRationaleDialog({
+    required String title,
+    required String message,
+    String declineLabel = 'Để sau',
+    String confirmLabel = 'Bật',
+  }) async {
+    return await Get.dialog<bool>(
+          AlertDialog(
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            title: Text(title),
+            content: Text(message),
+            actions: [
+              TextButton(
+                onPressed: () => Get.back(result: false),
+                child: Text(declineLabel),
+              ),
+              ElevatedButton(
+                onPressed: () => Get.back(result: true),
+                child: Text(confirmLabel),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+  }
+
   Future<bool> showPermissionDialog(
     String permissionName,
     String message, {

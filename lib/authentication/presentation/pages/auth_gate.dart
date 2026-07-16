@@ -7,9 +7,13 @@ import 'package:events_app/authentication/presentation/pages/login_screen.dart';
 import 'package:events_app/authentication/presentation/pages/organizer_pending_approval_screen.dart';
 import 'package:events_app/authentication/presentation/pages/organizer_rejected_screen.dart';
 import 'package:events_app/common/path/asset_path.dart';
+import 'package:events_app/common/utils/fcm_service.dart';
+import 'package:events_app/common/utils/permission_dialog_helper.dart';
 import 'package:events_app/feature/common/domain/enum/app_enum.dart';
 import 'package:events_app/feature/common/utils/app_snackbar_utils.dart';
 import 'package:events_app/routes/organizer_app_layout.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -83,8 +87,25 @@ class _AuthGateState extends State<AuthGate> {
         Get.to(() => const OrganizerRejectedScreen());
 
       case AuthEvent.loginSuccess:
-        break;
+        _maybeRequestNotificationPermission();
     }
+  }
+
+  Future<void> _maybeRequestNotificationPermission() async {
+    if (kIsWeb) return;
+
+    final fcmService = Get.find<FcmService>();
+    final status = await fcmService.getPermissionStatus();
+    if (status != AuthorizationStatus.notDetermined) return;
+
+    final shouldAsk = await const PermissionDialogHelper().showRationaleDialog(
+      title: 'Bật thông báo',
+      message:
+          'Nhận thông báo về sự kiện mới, lịch tham gia và các cập nhật quan trọng.',
+    );
+    if (!shouldAsk) return;
+
+    await fcmService.initialize();
   }
 
   @override

@@ -12,6 +12,8 @@ import 'package:events_app/feature/feedback/presentation/page/feedback_page.dart
 import 'package:events_app/api_template/event_network.dart';
 import 'package:events_app/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:events_app/common/utils/fcm_service.dart';
 
 import 'package:events_app/common/timezone_helper.dart';
 
@@ -32,6 +34,8 @@ void main() async {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
+    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+    Get.put(FcmService(), permanent: true);
   } on UnsupportedError catch (e) {
     debugPrint('Firebase not configured for this platform: $e');
   } catch (e) {
